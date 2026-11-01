@@ -1,0 +1,11 @@
+package-as: Untamed
+
+ignore:
+  - tools
+  - tests
+  - README.md
+  - CHANGELOG.md
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown

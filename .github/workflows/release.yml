@@ -1,0 +1,22 @@
+# Builds and uploads a release when you push a version tag, for example:  git tag v2.1.0 && git push --tags
+# Needs repository secrets: CF_API_KEY (CurseForge) and, optionally, WAGO_API_TOKEN (Wago Addons).
+# Add the project IDs to the TOC files as "## X-Curse-Project-ID:" and "## X-Wago-ID:" once the projects exist.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: BigWigsMods/packager@v2

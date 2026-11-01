@@ -1,0 +1,6486 @@
+{
+ "families": {
+  "Bat": {
+   "diet": [
+    "Fruit",
+    "Fungus"
+   ],
+   "unique": "Sonic Blast",
+   "abilities": [
+    "Bite",
+    "Dive",
+    "Sonic Blast",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Bear": {
+   "diet": [
+    "Meat",
+    "Fish",
+    "Cheese",
+    "Bread",
+    "Fungus",
+    "Fruit"
+   ],
+   "unique": "Swipe",
+   "abilities": [
+    "Bite",
+    "Claw",
+    "Dash",
+    "Swipe",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Bird of Prey": {
+   "diet": [
+    "Meat"
+   ],
+   "unique": "Mine!",
+   "abilities": [
+    "Claw",
+    "Dive",
+    "Mine!",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Boar": {
+   "diet": [
+    "Meat",
+    "Fish",
+    "Cheese",
+    "Bread",
+    "Fungus",
+    "Fruit"
+   ],
+   "unique": "Charge",
+   "abilities": [
+    "Bite",
+    "Dash",
+    "Charge",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Carrion Bird": {
+   "diet": [
+    "Meat",
+    "Fish"
+   ],
+   "unique": "Demoralizing Screech",
+   "abilities": [
+    "Bite",
+    "Claw",
+    "Dive",
+    "Demoralizing Screech",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Cat": {
+   "diet": [
+    "Meat",
+    "Fish"
+   ],
+   "unique": "Prowl",
+   "abilities": [
+    "Bite",
+    "Claw",
+    "Dash",
+    "Prowl",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Crab": {
+   "diet": [
+    "Fish",
+    "Bread",
+    "Fungus",
+    "Fruit"
+   ],
+   "unique": "Pinch",
+   "abilities": [
+    "Claw",
+    "Dash",
+    "Pinch",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Crocolisk": {
+   "diet": [
+    "Meat",
+    "Fish"
+   ],
+   "unique": "Dismember",
+   "abilities": [
+    "Bite",
+    "Dash",
+    "Dismember",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Fox": {
+   "diet": [
+    "Meat"
+   ],
+   "unique": "Trickster's Dance",
+   "abilities": [
+    "Bite",
+    "Dash",
+    "Trickster's Dance",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Gorilla": {
+   "diet": [
+    "Fungus",
+    "Fruit"
+   ],
+   "unique": "Thunderstomp",
+   "abilities": [
+    "Bite",
+    "Dash",
+    "Thunderstomp",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Hyena": {
+   "diet": [
+    "Meat",
+    "Fruit"
+   ],
+   "unique": "Tendon Rip",
+   "abilities": [
+    "Bite",
+    "Dash",
+    "Tendon Rip",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Raptor": {
+   "diet": [
+    "Meat"
+   ],
+   "unique": "Savage Rend",
+   "abilities": [
+    "Bite",
+    "Claw",
+    "Dash",
+    "Savage Rend",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Scorpid": {
+   "diet": [
+    "Meat"
+   ],
+   "unique": "Scorpid Poison",
+   "abilities": [
+    "Claw",
+    "Dash",
+    "Scorpid Poison",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Spider": {
+   "diet": [
+    "Meat"
+   ],
+   "unique": "Web",
+   "abilities": [
+    "Bite",
+    "Dash",
+    "Web",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Tallstrider": {
+   "diet": [
+    "Cheese",
+    "Fungus",
+    "Fruit"
+   ],
+   "unique": "Dust Cloud",
+   "abilities": [
+    "Bite",
+    "Dash",
+    "Dust Cloud",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Turtle": {
+   "diet": [
+    "Fish",
+    "Fungus",
+    "Fruit"
+   ],
+   "unique": "Shell Shield",
+   "abilities": [
+    "Bite",
+    "Dash",
+    "Shell Shield",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Wind Serpent": {
+   "diet": [
+    "Fish",
+    "Cheese",
+    "Bread"
+   ],
+   "unique": "Lightning Breath",
+   "abilities": [
+    "Bite",
+    "Dive",
+    "Lightning Breath",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Wolf": {
+   "diet": [
+    "Meat"
+   ],
+   "unique": "Furious Howl",
+   "abilities": [
+    "Bite",
+    "Dash",
+    "Furious Howl",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ]
+  },
+  "Core Hound": {
+   "diet": [
+    "Meat"
+   ],
+   "unique": "Lava Breath",
+   "abilities": [
+    "Bite",
+    "Lava Breath",
+    "Cower",
+    "Growl"
+   ],
+   "passives": [
+    "Great Stamina",
+    "Natural Armor",
+    "Arcane Resistance",
+    "Fire Resistance",
+    "Frost Resistance",
+    "Nature Resistance",
+    "Shadow Resistance",
+    "Faster Attack",
+    "Slower Attack"
+   ],
+   "note": "Listed by Petopia/warcrafttavern; no tameable Core Hound found in mmonster lists."
+  }
+ },
+ "abilities": {
+  "Bite": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 1,
+     "tp": 1
+    },
+    {
+     "rank": 2,
+     "level": 8,
+     "tp": 4
+    },
+    {
+     "rank": 3,
+     "level": 16,
+     "tp": 7
+    },
+    {
+     "rank": 4,
+     "level": 24,
+     "tp": 10
+    },
+    {
+     "rank": 5,
+     "level": 32,
+     "tp": 13
+    },
+    {
+     "rank": 6,
+     "level": 40,
+     "tp": 17
+    },
+    {
+     "rank": 7,
+     "level": 48,
+     "tp": 21
+    },
+    {
+     "rank": 8,
+     "level": 56,
+     "tp": 25
+    }
+   ]
+  },
+  "Claw": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 1,
+     "tp": 1
+    },
+    {
+     "rank": 2,
+     "level": 8,
+     "tp": 4
+    },
+    {
+     "rank": 3,
+     "level": 16,
+     "tp": 7
+    },
+    {
+     "rank": 4,
+     "level": 24,
+     "tp": 10
+    },
+    {
+     "rank": 5,
+     "level": 32,
+     "tp": 13
+    },
+    {
+     "rank": 6,
+     "level": 40,
+     "tp": 17
+    },
+    {
+     "rank": 7,
+     "level": 48,
+     "tp": 21
+    },
+    {
+     "rank": 8,
+     "level": 56,
+     "tp": 25
+    }
+   ]
+  },
+  "Cower": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 5,
+     "tp": 8
+    },
+    {
+     "rank": 2,
+     "level": 15,
+     "tp": 10
+    },
+    {
+     "rank": 3,
+     "level": 25,
+     "tp": 12
+    },
+    {
+     "rank": 4,
+     "level": 35,
+     "tp": 14
+    },
+    {
+     "rank": 5,
+     "level": 45,
+     "tp": 16
+    },
+    {
+     "rank": 6,
+     "level": 55,
+     "tp": 18
+    }
+   ]
+  },
+  "Dash": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 30,
+     "tp": 15
+    },
+    {
+     "rank": 2,
+     "level": 40,
+     "tp": 20
+    },
+    {
+     "rank": 3,
+     "level": 50,
+     "tp": 25
+    }
+   ]
+  },
+  "Dive": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 30,
+     "tp": 15
+    },
+    {
+     "rank": 2,
+     "level": 40,
+     "tp": 20
+    },
+    {
+     "rank": 3,
+     "level": 50,
+     "tp": 25
+    }
+   ]
+  },
+  "Charge": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 1,
+     "tp": 5
+    },
+    {
+     "rank": 2,
+     "level": 12,
+     "tp": 9
+    },
+    {
+     "rank": 3,
+     "level": 24,
+     "tp": 13
+    },
+    {
+     "rank": 4,
+     "level": 36,
+     "tp": 17
+    },
+    {
+     "rank": 5,
+     "level": 48,
+     "tp": 21
+    },
+    {
+     "rank": 6,
+     "level": 60,
+     "tp": 25
+    }
+   ],
+   "note": "Rank 4 (lvl 36) has no known teaching beast (Petopia: 'No known training source')."
+  },
+  "Furious Howl": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 10,
+     "tp": 10
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": 15
+    },
+    {
+     "rank": 3,
+     "level": 40,
+     "tp": 20
+    },
+    {
+     "rank": 4,
+     "level": 56,
+     "tp": 25
+    }
+   ]
+  },
+  "Lightning Breath": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 1,
+     "tp": 1
+    },
+    {
+     "rank": 2,
+     "level": 12,
+     "tp": 5
+    },
+    {
+     "rank": 3,
+     "level": 24,
+     "tp": 10
+    },
+    {
+     "rank": 4,
+     "level": 36,
+     "tp": 15
+    },
+    {
+     "rank": 5,
+     "level": 48,
+     "tp": 20
+    },
+    {
+     "rank": 6,
+     "level": 60,
+     "tp": 25
+    }
+   ],
+   "note": "Rank 1 has no known teaching beast (Petopia); likely known by wind serpents on tame."
+  },
+  "Prowl": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 30,
+     "tp": 15
+    },
+    {
+     "rank": 2,
+     "level": 40,
+     "tp": 20
+    },
+    {
+     "rank": 3,
+     "level": 50,
+     "tp": 25
+    }
+   ]
+  },
+  "Scorpid Poison": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 8,
+     "tp": 10
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": 15
+    },
+    {
+     "rank": 3,
+     "level": 40,
+     "tp": 20
+    },
+    {
+     "rank": 4,
+     "level": 56,
+     "tp": 25
+    }
+   ]
+  },
+  "Shell Shield": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 20,
+     "tp": 15
+    }
+   ]
+  },
+  "Thunderstomp": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 30,
+     "tp": 15
+    },
+    {
+     "rank": 2,
+     "level": 40,
+     "tp": 20
+    },
+    {
+     "rank": 3,
+     "level": 50,
+     "tp": 25
+    },
+    {
+     "rank": 4,
+     "level": 60,
+     "tp": 0
+    }
+   ],
+   "note": "Rank 4 (lvl 60) is new in Forever, listed with 0 TP and no teaching beast."
+  },
+  "Demoralizing Screech": {
+   "source": "beast",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 8,
+     "tp": 10
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": 15
+    },
+    {
+     "rank": 3,
+     "level": 48,
+     "tp": 20
+    },
+    {
+     "rank": 4,
+     "level": 56,
+     "tp": 25
+    }
+   ],
+   "sourceConfidence": "low",
+   "note": "Replaces Classic Screech. Petopia: 'No known training source' for all ranks; mmonster lists none; wowforevertools lists Greater Fleshripper (154) as rank 1 teacher."
+  },
+  "Swipe": {
+   "source": "beast",
+   "sourceConfidence": "low",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 12,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 36,
+     "tp": 0
+    },
+    {
+     "rank": 4,
+     "level": 48,
+     "tp": 0
+    },
+    {
+     "rank": 5,
+     "level": 60,
+     "tp": 0
+    }
+   ],
+   "note": "New. Only teacher found: Giant Grizzled Bear (rank 1). 0 TP suggests possibly innate; unconfirmed."
+  },
+  "Savage Rend": {
+   "source": "beast",
+   "sourceConfidence": "low",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 12,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 36,
+     "tp": 0
+    },
+    {
+     "rank": 4,
+     "level": 48,
+     "tp": 0
+    },
+    {
+     "rank": 5,
+     "level": 60,
+     "tp": 0
+    }
+   ],
+   "note": "New. Rank 1 teachers per mmonster: Shriekling Matriarch (raptor), Shadowgale Shriekling (bird of prey), Mystmane (bear); cross-family teachers and level 9-13 beasts teaching a lvl-12 rank look odd (beta data)."
+  },
+  "Tendon Rip": {
+   "source": "innate",
+   "sourceConfidence": "unknown",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 12,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 36,
+     "tp": 0
+    },
+    {
+     "rank": 4,
+     "level": 48,
+     "tp": 0
+    },
+    {
+     "rank": 5,
+     "level": 60,
+     "tp": 0
+    }
+   ],
+   "note": "New. No teaching beast in any source; 0 TP. 'innate' is a guess."
+  },
+  "Web": {
+   "source": "beast",
+   "sourceConfidence": "low",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 12,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 36,
+     "tp": 0
+    },
+    {
+     "rank": 4,
+     "level": 48,
+     "tp": 0
+    },
+    {
+     "rank": 5,
+     "level": 60,
+     "tp": 0
+    }
+   ],
+   "note": "New. Only teacher found: Moss Stalker (1780) rank 1."
+  },
+  "Dust Cloud": {
+   "source": "beast",
+   "sourceConfidence": "low",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 12,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 36,
+     "tp": 0
+    },
+    {
+     "rank": 4,
+     "level": 48,
+     "tp": 0
+    },
+    {
+     "rank": 5,
+     "level": 60,
+     "tp": 0
+    }
+   ],
+   "note": "New. mmonster: Galestrider/Ornery Galestrider teach rank 1. Petopia: 'No known training source'."
+  },
+  "Pinch": {
+   "source": "innate",
+   "sourceConfidence": "unknown",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 12,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 36,
+     "tp": 0
+    },
+    {
+     "rank": 4,
+     "level": 48,
+     "tp": 0
+    },
+    {
+     "rank": 5,
+     "level": 60,
+     "tp": 0
+    }
+   ],
+   "note": "New. No teaching beast in any source; 0 TP."
+  },
+  "Dismember": {
+   "source": "innate",
+   "sourceConfidence": "unknown",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 12,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 36,
+     "tp": 0
+    },
+    {
+     "rank": 4,
+     "level": 48,
+     "tp": 0
+    },
+    {
+     "rank": 5,
+     "level": 60,
+     "tp": 0
+    }
+   ],
+   "note": "New. Petopia: 'No known training source', 0 TP; mmonster says 1 TP per rank. No teachers found."
+  },
+  "Mine!": {
+   "source": "innate",
+   "sourceConfidence": "unknown",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 10,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 20,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 30,
+     "tp": 0
+    },
+    {
+     "rank": 4,
+     "level": 40,
+     "tp": 0
+    },
+    {
+     "rank": 5,
+     "level": 50,
+     "tp": 0
+    }
+   ],
+   "note": "New. No teaching beast in any source; 0 TP."
+  },
+  "Sonic Blast": {
+   "source": "innate",
+   "sourceConfidence": "unknown",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 12,
+     "tp": null
+    },
+    {
+     "rank": 2,
+     "level": 24,
+     "tp": null
+    },
+    {
+     "rank": 3,
+     "level": 36,
+     "tp": null
+    },
+    {
+     "rank": 4,
+     "level": 48,
+     "tp": null
+    },
+    {
+     "rank": 5,
+     "level": 60,
+     "tp": null
+    }
+   ],
+   "note": "New. Levels from mmonster only; TP not given; not on Petopia's page. No teachers found."
+  },
+  "Trickster's Dance": {
+   "source": "beast",
+   "sourceConfidence": "medium",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 20,
+     "tp": 10
+    }
+   ],
+   "note": "New. Taught by Vuldren Alpha (250874), Zephras Isle."
+  },
+  "Lava Breath": {
+   "source": "innate",
+   "sourceConfidence": "unknown",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 48,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 48,
+     "tp": 0
+    }
+   ],
+   "note": "Core Hound only; no known training source."
+  },
+  "Growl": {
+   "source": "trainer",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 1,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 10,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 20,
+     "tp": 0
+    },
+    {
+     "rank": 4,
+     "level": 30,
+     "tp": 0
+    },
+    {
+     "rank": 5,
+     "level": 40,
+     "tp": 0
+    },
+    {
+     "rank": 6,
+     "level": 50,
+     "tp": 0
+    },
+    {
+     "rank": 7,
+     "level": 60,
+     "tp": 0
+    }
+   ]
+  },
+  "Great Stamina": {
+   "source": "trainer",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 1,
+     "tp": 5
+    },
+    {
+     "rank": 2,
+     "level": 12,
+     "tp": 10
+    },
+    {
+     "rank": 3,
+     "level": 18,
+     "tp": 15
+    },
+    {
+     "rank": 4,
+     "level": 24,
+     "tp": 25
+    },
+    {
+     "rank": 5,
+     "level": 30,
+     "tp": 50
+    },
+    {
+     "rank": 6,
+     "level": 36,
+     "tp": 75
+    },
+    {
+     "rank": 7,
+     "level": 42,
+     "tp": 100
+    },
+    {
+     "rank": 8,
+     "level": 48,
+     "tp": 125
+    },
+    {
+     "rank": 9,
+     "level": 54,
+     "tp": 150
+    },
+    {
+     "rank": 10,
+     "level": 60,
+     "tp": 185
+    }
+   ]
+  },
+  "Natural Armor": {
+   "source": "trainer",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 1,
+     "tp": 1
+    },
+    {
+     "rank": 2,
+     "level": 12,
+     "tp": 5
+    },
+    {
+     "rank": 3,
+     "level": 18,
+     "tp": 10
+    },
+    {
+     "rank": 4,
+     "level": 24,
+     "tp": 15
+    },
+    {
+     "rank": 5,
+     "level": 30,
+     "tp": 25
+    },
+    {
+     "rank": 6,
+     "level": 36,
+     "tp": 50
+    },
+    {
+     "rank": 7,
+     "level": 42,
+     "tp": 75
+    },
+    {
+     "rank": 8,
+     "level": 48,
+     "tp": 100
+    },
+    {
+     "rank": 9,
+     "level": 54,
+     "tp": 125
+    },
+    {
+     "rank": 10,
+     "level": 60,
+     "tp": 150
+    }
+   ]
+  },
+  "Arcane Resistance": {
+   "source": "trainer",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 20,
+     "tp": 5
+    },
+    {
+     "rank": 2,
+     "level": 30,
+     "tp": 15
+    },
+    {
+     "rank": 3,
+     "level": 40,
+     "tp": 45
+    },
+    {
+     "rank": 4,
+     "level": 50,
+     "tp": 90
+    }
+   ]
+  },
+  "Fire Resistance": {
+   "source": "trainer",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 20,
+     "tp": 5
+    },
+    {
+     "rank": 2,
+     "level": 30,
+     "tp": 15
+    },
+    {
+     "rank": 3,
+     "level": 40,
+     "tp": 45
+    },
+    {
+     "rank": 4,
+     "level": 50,
+     "tp": 90
+    }
+   ]
+  },
+  "Frost Resistance": {
+   "source": "trainer",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 20,
+     "tp": 5
+    },
+    {
+     "rank": 2,
+     "level": 30,
+     "tp": 15
+    },
+    {
+     "rank": 3,
+     "level": 40,
+     "tp": 45
+    },
+    {
+     "rank": 4,
+     "level": 50,
+     "tp": 90
+    }
+   ]
+  },
+  "Nature Resistance": {
+   "source": "trainer",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 20,
+     "tp": 5
+    },
+    {
+     "rank": 2,
+     "level": 30,
+     "tp": 15
+    },
+    {
+     "rank": 3,
+     "level": 40,
+     "tp": 45
+    },
+    {
+     "rank": 4,
+     "level": 50,
+     "tp": 90
+    }
+   ]
+  },
+  "Shadow Resistance": {
+   "source": "trainer",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 20,
+     "tp": 5
+    },
+    {
+     "rank": 2,
+     "level": 30,
+     "tp": 15
+    },
+    {
+     "rank": 3,
+     "level": 40,
+     "tp": 45
+    },
+    {
+     "rank": 4,
+     "level": 50,
+     "tp": 90
+    }
+   ]
+  },
+  "Faster Attack": {
+   "source": "innate",
+   "sourceConfidence": "contradictory",
+   "ranks": [
+    {
+     "rank": 1,
+     "level": 1,
+     "tp": 0
+    },
+    {
+     "rank": 2,
+     "level": 1,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 1,
+     "tp": 0
+    },
+    {
+     "rank": 4,
+     "level": 1,
+     "tp": 0
+    },
+    {
+     "rank": 5,
+     "level": 1,
+     "tp": 0
+    },
+    {
+     "rank": 6,
+     "level": 1,
+     "tp": 0
+    },
+    {
+     "rank": 7,
+     "level": 1,
+     "tp": 0
+    }
+   ],
+   "note": "Attack-speed passive (all pets base 2.0s). conquestcapped: hidden passive kept from the tamed beast, no trainer sells it. Petopia: 'Can be learned from trainers'. Per-beast values are in beasts[].attackSpeedPassive (only on beasts that also teach something)."
+  },
+  "Slower Attack": {
+   "source": "innate",
+   "sourceConfidence": "contradictory",
+   "ranks": [
+    {
+     "rank": 2,
+     "level": 1,
+     "tp": 0
+    },
+    {
+     "rank": 3,
+     "level": 1,
+     "tp": 0
+    }
+   ],
+   "note": "As Faster Attack."
+  }
+ },
+ "beasts": [
+  {
+   "npcId": 250926,
+   "name": "Scrawny Ursera",
+   "family": "Bear",
+   "minLevel": 3,
+   "maxLevel": 4,
+   "teaches": [
+    [
+     "Claw",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 250937,
+   "name": "Ursera Scavenger",
+   "family": "Bear",
+   "minLevel": 4,
+   "maxLevel": 4,
+   "teaches": [
+    [
+     "Claw",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 251115,
+   "name": "Urs'anah",
+   "family": "Bear",
+   "minLevel": 5,
+   "maxLevel": 5,
+   "teaches": [
+    [
+     "Claw",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster",
+   "attackSpeedPassive": "Slower Attack II"
+  },
+  {
+   "npcId": 1196,
+   "name": "Ice Claw Bear",
+   "family": "Bear",
+   "minLevel": 7,
+   "maxLevel": 8,
+   "teaches": [
+    [
+     "Claw",
+     1
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 822,
+   "name": "Young Forest Bear",
+   "family": "Bear",
+   "minLevel": 8,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Elwynn Forest",
+   "source": "mmonster",
+   "attackSpeedPassive": "Slower Attack II"
+  },
+  {
+   "npcId": 250927,
+   "name": "Shadowgale Ursera",
+   "family": "Bear",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1778,
+   "name": "Ferocious Grizzled Bear",
+   "family": "Bear",
+   "minLevel": 11,
+   "maxLevel": 12,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Silverpine Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1961,
+   "name": "Mangeclaw",
+   "family": "Bear",
+   "minLevel": 11,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2163,
+   "name": "Thistle Bear",
+   "family": "Bear",
+   "minLevel": 11,
+   "maxLevel": 12,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1130,
+   "name": "Bjarn",
+   "family": "Bear",
+   "minLevel": 12,
+   "maxLevel": 12,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1797,
+   "name": "Giant Grizzled Bear",
+   "family": "Bear",
+   "minLevel": 12,
+   "maxLevel": 13,
+   "teaches": [
+    [
+     "Swipe",
+     1
+    ]
+   ],
+   "zone": "Silverpine Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 259388,
+   "name": "Mystmane",
+   "family": "Bear",
+   "minLevel": 13,
+   "maxLevel": 13,
+   "teaches": [
+    [
+     "Savage Rend",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack II"
+  },
+  {
+   "npcId": 1189,
+   "name": "Black Bear Patriarch",
+   "family": "Bear",
+   "minLevel": 16,
+   "maxLevel": 17,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 6788,
+   "name": "Den Mother",
+   "family": "Bear",
+   "minLevel": 18,
+   "maxLevel": 19,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1225,
+   "name": "Ol' Sooty",
+   "family": "Bear",
+   "minLevel": 20,
+   "maxLevel": 20,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3809,
+   "name": "Ashenvale Bear",
+   "family": "Bear",
+   "minLevel": 21,
+   "maxLevel": 22,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Ashenvale",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2351,
+   "name": "Gray Bear",
+   "family": "Bear",
+   "minLevel": 21,
+   "maxLevel": 22,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Hillsbrad Foothills",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3810,
+   "name": "Elder Ashenvale Bear",
+   "family": "Bear",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Claw",
+     4
+    ]
+   ],
+   "zone": "Ashenvale",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5268,
+   "name": "Ironfur Bear",
+   "family": "Bear",
+   "minLevel": 41,
+   "maxLevel": 42,
+   "teaches": [
+    [
+     "Claw",
+     6
+    ]
+   ],
+   "zone": "Feralas",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5352,
+   "name": "Old Grizzlegut",
+   "family": "Bear",
+   "minLevel": 43,
+   "maxLevel": 43,
+   "teaches": [
+    [
+     "Claw",
+     6
+    ]
+   ],
+   "zone": "Feralas",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5274,
+   "name": "Ironfur Patriarch",
+   "family": "Bear",
+   "minLevel": 48,
+   "maxLevel": 49,
+   "teaches": [
+    [
+     "Claw",
+     7
+    ]
+   ],
+   "zone": "Feralas",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8958,
+   "name": "Angerclaw Mauler",
+   "family": "Bear",
+   "minLevel": 49,
+   "maxLevel": 50,
+   "teaches": [
+    [
+     "Claw",
+     7
+    ]
+   ],
+   "zone": "Felwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 14344,
+   "name": "Mongress",
+   "family": "Bear",
+   "minLevel": 50,
+   "maxLevel": 50,
+   "teaches": [
+    [
+     "Claw",
+     7
+    ]
+   ],
+   "zone": "Felwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7444,
+   "name": "Shardtooth Bear",
+   "family": "Bear",
+   "minLevel": 53,
+   "maxLevel": 54,
+   "teaches": [
+    [
+     "Claw",
+     7
+    ]
+   ],
+   "zone": "Winterspring",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1816,
+   "name": "Diseased Grizzly",
+   "family": "Bear",
+   "minLevel": 55,
+   "maxLevel": 56,
+   "teaches": [
+    [
+     "Claw",
+     7
+    ]
+   ],
+   "zone": "Western Plaguelands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7445,
+   "name": "Elder Shardtooth",
+   "family": "Bear",
+   "minLevel": 57,
+   "maxLevel": 58,
+   "teaches": [
+    [
+     "Claw",
+     8
+    ]
+   ],
+   "zone": "Winterspring",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1509,
+   "name": "Ragged Scavenger",
+   "family": "Wolf",
+   "minLevel": 2,
+   "maxLevel": 3,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Tirisfal Glades",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2958,
+   "name": "Prairie Wolf",
+   "family": "Wolf",
+   "minLevel": 5,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Mulgore",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 1138,
+   "name": "Snow Tracker Wolf",
+   "family": "Wolf",
+   "minLevel": 6,
+   "maxLevel": 7,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1922,
+   "name": "Gray Forest Wolf",
+   "family": "Wolf",
+   "minLevel": 7,
+   "maxLevel": 8,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Elwynn Forest",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack I"
+  },
+  {
+   "npcId": 2959,
+   "name": "Prairie Stalker",
+   "family": "Wolf",
+   "minLevel": 7,
+   "maxLevel": 8,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Mulgore",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 1131,
+   "name": "Winter Wolf",
+   "family": "Wolf",
+   "minLevel": 7,
+   "maxLevel": 8,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1133,
+   "name": "Starving Winter Wolf",
+   "family": "Wolf",
+   "minLevel": 8,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 254589,
+   "name": "Vulgara the Insatiable",
+   "family": "Wolf",
+   "minLevel": 8,
+   "maxLevel": 8,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2960,
+   "name": "Prairie Wolf Alpha",
+   "family": "Wolf",
+   "minLevel": 9,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ],
+    [
+     "Furious Howl",
+     1
+    ]
+   ],
+   "zone": "Mulgore",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack IV"
+  },
+  {
+   "npcId": 118,
+   "name": "Prowler",
+   "family": "Wolf",
+   "minLevel": 9,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Elwynn Forest",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 834,
+   "name": "Coyote",
+   "family": "Wolf",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Westfall",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1132,
+   "name": "Timber",
+   "family": "Wolf",
+   "minLevel": 10,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1765,
+   "name": "Worg",
+   "family": "Wolf",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ],
+    [
+     "Furious Howl",
+     1
+    ]
+   ],
+   "zone": "Silverpine Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 833,
+   "name": "Coyote Packleader",
+   "family": "Wolf",
+   "minLevel": 11,
+   "maxLevel": 12,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ],
+    [
+     "Furious Howl",
+     1
+    ]
+   ],
+   "zone": "Westfall",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 274300,
+   "name": "Coldrasp",
+   "family": "Wolf",
+   "minLevel": 12,
+   "maxLevel": 12,
+   "teaches": [
+    [
+     "Furious Howl",
+     1
+    ]
+   ],
+   "zone": "Tirisfal Glades",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 1923,
+   "name": "Bloodsnout Worg",
+   "family": "Wolf",
+   "minLevel": 16,
+   "maxLevel": 17,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Silverpine Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3823,
+   "name": "Ghostpaw Runner",
+   "family": "Wolf",
+   "minLevel": 19,
+   "maxLevel": 20,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Ashenvale",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 10644,
+   "name": "Mist Howler",
+   "family": "Wolf",
+   "minLevel": 22,
+   "maxLevel": 22,
+   "teaches": [
+    [
+     "Furious Howl",
+     1
+    ]
+   ],
+   "zone": "Ashenvale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 521,
+   "name": "Lupos",
+   "family": "Wolf",
+   "minLevel": 23,
+   "maxLevel": 23,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Duskwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 628,
+   "name": "Black Ravager",
+   "family": "Wolf",
+   "minLevel": 24,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ]
+   ],
+   "zone": "Duskwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1258,
+   "name": "Black Ravager Mastiff",
+   "family": "Wolf",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ],
+    [
+     "Furious Howl",
+     2
+    ]
+   ],
+   "zone": "Duskwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3825,
+   "name": "Ghostpaw Alpha",
+   "family": "Wolf",
+   "minLevel": 27,
+   "maxLevel": 28,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ],
+    [
+     "Furious Howl",
+     2
+    ]
+   ],
+   "zone": "Ashenvale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 2727,
+   "name": "Crag Coyote",
+   "family": "Wolf",
+   "minLevel": 35,
+   "maxLevel": 36,
+   "teaches": [
+    [
+     "Bite",
+     5
+    ],
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4950,
+   "name": "Spot",
+   "family": "Wolf",
+   "minLevel": 35,
+   "maxLevel": 35,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2728,
+   "name": "Feral Crag Coyote",
+   "family": "Wolf",
+   "minLevel": 37,
+   "maxLevel": 38,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2753,
+   "name": "Barnabus",
+   "family": "Wolf",
+   "minLevel": 38,
+   "maxLevel": 38,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2729,
+   "name": "Elder Crag Coyote",
+   "family": "Wolf",
+   "minLevel": 39,
+   "maxLevel": 40,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ],
+    [
+     "Furious Howl",
+     2
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5286,
+   "name": "Longtooth Runner",
+   "family": "Wolf",
+   "minLevel": 40,
+   "maxLevel": 41,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ],
+    [
+     "Dash",
+     2
+    ],
+    [
+     "Furious Howl",
+     3
+    ]
+   ],
+   "zone": "Feralas",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8211,
+   "name": "Old Cliff Jumper",
+   "family": "Wolf",
+   "minLevel": 42,
+   "maxLevel": 42,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ],
+    [
+     "Dash",
+     2
+    ]
+   ],
+   "zone": "The Hinterlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2730,
+   "name": "Rabid Crag Coyote",
+   "family": "Wolf",
+   "minLevel": 42,
+   "maxLevel": 43,
+   "teaches": [
+    [
+     "Dash",
+     2
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5356,
+   "name": "Snarler",
+   "family": "Wolf",
+   "minLevel": 42,
+   "maxLevel": 42,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ],
+    [
+     "Furious Howl",
+     3
+    ]
+   ],
+   "zone": "Feralas",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5287,
+   "name": "Longtooth Howler",
+   "family": "Wolf",
+   "minLevel": 43,
+   "maxLevel": 44,
+   "teaches": [
+    [
+     "Furious Howl",
+     2
+    ]
+   ],
+   "zone": "Feralas",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2924,
+   "name": "Silvermane Wolf",
+   "family": "Wolf",
+   "minLevel": 43,
+   "maxLevel": 44,
+   "teaches": [
+    [
+     "Furious Howl",
+     3
+    ]
+   ],
+   "zone": "The Hinterlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2925,
+   "name": "Silvermane Howler",
+   "family": "Wolf",
+   "minLevel": 45,
+   "maxLevel": 46,
+   "teaches": [
+    [
+     "Furious Howl",
+     2
+    ]
+   ],
+   "zone": "The Hinterlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8959,
+   "name": "Felpaw Wolf",
+   "family": "Wolf",
+   "minLevel": 47,
+   "maxLevel": 48,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ],
+    [
+     "Furious Howl",
+     3
+    ]
+   ],
+   "zone": "Felwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2926,
+   "name": "Silvermane Stalker",
+   "family": "Wolf",
+   "minLevel": 47,
+   "maxLevel": 48,
+   "teaches": [
+    [
+     "Dash",
+     2
+    ]
+   ],
+   "zone": "The Hinterlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 14339,
+   "name": "Death Howl",
+   "family": "Wolf",
+   "minLevel": 49,
+   "maxLevel": 49,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ],
+    [
+     "Furious Howl",
+     3
+    ]
+   ],
+   "zone": "Felwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2681,
+   "name": "Vilebranch Raiding Wolf",
+   "family": "Wolf",
+   "minLevel": 50,
+   "maxLevel": 51,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ],
+    [
+     "Dash",
+     3
+    ]
+   ],
+   "zone": "The Hinterlands",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack I"
+  },
+  {
+   "npcId": 8961,
+   "name": "Felpaw Ravager",
+   "family": "Wolf",
+   "minLevel": 51,
+   "maxLevel": 52,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ]
+   ],
+   "zone": "Felwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1817,
+   "name": "Diseased Wolf",
+   "family": "Wolf",
+   "minLevel": 53,
+   "maxLevel": 54,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ]
+   ],
+   "zone": "Western Plaguelands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 9416,
+   "name": "Scarshield Worg",
+   "family": "Wolf",
+   "minLevel": 53,
+   "maxLevel": 54,
+   "teaches": [
+    [
+     "Dash",
+     3
+    ]
+   ],
+   "zone": "Lower Blackrock Spire",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 7055,
+   "name": "Blackrock Worg",
+   "family": "Wolf",
+   "minLevel": 54,
+   "maxLevel": 55,
+   "teaches": [
+    [
+     "Dash",
+     3
+    ]
+   ],
+   "zone": "Burning Steppes",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 9696,
+   "name": "Bloodaxe Worg",
+   "family": "Wolf",
+   "minLevel": 56,
+   "maxLevel": 60,
+   "teaches": [
+    [
+     "Bite",
+     8
+    ],
+    [
+     "Dash",
+     3
+    ],
+    [
+     "Furious Howl",
+     4
+    ]
+   ],
+   "zone": "Lower Blackrock Spire",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 1199,
+   "name": "Juvenile Snow Leopard",
+   "family": "Cat",
+   "minLevel": 5,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 2042,
+   "name": "Nightsaber",
+   "family": "Cat",
+   "minLevel": 5,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack IV"
+  },
+  {
+   "npcId": 251245,
+   "name": "Prideclaw",
+   "family": "Cat",
+   "minLevel": 5,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3121,
+   "name": "Durotar Tiger",
+   "family": "Cat",
+   "minLevel": 7,
+   "maxLevel": 8,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 3035,
+   "name": "Flatland Cougar",
+   "family": "Cat",
+   "minLevel": 7,
+   "maxLevel": 8,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Mulgore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2070,
+   "name": "Moonstalker Runt",
+   "family": "Cat",
+   "minLevel": 10,
+   "maxLevel": 17,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 3241,
+   "name": "Savannah Patriarch",
+   "family": "Cat",
+   "minLevel": 15,
+   "maxLevel": 16,
+   "teaches": [
+    [
+     "Cower",
+     2
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 2237,
+   "name": "Moonstalker Sire",
+   "family": "Cat",
+   "minLevel": 17,
+   "maxLevel": 18,
+   "teaches": [
+    [
+     "Cower",
+     2
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 3619,
+   "name": "Ghost Saber",
+   "family": "Cat",
+   "minLevel": 19,
+   "maxLevel": 20,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2384,
+   "name": "Starving Mountain Lion",
+   "family": "Cat",
+   "minLevel": 23,
+   "maxLevel": 24,
+   "teaches": [
+    [
+     "Cower",
+     2
+    ]
+   ],
+   "zone": "Hillsbrad Foothills",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack VI"
+  },
+  {
+   "npcId": 4067,
+   "name": "Twilight Runner",
+   "family": "Cat",
+   "minLevel": 23,
+   "maxLevel": 24,
+   "teaches": [
+    [
+     "Cower",
+     2
+    ]
+   ],
+   "zone": "Stonetalon Mountains",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 4126,
+   "name": "Crag Stalker",
+   "family": "Cat",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Cower",
+     3
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack II"
+  },
+  {
+   "npcId": 2385,
+   "name": "Feral Mountain Lion",
+   "family": "Cat",
+   "minLevel": 27,
+   "maxLevel": 28,
+   "teaches": [
+    [
+     "Cower",
+     3
+    ]
+   ],
+   "zone": "Hillsbrad Foothills",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack VI"
+  },
+  {
+   "npcId": 683,
+   "name": "Young Panther",
+   "family": "Cat",
+   "minLevel": 30,
+   "maxLevel": 31,
+   "teaches": [
+    [
+     "Cower",
+     3
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 681,
+   "name": "Young Stranglethorn Tiger",
+   "family": "Cat",
+   "minLevel": 30,
+   "maxLevel": 31,
+   "teaches": [
+    [
+     "Cower",
+     3
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 976,
+   "name": "Kurzen War Tiger",
+   "family": "Cat",
+   "minLevel": 32,
+   "maxLevel": 33,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 2406,
+   "name": "Mountain Lion",
+   "family": "Cat",
+   "minLevel": 32,
+   "maxLevel": 33,
+   "teaches": [
+    [
+     "Prowl",
+     1
+    ]
+   ],
+   "zone": "Alterac Mountains",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack IV"
+  },
+  {
+   "npcId": 736,
+   "name": "Panther",
+   "family": "Cat",
+   "minLevel": 32,
+   "maxLevel": 33,
+   "teaches": [
+    [
+     "Cower",
+     3
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 682,
+   "name": "Stranglethorn Tiger",
+   "family": "Cat",
+   "minLevel": 32,
+   "maxLevel": 33,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 2731,
+   "name": "Ridge Stalker",
+   "family": "Cat",
+   "minLevel": 36,
+   "maxLevel": 37,
+   "teaches": [
+    [
+     "Cower",
+     4
+    ],
+    [
+     "Prowl",
+     1
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 767,
+   "name": "Swamp Jaguar",
+   "family": "Cat",
+   "minLevel": 36,
+   "maxLevel": 37,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Swamp of Sorrows",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack VI"
+  },
+  {
+   "npcId": 2850,
+   "name": "Broken Tooth",
+   "family": "Cat",
+   "minLevel": 37,
+   "maxLevel": 37,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack VII"
+  },
+  {
+   "npcId": 684,
+   "name": "Shadowmaw Panther",
+   "family": "Cat",
+   "minLevel": 37,
+   "maxLevel": 38,
+   "teaches": [
+    [
+     "Prowl",
+     1
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 729,
+   "name": "Sin'Dall",
+   "family": "Cat",
+   "minLevel": 37,
+   "maxLevel": 37,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 2732,
+   "name": "Ridge Huntress",
+   "family": "Cat",
+   "minLevel": 38,
+   "maxLevel": 39,
+   "teaches": [
+    [
+     "Cower",
+     4
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 768,
+   "name": "Shadow Panther",
+   "family": "Cat",
+   "minLevel": 39,
+   "maxLevel": 40,
+   "teaches": [
+    [
+     "Prowl",
+     1
+    ]
+   ],
+   "zone": "Swamp of Sorrows",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack II"
+  },
+  {
+   "npcId": 728,
+   "name": "Bhag'thera",
+   "family": "Cat",
+   "minLevel": 40,
+   "maxLevel": 40,
+   "teaches": [
+    [
+     "Dash",
+     2
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 2734,
+   "name": "Ridge Stalker Patriarch",
+   "family": "Cat",
+   "minLevel": 40,
+   "maxLevel": 41,
+   "teaches": [
+    [
+     "Dash",
+     2
+    ],
+    [
+     "Prowl",
+     2
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 1713,
+   "name": "Elder Shadowmaw Panther",
+   "family": "Cat",
+   "minLevel": 42,
+   "maxLevel": 43,
+   "teaches": [
+    [
+     "Dash",
+     2
+    ],
+    [
+     "Prowl",
+     2
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 731,
+   "name": "King Bangalash",
+   "family": "Cat",
+   "minLevel": 43,
+   "maxLevel": 43,
+   "teaches": [
+    [
+     "Claw",
+     6
+    ],
+    [
+     "Dash",
+     2
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack IV"
+  },
+  {
+   "npcId": 2522,
+   "name": "Jaguero Stalker",
+   "family": "Cat",
+   "minLevel": 50,
+   "maxLevel": 50,
+   "teaches": [
+    [
+     "Cower",
+     5
+    ],
+    [
+     "Prowl",
+     3
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7430,
+   "name": "Frostsaber Cub",
+   "family": "Cat",
+   "minLevel": 55,
+   "maxLevel": 56,
+   "teaches": [
+    [
+     "Cower",
+     6
+    ]
+   ],
+   "zone": "Winterspring",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 10200,
+   "name": "Rak'shiri",
+   "family": "Cat",
+   "minLevel": 57,
+   "maxLevel": 57,
+   "teaches": [
+    [
+     "Dash",
+     3
+    ]
+   ],
+   "zone": "Winterspring",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 7433,
+   "name": "Frostsaber Huntress",
+   "family": "Cat",
+   "minLevel": 58,
+   "maxLevel": 59,
+   "teaches": [
+    [
+     "Dash",
+     3
+    ]
+   ],
+   "zone": "Winterspring",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 7432,
+   "name": "Frostsaber Stalker",
+   "family": "Cat",
+   "minLevel": 59,
+   "maxLevel": 60,
+   "teaches": [
+    [
+     "Dash",
+     3
+    ],
+    [
+     "Prowl",
+     3
+    ]
+   ],
+   "zone": "Winterspring",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 11365,
+   "name": "Zulian Panther",
+   "family": "Cat",
+   "minLevel": 60,
+   "maxLevel": 60,
+   "teaches": [
+    [
+     "Dash",
+     3
+    ]
+   ],
+   "zone": "Zul'Gurub",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3098,
+   "name": "Mottled Boar",
+   "family": "Boar",
+   "minLevel": 1,
+   "maxLevel": 2,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1984,
+   "name": "Young Thistle Boar",
+   "family": "Boar",
+   "minLevel": 1,
+   "maxLevel": 2,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1985,
+   "name": "Thistle Boar",
+   "family": "Boar",
+   "minLevel": 2,
+   "maxLevel": 3,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2966,
+   "name": "Battleboar",
+   "family": "Boar",
+   "minLevel": 3,
+   "maxLevel": 4,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Mulgore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 708,
+   "name": "Small Crag Boar",
+   "family": "Boar",
+   "minLevel": 3,
+   "maxLevel": 3,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2954,
+   "name": "Bristleback Battleboar",
+   "family": "Boar",
+   "minLevel": 4,
+   "maxLevel": 5,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Mulgore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1125,
+   "name": "Crag Boar",
+   "family": "Boar",
+   "minLevel": 5,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 113,
+   "name": "Stonetusk Boar",
+   "family": "Boar",
+   "minLevel": 5,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Elwynn Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3099,
+   "name": "Dire Mottled Boar",
+   "family": "Boar",
+   "minLevel": 6,
+   "maxLevel": 7,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1126,
+   "name": "Large Crag Boar",
+   "family": "Boar",
+   "minLevel": 6,
+   "maxLevel": 7,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1127,
+   "name": "Elder Crag Boar",
+   "family": "Boar",
+   "minLevel": 7,
+   "maxLevel": 8,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 390,
+   "name": "Porcine Entourage",
+   "family": "Boar",
+   "minLevel": 7,
+   "maxLevel": 7,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Elwynn Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 524,
+   "name": "Rockhide Boar",
+   "family": "Boar",
+   "minLevel": 7,
+   "maxLevel": 8,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Elwynn Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3100,
+   "name": "Elder Mottled Boar",
+   "family": "Boar",
+   "minLevel": 8,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 330,
+   "name": "Princess",
+   "family": "Boar",
+   "minLevel": 9,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Elwynn Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1689,
+   "name": "Scarred Crag Boar",
+   "family": "Boar",
+   "minLevel": 9,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Dun Morogh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3225,
+   "name": "Corrupted Mottled Boar",
+   "family": "Boar",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 119,
+   "name": "Longsnout",
+   "family": "Boar",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Elwynn Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1190,
+   "name": "Mountain Boar",
+   "family": "Boar",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Charge",
+     1
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 454,
+   "name": "Young Goretusk",
+   "family": "Boar",
+   "minLevel": 12,
+   "maxLevel": 13,
+   "teaches": [
+    [
+     "Charge",
+     2
+    ]
+   ],
+   "zone": "Westfall",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 157,
+   "name": "Goretusk",
+   "family": "Boar",
+   "minLevel": 14,
+   "maxLevel": 15,
+   "teaches": [
+    [
+     "Charge",
+     2
+    ]
+   ],
+   "zone": "Westfall",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1191,
+   "name": "Mangy Mountain Boar",
+   "family": "Boar",
+   "minLevel": 14,
+   "maxLevel": 15,
+   "teaches": [
+    [
+     "Charge",
+     2
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1192,
+   "name": "Elder Mountain Boar",
+   "family": "Boar",
+   "minLevel": 16,
+   "maxLevel": 17,
+   "teaches": [
+    [
+     "Charge",
+     2
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 547,
+   "name": "Great Goretusk",
+   "family": "Boar",
+   "minLevel": 16,
+   "maxLevel": 17,
+   "teaches": [
+    [
+     "Charge",
+     2
+    ]
+   ],
+   "zone": "Westfall",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4511,
+   "name": "Agam'ar",
+   "family": "Boar",
+   "minLevel": 24,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Charge",
+     3
+    ]
+   ],
+   "zone": "Razorfen Kraul",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 345,
+   "name": "Bellygrub",
+   "family": "Boar",
+   "minLevel": 24,
+   "maxLevel": 24,
+   "teaches": [
+    [
+     "Charge",
+     3
+    ]
+   ],
+   "zone": "Redridge Mountains",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4514,
+   "name": "Raging Agam'ar",
+   "family": "Boar",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Charge",
+     3
+    ]
+   ],
+   "zone": "Razorfen Kraul",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4512,
+   "name": "Rotting Agam'ar",
+   "family": "Boar",
+   "minLevel": 28,
+   "maxLevel": 28,
+   "teaches": [
+    [
+     "Charge",
+     3
+    ]
+   ],
+   "zone": "Razorfen Kraul",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5992,
+   "name": "Ashmane Boar",
+   "family": "Boar",
+   "minLevel": 48,
+   "maxLevel": 49,
+   "teaches": [
+    [
+     "Charge",
+     5
+    ]
+   ],
+   "zone": "Blasted Lands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8303,
+   "name": "Grunter",
+   "family": "Boar",
+   "minLevel": 50,
+   "maxLevel": 50,
+   "teaches": [
+    [
+     "Charge",
+     5
+    ],
+    [
+     "Dash",
+     3
+    ]
+   ],
+   "zone": "Blasted Lands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 16117,
+   "name": "Plagued Swine",
+   "family": "Boar",
+   "minLevel": 60,
+   "maxLevel": 60,
+   "teaches": [
+    [
+     "Charge",
+     6
+    ]
+   ],
+   "zone": "Eastern Plaguelands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 253282,
+   "name": "Shriekling Fledgling",
+   "family": "Raptor",
+   "minLevel": 8,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 253283,
+   "name": "Shriekling Matriarch",
+   "family": "Raptor",
+   "minLevel": 9,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Savage Rend",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4688,
+   "name": "Bonepaw Hyena",
+   "family": "Hyena",
+   "minLevel": 33,
+   "maxLevel": 35,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Desolace",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4304,
+   "name": "Scarlet Tracking Hound",
+   "family": "Hyena",
+   "minLevel": 33,
+   "maxLevel": 34,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Scarlet Monastery",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack III"
+  },
+  {
+   "npcId": 4662,
+   "name": "Magram Bonepaw",
+   "family": "Hyena",
+   "minLevel": 37,
+   "maxLevel": 38,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ]
+   ],
+   "zone": "Desolace",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5425,
+   "name": "Starving Blisterpaw",
+   "family": "Hyena",
+   "minLevel": 41,
+   "maxLevel": 42,
+   "teaches": [
+    [
+     "Dash",
+     2
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8208,
+   "name": "Murderous Blisterpaw",
+   "family": "Hyena",
+   "minLevel": 43,
+   "maxLevel": 43,
+   "teaches": [
+    [
+     "Dash",
+     2
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5426,
+   "name": "Blisterpaw Hyena",
+   "family": "Hyena",
+   "minLevel": 44,
+   "maxLevel": 45,
+   "teaches": [
+    [
+     "Dash",
+     2
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5427,
+   "name": "Rabid Blisterpaw",
+   "family": "Hyena",
+   "minLevel": 47,
+   "maxLevel": 48,
+   "teaches": [
+    [
+     "Dash",
+     2
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8300,
+   "name": "Ravage",
+   "family": "Hyena",
+   "minLevel": 51,
+   "maxLevel": 51,
+   "teaches": [
+    [
+     "Dash",
+     3
+    ]
+   ],
+   "zone": "Blasted Lands",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 1995,
+   "name": "Strigid Owl",
+   "family": "Bird of Prey",
+   "minLevel": 5,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Claw",
+     1
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1997,
+   "name": "Strigid Hunter",
+   "family": "Bird of Prey",
+   "minLevel": 8,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 256092,
+   "name": "Shadowgale Shriekling",
+   "family": "Bird of Prey",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Savage Rend",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7097,
+   "name": "Ironbeak Owl",
+   "family": "Bird of Prey",
+   "minLevel": 48,
+   "maxLevel": 49,
+   "teaches": [
+    [
+     "Dive",
+     2
+    ]
+   ],
+   "zone": "Felwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7099,
+   "name": "Ironbeak Hunter",
+   "family": "Bird of Prey",
+   "minLevel": 50,
+   "maxLevel": 51,
+   "teaches": [
+    [
+     "Claw",
+     7
+    ],
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Felwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7098,
+   "name": "Ironbeak Screecher",
+   "family": "Bird of Prey",
+   "minLevel": 52,
+   "maxLevel": 53,
+   "teaches": [
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Felwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 14343,
+   "name": "Olm the Wise",
+   "family": "Bird of Prey",
+   "minLevel": 52,
+   "maxLevel": 52,
+   "teaches": [
+    [
+     "Claw",
+     7
+    ],
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Felwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7455,
+   "name": "Winterspring Owl",
+   "family": "Bird of Prey",
+   "minLevel": 54,
+   "maxLevel": 56,
+   "teaches": [
+    [
+     "Claw",
+     7
+    ],
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Winterspring",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7456,
+   "name": "Winterspring Screecher",
+   "family": "Bird of Prey",
+   "minLevel": 57,
+   "maxLevel": 59,
+   "teaches": [
+    [
+     "Claw",
+     8
+    ],
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Winterspring",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1505,
+   "name": "Night Web Spider",
+   "family": "Spider",
+   "minLevel": 3,
+   "maxLevel": 4,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Tirisfal Glades",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 30,
+   "name": "Forest Spider",
+   "family": "Spider",
+   "minLevel": 5,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Elwynn Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1994,
+   "name": "Githyiss the Vile",
+   "family": "Spider",
+   "minLevel": 5,
+   "maxLevel": 5,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1688,
+   "name": "Night Web Matriarch",
+   "family": "Spider",
+   "minLevel": 5,
+   "maxLevel": 5,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Tirisfal Glades",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1999,
+   "name": "Webwood Venomfang",
+   "family": "Spider",
+   "minLevel": 7,
+   "maxLevel": 8,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2000,
+   "name": "Webwood Silkspinner",
+   "family": "Spider",
+   "minLevel": 8,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1555,
+   "name": "Vicious Night Web Spider",
+   "family": "Spider",
+   "minLevel": 9,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Tirisfal Glades",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1195,
+   "name": "Forest Lurker",
+   "family": "Spider",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2001,
+   "name": "Giant Webwood Spider",
+   "family": "Spider",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7319,
+   "name": "Lady Sathrah",
+   "family": "Spider",
+   "minLevel": 12,
+   "maxLevel": 12,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1780,
+   "name": "Moss Stalker",
+   "family": "Spider",
+   "minLevel": 12,
+   "maxLevel": 13,
+   "teaches": [
+    [
+     "Web",
+     1
+    ]
+   ],
+   "zone": "Silverpine Forest",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 442,
+   "name": "Tarantula",
+   "family": "Spider",
+   "minLevel": 15,
+   "maxLevel": 16,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Redridge Mountains",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4005,
+   "name": "Deepmoss Creeper",
+   "family": "Spider",
+   "minLevel": 16,
+   "maxLevel": 17,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Stonetalon Mountains",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1185,
+   "name": "Wood Lurker",
+   "family": "Spider",
+   "minLevel": 17,
+   "maxLevel": 18,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4006,
+   "name": "Deepmoss Webspinner",
+   "family": "Spider",
+   "minLevel": 19,
+   "maxLevel": 20,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Stonetalon Mountains",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 505,
+   "name": "Greater Tarantula",
+   "family": "Spider",
+   "minLevel": 19,
+   "maxLevel": 20,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Redridge Mountains",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 14266,
+   "name": "Shanda the Spinner",
+   "family": "Spider",
+   "minLevel": 19,
+   "maxLevel": 19,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2350,
+   "name": "Forest Moss Creeper",
+   "family": "Spider",
+   "minLevel": 20,
+   "maxLevel": 21,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Hillsbrad Foothills",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 11921,
+   "name": "Besseleth",
+   "family": "Spider",
+   "minLevel": 21,
+   "maxLevel": 21,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Stonetalon Mountains",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 569,
+   "name": "Green Recluse",
+   "family": "Spider",
+   "minLevel": 21,
+   "maxLevel": 22,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Duskwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 616,
+   "name": "Chatter",
+   "family": "Spider",
+   "minLevel": 23,
+   "maxLevel": 23,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Redridge Mountains",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 14279,
+   "name": "Creepthess",
+   "family": "Spider",
+   "minLevel": 24,
+   "maxLevel": 24,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Hillsbrad Foothills",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2349,
+   "name": "Giant Moss Creeper",
+   "family": "Spider",
+   "minLevel": 24,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ]
+   ],
+   "zone": "Hillsbrad Foothills",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1112,
+   "name": "Leech Widow",
+   "family": "Spider",
+   "minLevel": 24,
+   "maxLevel": 24,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2348,
+   "name": "Elder Moss Creeper",
+   "family": "Spider",
+   "minLevel": 26,
+   "maxLevel": 27,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ]
+   ],
+   "zone": "Hillsbrad Foothills",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 574,
+   "name": "Naraxis",
+   "family": "Spider",
+   "minLevel": 27,
+   "maxLevel": 27,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ]
+   ],
+   "zone": "Duskwood",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3821,
+   "name": "Wildthorn Lurker",
+   "family": "Spider",
+   "minLevel": 28,
+   "maxLevel": 29,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ]
+   ],
+   "zone": "Ashenvale",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2563,
+   "name": "Plains Creeper",
+   "family": "Spider",
+   "minLevel": 32,
+   "maxLevel": 33,
+   "teaches": [
+    [
+     "Bite",
+     5
+    ]
+   ],
+   "zone": "Arathi Highlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4413,
+   "name": "Darkfang Spider",
+   "family": "Spider",
+   "minLevel": 35,
+   "maxLevel": 36,
+   "teaches": [
+    [
+     "Bite",
+     5
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2565,
+   "name": "Giant Plains Creeper",
+   "family": "Spider",
+   "minLevel": 35,
+   "maxLevel": 36,
+   "teaches": [
+    [
+     "Bite",
+     5
+    ]
+   ],
+   "zone": "Arathi Highlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4411,
+   "name": "Darkfang Lurker",
+   "family": "Spider",
+   "minLevel": 36,
+   "maxLevel": 37,
+   "teaches": [
+    [
+     "Bite",
+     5
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4412,
+   "name": "Darkfang Creeper",
+   "family": "Spider",
+   "minLevel": 38,
+   "maxLevel": 39,
+   "teaches": [
+    [
+     "Bite",
+     5
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 769,
+   "name": "Deathstrike Tarantula",
+   "family": "Spider",
+   "minLevel": 40,
+   "maxLevel": 41,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ]
+   ],
+   "zone": "Swamp of Sorrows",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8762,
+   "name": "Timberweb Recluse",
+   "family": "Spider",
+   "minLevel": 47,
+   "maxLevel": 48,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ]
+   ],
+   "zone": "Azshara",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8277,
+   "name": "Rekk'tilac",
+   "family": "Spider",
+   "minLevel": 48,
+   "maxLevel": 48,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ]
+   ],
+   "zone": "Searing Gorge",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8933,
+   "name": "Cave Creeper",
+   "family": "Spider",
+   "minLevel": 50,
+   "maxLevel": 52,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ]
+   ],
+   "zone": "Blackrock Depths",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1824,
+   "name": "Plague Lurker",
+   "family": "Spider",
+   "minLevel": 54,
+   "maxLevel": 55,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ]
+   ],
+   "zone": "Western Plaguelands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3110,
+   "name": "Dreadmaw Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 9,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1693,
+   "name": "Loch Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 14,
+   "maxLevel": 15,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5053,
+   "name": "Deviate Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 18,
+   "maxLevel": 19,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Wailing Caverns",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2476,
+   "name": "Large Loch Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 22,
+   "maxLevel": 22,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2089,
+   "name": "Giant Wetlands Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4341,
+   "name": "Drywallow Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 35,
+   "maxLevel": 36,
+   "teaches": [
+    [
+     "Bite",
+     5
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4343,
+   "name": "Drywallow Snapper",
+   "family": "Crocolisk",
+   "minLevel": 37,
+   "maxLevel": 38,
+   "teaches": [
+    [
+     "Claw",
+     5
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4344,
+   "name": "Mottled Drywallow Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 38,
+   "maxLevel": 39,
+   "teaches": [
+    [
+     "Bite",
+     5
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 14233,
+   "name": "Ripscale",
+   "family": "Crocolisk",
+   "minLevel": 39,
+   "maxLevel": 39,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4345,
+   "name": "Drywallow Daggermaw",
+   "family": "Crocolisk",
+   "minLevel": 40,
+   "maxLevel": 41,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1087,
+   "name": "Sawtooth Snapper",
+   "family": "Crocolisk",
+   "minLevel": 41,
+   "maxLevel": 42,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ]
+   ],
+   "zone": "Swamp of Sorrows",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4841,
+   "name": "Deadmire",
+   "family": "Crocolisk",
+   "minLevel": 45,
+   "maxLevel": 45,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3581,
+   "name": "Sewer Beast",
+   "family": "Crocolisk",
+   "minLevel": 50,
+   "maxLevel": 50,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ]
+   ],
+   "zone": "Stormwind City",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3124,
+   "name": "Scorpid Worker",
+   "family": "Scorpid",
+   "minLevel": 3,
+   "maxLevel": 3,
+   "teaches": [
+    [
+     "Claw",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3281,
+   "name": "Sarkoth",
+   "family": "Scorpid",
+   "minLevel": 4,
+   "maxLevel": 4,
+   "teaches": [
+    [
+     "Claw",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3127,
+   "name": "Venomtail Scorpid",
+   "family": "Scorpid",
+   "minLevel": 9,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ],
+    [
+     "Scorpid Poison",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3226,
+   "name": "Corrupted Scorpid",
+   "family": "Scorpid",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5823,
+   "name": "Death Flayer",
+   "family": "Scorpid",
+   "minLevel": 11,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ],
+    [
+     "Scorpid Poison",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack II"
+  },
+  {
+   "npcId": 3250,
+   "name": "Silithid Creeper",
+   "family": "Scorpid",
+   "minLevel": 20,
+   "maxLevel": 21,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     1
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3252,
+   "name": "Silithid Swarmer",
+   "family": "Scorpid",
+   "minLevel": 21,
+   "maxLevel": 22,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     1
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4696,
+   "name": "Scorpashi Snapper",
+   "family": "Scorpid",
+   "minLevel": 30,
+   "maxLevel": 31,
+   "teaches": [
+    [
+     "Claw",
+     4
+    ],
+    [
+     "Scorpid Poison",
+     2
+    ]
+   ],
+   "zone": "Desolace",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4140,
+   "name": "Scorpid Reaver",
+   "family": "Scorpid",
+   "minLevel": 31,
+   "maxLevel": 32,
+   "teaches": [
+    [
+     "Claw",
+     4
+    ],
+    [
+     "Scorpid Poison",
+     2
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4139,
+   "name": "Scorpid Terror",
+   "family": "Scorpid",
+   "minLevel": 33,
+   "maxLevel": 34,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     2
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4697,
+   "name": "Scorpashi Lasher",
+   "family": "Scorpid",
+   "minLevel": 34,
+   "maxLevel": 35,
+   "teaches": [
+    [
+     "Claw",
+     5
+    ]
+   ],
+   "zone": "Desolace",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7078,
+   "name": "Cleft Scorpid",
+   "family": "Scorpid",
+   "minLevel": 35,
+   "maxLevel": 36,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     2
+    ]
+   ],
+   "zone": "Uldaman",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5937,
+   "name": "Vile Sting",
+   "family": "Scorpid",
+   "minLevel": 35,
+   "maxLevel": 35,
+   "teaches": [
+    [
+     "Claw",
+     5
+    ],
+    [
+     "Scorpid Poison",
+     2
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4699,
+   "name": "Scorpashi Venomlash",
+   "family": "Scorpid",
+   "minLevel": 38,
+   "maxLevel": 39,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     2
+    ]
+   ],
+   "zone": "Desolace",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7022,
+   "name": "Venomlash Scorpid",
+   "family": "Scorpid",
+   "minLevel": 39,
+   "maxLevel": 40,
+   "teaches": [
+    [
+     "Claw",
+     5
+    ]
+   ],
+   "zone": "Uldaman",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5422,
+   "name": "Scorpid Hunter",
+   "family": "Scorpid",
+   "minLevel": 40,
+   "maxLevel": 41,
+   "teaches": [
+    [
+     "Claw",
+     6
+    ],
+    [
+     "Scorpid Poison",
+     3
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7405,
+   "name": "Deadly Cleft Scorpid",
+   "family": "Scorpid",
+   "minLevel": 42,
+   "maxLevel": 43,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     3
+    ]
+   ],
+   "zone": "Uldaman",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5423,
+   "name": "Scorpid Tail Lasher",
+   "family": "Scorpid",
+   "minLevel": 43,
+   "maxLevel": 44,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     3
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 7803,
+   "name": "Scorpid Duneburrower",
+   "family": "Scorpid",
+   "minLevel": 46,
+   "maxLevel": 47,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     3
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5424,
+   "name": "Scorpid Dunestalker",
+   "family": "Scorpid",
+   "minLevel": 46,
+   "maxLevel": 47,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     3
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8926,
+   "name": "Deep Stinger",
+   "family": "Scorpid",
+   "minLevel": 50,
+   "maxLevel": 52,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     3
+    ]
+   ],
+   "zone": "Blackrock Depths",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5988,
+   "name": "Scorpok Stinger",
+   "family": "Scorpid",
+   "minLevel": 50,
+   "maxLevel": 51,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     3
+    ]
+   ],
+   "zone": "Blasted Lands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 9691,
+   "name": "Venomtip Scorpid",
+   "family": "Scorpid",
+   "minLevel": 52,
+   "maxLevel": 53,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     3
+    ]
+   ],
+   "zone": "Burning Steppes",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8301,
+   "name": "Clack the Reaver",
+   "family": "Scorpid",
+   "minLevel": 53,
+   "maxLevel": 53,
+   "teaches": [
+    [
+     "Claw",
+     7
+    ]
+   ],
+   "zone": "Blasted Lands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 9695,
+   "name": "Deathlash Scorpid",
+   "family": "Scorpid",
+   "minLevel": 54,
+   "maxLevel": 55,
+   "teaches": [
+    [
+     "Claw",
+     7
+    ],
+    [
+     "Scorpid Poison",
+     3
+    ]
+   ],
+   "zone": "Burning Steppes",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 11735,
+   "name": "Stonelash Scorpid",
+   "family": "Scorpid",
+   "minLevel": 54,
+   "maxLevel": 55,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     3
+    ]
+   ],
+   "zone": "Silithus",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 9698,
+   "name": "Firetail Scorpid",
+   "family": "Scorpid",
+   "minLevel": 56,
+   "maxLevel": 57,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     4
+    ]
+   ],
+   "zone": "Burning Steppes",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 14476,
+   "name": "Krellack",
+   "family": "Scorpid",
+   "minLevel": 56,
+   "maxLevel": 56,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     4
+    ]
+   ],
+   "zone": "Silithus",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 11736,
+   "name": "Stonelash Pincer",
+   "family": "Scorpid",
+   "minLevel": 56,
+   "maxLevel": 56,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     4
+    ]
+   ],
+   "zone": "Silithus",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 11737,
+   "name": "Stonelash Flayer",
+   "family": "Scorpid",
+   "minLevel": 57,
+   "maxLevel": 58,
+   "teaches": [
+    [
+     "Scorpid Poison",
+     4
+    ]
+   ],
+   "zone": "Silithus",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3630,
+   "name": "Deviate Coiler",
+   "family": "Wind Serpent",
+   "minLevel": 15,
+   "maxLevel": 16,
+   "teaches": [
+    [
+     "Lightning Breath",
+     2
+    ]
+   ],
+   "zone": "Wailing Caverns",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3631,
+   "name": "Deviate Stinglash",
+   "family": "Wind Serpent",
+   "minLevel": 16,
+   "maxLevel": 17,
+   "teaches": [
+    [
+     "Lightning Breath",
+     2
+    ]
+   ],
+   "zone": "Wailing Caverns",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3247,
+   "name": "Thunderhawk Hatchling",
+   "family": "Wind Serpent",
+   "minLevel": 18,
+   "maxLevel": 20,
+   "teaches": [
+    [
+     "Lightning Breath",
+     2
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5056,
+   "name": "Deviate Dreadfang",
+   "family": "Wind Serpent",
+   "minLevel": 20,
+   "maxLevel": 21,
+   "teaches": [
+    [
+     "Lightning Breath",
+     2
+    ]
+   ],
+   "zone": "Wailing Caverns",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5756,
+   "name": "Deviate Venomwing",
+   "family": "Wind Serpent",
+   "minLevel": 20,
+   "maxLevel": 21,
+   "teaches": [
+    [
+     "Lightning Breath",
+     2
+    ]
+   ],
+   "zone": "Wailing Caverns",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3424,
+   "name": "Thunderhawk Cloudscraper",
+   "family": "Wind Serpent",
+   "minLevel": 20,
+   "maxLevel": 22,
+   "teaches": [
+    [
+     "Lightning Breath",
+     2
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3249,
+   "name": "Greater Thunderhawk",
+   "family": "Wind Serpent",
+   "minLevel": 23,
+   "maxLevel": 24,
+   "teaches": [
+    [
+     "Lightning Breath",
+     2
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4117,
+   "name": "Cloud Serpent",
+   "family": "Wind Serpent",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Lightning Breath",
+     3
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3472,
+   "name": "Washte Pawne",
+   "family": "Wind Serpent",
+   "minLevel": 25,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Lightning Breath",
+     3
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4118,
+   "name": "Venomous Cloud Serpent",
+   "family": "Wind Serpent",
+   "minLevel": 26,
+   "maxLevel": 28,
+   "teaches": [
+    [
+     "Lightning Breath",
+     3
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4119,
+   "name": "Elder Cloud Serpent",
+   "family": "Wind Serpent",
+   "minLevel": 27,
+   "maxLevel": 29,
+   "teaches": [
+    [
+     "Lightning Breath",
+     3
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5307,
+   "name": "Vale Screecher",
+   "family": "Wind Serpent",
+   "minLevel": 41,
+   "maxLevel": 43,
+   "teaches": [
+    [
+     "Dive",
+     2
+    ],
+    [
+     "Lightning Breath",
+     4
+    ]
+   ],
+   "zone": "Feralas",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5308,
+   "name": "Rogue Vale Screecher",
+   "family": "Wind Serpent",
+   "minLevel": 44,
+   "maxLevel": 46,
+   "teaches": [
+    [
+     "Dive",
+     2
+    ],
+    [
+     "Lightning Breath",
+     4
+    ]
+   ],
+   "zone": "Feralas",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5349,
+   "name": "Arash-ethis",
+   "family": "Wind Serpent",
+   "minLevel": 49,
+   "maxLevel": 49,
+   "teaches": [
+    [
+     "Dive",
+     2
+    ],
+    [
+     "Lightning Breath",
+     5
+    ]
+   ],
+   "zone": "Feralas",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5291,
+   "name": "Hakkari Frostwing",
+   "family": "Wind Serpent",
+   "minLevel": 49,
+   "maxLevel": 50,
+   "teaches": [
+    [
+     "Lightning Breath",
+     5
+    ]
+   ],
+   "zone": "Sunken Temple",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8336,
+   "name": "Hakkari Sapper",
+   "family": "Wind Serpent",
+   "minLevel": 49,
+   "maxLevel": 50,
+   "teaches": [
+    [
+     "Lightning Breath",
+     5
+    ]
+   ],
+   "zone": "Sunken Temple",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5708,
+   "name": "Spawn of Hakkar",
+   "family": "Wind Serpent",
+   "minLevel": 51,
+   "maxLevel": 51,
+   "teaches": [
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Sunken Temple",
+   "source": "petopia"
+  },
+  {
+   "npcId": 11357,
+   "name": "Son of Hakkar",
+   "family": "Wind Serpent",
+   "minLevel": 60,
+   "maxLevel": 60,
+   "teaches": [
+    [
+     "Lightning Breath",
+     6
+    ]
+   ],
+   "zone": "Zul'Gurub",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 154,
+   "name": "Greater Fleshripper",
+   "family": "Carrion Bird",
+   "minLevel": 16,
+   "maxLevel": 17,
+   "teaches": [
+    [
+     "Demoralizing Screech",
+     1
+    ]
+   ],
+   "zone": "Westfall",
+   "source": "wowforevertools"
+  },
+  {
+   "npcId": 2578,
+   "name": "Young Mesa Buzzard",
+   "family": "Carrion Bird",
+   "minLevel": 31,
+   "maxLevel": 32,
+   "teaches": [
+    [
+     "Dive",
+     1
+    ]
+   ],
+   "zone": "Arathi Highlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2579,
+   "name": "Mesa Buzzard",
+   "family": "Carrion Bird",
+   "minLevel": 34,
+   "maxLevel": 35,
+   "teaches": [
+    [
+     "Dive",
+     1
+    ]
+   ],
+   "zone": "Arathi Highlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 6013,
+   "name": "Wayward Buzzard",
+   "family": "Carrion Bird",
+   "minLevel": 35,
+   "maxLevel": 37,
+   "teaches": [
+    [
+     "Dive",
+     1
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4693,
+   "name": "Dread Flyer",
+   "family": "Carrion Bird",
+   "minLevel": 36,
+   "maxLevel": 37,
+   "teaches": [
+    [
+     "Dive",
+     1
+    ]
+   ],
+   "zone": "Desolace",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5428,
+   "name": "Roc",
+   "family": "Carrion Bird",
+   "minLevel": 41,
+   "maxLevel": 43,
+   "teaches": [
+    [
+     "Dive",
+     2
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5429,
+   "name": "Fire Roc",
+   "family": "Carrion Bird",
+   "minLevel": 43,
+   "maxLevel": 45,
+   "teaches": [
+    [
+     "Dive",
+     2
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8207,
+   "name": "Greater Firebird",
+   "family": "Carrion Bird",
+   "minLevel": 46,
+   "maxLevel": 46,
+   "teaches": [
+    [
+     "Dive",
+     2
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5430,
+   "name": "Searing Roc",
+   "family": "Carrion Bird",
+   "minLevel": 47,
+   "maxLevel": 49,
+   "teaches": [
+    [
+     "Dive",
+     2
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1809,
+   "name": "Carrion Vulture",
+   "family": "Carrion Bird",
+   "minLevel": 50,
+   "maxLevel": 52,
+   "teaches": [
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Western Plaguelands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8299,
+   "name": "Spiteflayer",
+   "family": "Carrion Bird",
+   "minLevel": 52,
+   "maxLevel": 52,
+   "teaches": [
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Blasted Lands",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack VI"
+  },
+  {
+   "npcId": 2931,
+   "name": "Zaricotl",
+   "family": "Carrion Bird",
+   "minLevel": 55,
+   "maxLevel": 55,
+   "teaches": [
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Badlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1553,
+   "name": "Greater Duskbat",
+   "family": "Bat",
+   "minLevel": 6,
+   "maxLevel": 7,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Tirisfal Glades",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4538,
+   "name": "Kraul Bat",
+   "family": "Bat",
+   "minLevel": 30,
+   "maxLevel": 31,
+   "teaches": [
+    [
+     "Cower",
+     3
+    ],
+    [
+     "Dive",
+     1
+    ]
+   ],
+   "zone": "Razorfen Kraul",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4539,
+   "name": "Greater Kraul Bat",
+   "family": "Bat",
+   "minLevel": 32,
+   "maxLevel": 32,
+   "teaches": [
+    [
+     "Cower",
+     3
+    ],
+    [
+     "Dive",
+     1
+    ]
+   ],
+   "zone": "Razorfen Kraul",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4861,
+   "name": "Shrike Bat",
+   "family": "Bat",
+   "minLevel": 38,
+   "maxLevel": 39,
+   "teaches": [
+    [
+     "Cower",
+     4
+    ],
+    [
+     "Dive",
+     1
+    ]
+   ],
+   "zone": "Uldaman",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8927,
+   "name": "Dark Screecher",
+   "family": "Bat",
+   "minLevel": 50,
+   "maxLevel": 52,
+   "teaches": [
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Blackrock Depths",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8600,
+   "name": "Plaguebat",
+   "family": "Bat",
+   "minLevel": 53,
+   "maxLevel": 55,
+   "teaches": [
+    [
+     "Cower",
+     5
+    ],
+    [
+     "Dive",
+     3
+    ]
+   ],
+   "zone": "Eastern Plaguelands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8601,
+   "name": "Noxious Plaguebat",
+   "family": "Bat",
+   "minLevel": 54,
+   "maxLevel": 56,
+   "teaches": [
+    [
+     "Cower",
+     5
+    ]
+   ],
+   "zone": "Eastern Plaguelands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8602,
+   "name": "Monstrous Plaguebat",
+   "family": "Bat",
+   "minLevel": 56,
+   "maxLevel": 58,
+   "teaches": [
+    [
+     "Cower",
+     6
+    ]
+   ],
+   "zone": "Eastern Plaguelands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 251661,
+   "name": "Galestrider",
+   "family": "Tallstrider",
+   "minLevel": 5,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Dust Cloud",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2957,
+   "name": "Elder Plainstrider",
+   "family": "Tallstrider",
+   "minLevel": 8,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Mulgore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 251707,
+   "name": "Ornery Galestrider",
+   "family": "Tallstrider",
+   "minLevel": 8,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Dust Cloud",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 3068,
+   "name": "Mazzranache",
+   "family": "Tallstrider",
+   "minLevel": 9,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Mulgore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2321,
+   "name": "Foreststrider Fledgling",
+   "family": "Tallstrider",
+   "minLevel": 11,
+   "maxLevel": 13,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3246,
+   "name": "Fleeting Plainstrider",
+   "family": "Tallstrider",
+   "minLevel": 12,
+   "maxLevel": 13,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3245,
+   "name": "Ornery Plainstrider",
+   "family": "Tallstrider",
+   "minLevel": 16,
+   "maxLevel": 17,
+   "teaches": [
+    [
+     "Cower",
+     2
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "mmonster",
+   "attackSpeedPassive": "Faster Attack V"
+  },
+  {
+   "npcId": 2323,
+   "name": "Giant Foreststrider",
+   "family": "Tallstrider",
+   "minLevel": 17,
+   "maxLevel": 19,
+   "teaches": [
+    [
+     "Cower",
+     2
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3106,
+   "name": "Pygmy Surf Crawler",
+   "family": "Crab",
+   "minLevel": 5,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Claw",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 254588,
+   "name": "Windsong Crawler",
+   "family": "Crab",
+   "minLevel": 8,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3108,
+   "name": "Encrusted Surf Crawler",
+   "family": "Crab",
+   "minLevel": 9,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2232,
+   "name": "Tide Crawler",
+   "family": "Crab",
+   "minLevel": 12,
+   "maxLevel": 14,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1216,
+   "name": "Shore Crawler",
+   "family": "Crab",
+   "minLevel": 17,
+   "maxLevel": 18,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Westfall",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3812,
+   "name": "Clattering Crawler",
+   "family": "Crab",
+   "minLevel": 19,
+   "maxLevel": 20,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Ashenvale",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4821,
+   "name": "Skittering Crustacean",
+   "family": "Crab",
+   "minLevel": 22,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Blackfathom Deeps",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4822,
+   "name": "Snapping Crustacean",
+   "family": "Crab",
+   "minLevel": 23,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Claw",
+     3
+    ]
+   ],
+   "zone": "Blackfathom Deeps",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4823,
+   "name": "Barbed Crustacean",
+   "family": "Crab",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Claw",
+     4
+    ]
+   ],
+   "zone": "Blackfathom Deeps",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 922,
+   "name": "Silt Crawler",
+   "family": "Crab",
+   "minLevel": 40,
+   "maxLevel": 41,
+   "teaches": [
+    [
+     "Claw",
+     6
+    ]
+   ],
+   "zone": "Swamp of Sorrows",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1088,
+   "name": "Monstrous Crawler",
+   "family": "Crab",
+   "minLevel": 43,
+   "maxLevel": 44,
+   "teaches": [
+    [
+     "Claw",
+     6
+    ]
+   ],
+   "zone": "Swamp of Sorrows",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 250873,
+   "name": "Juvenile Vuldren",
+   "family": "Fox",
+   "minLevel": 1,
+   "maxLevel": 1,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 250868,
+   "name": "Vuldren",
+   "family": "Fox",
+   "minLevel": 6,
+   "maxLevel": 6,
+   "teaches": [
+    [
+     "Bite",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 250874,
+   "name": "Vuldren Alpha",
+   "family": "Fox",
+   "minLevel": 10,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Trickster's Dance",
+     1
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1108,
+   "name": "Mistvale Gorilla",
+   "family": "Gorilla",
+   "minLevel": 32,
+   "maxLevel": 33,
+   "teaches": [
+    [
+     "Thunderstomp",
+     1
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1114,
+   "name": "Jungle Thunderer",
+   "family": "Gorilla",
+   "minLevel": 37,
+   "maxLevel": 38,
+   "teaches": [
+    [
+     "Thunderstomp",
+     1
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 1557,
+   "name": "Elder Mistvale Gorilla",
+   "family": "Gorilla",
+   "minLevel": 40,
+   "maxLevel": 41,
+   "teaches": [
+    [
+     "Thunderstomp",
+     2
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 5262,
+   "name": "Groddoc Thunderer",
+   "family": "Gorilla",
+   "minLevel": 49,
+   "maxLevel": 50,
+   "teaches": [
+    [
+     "Thunderstomp",
+     2
+    ]
+   ],
+   "zone": "Feralas",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 6585,
+   "name": "Uhk'loc",
+   "family": "Gorilla",
+   "minLevel": 52,
+   "maxLevel": 53,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ]
+   ],
+   "zone": "Un'Goro Crater",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 6516,
+   "name": "Un'Goro Thunderer",
+   "family": "Gorilla",
+   "minLevel": 52,
+   "maxLevel": 53,
+   "teaches": [
+    [
+     "Thunderstomp",
+     3
+    ]
+   ],
+   "zone": "Un'Goro Crater",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 9622,
+   "name": "U'cha",
+   "family": "Gorilla",
+   "minLevel": 55,
+   "maxLevel": 55,
+   "teaches": [
+    [
+     "Thunderstomp",
+     3
+    ]
+   ],
+   "zone": "Un'Goro Crater",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3461,
+   "name": "Oasis Snapjaw",
+   "family": "Turtle",
+   "minLevel": 15,
+   "maxLevel": 16,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 3653,
+   "name": "Kresh",
+   "family": "Turtle",
+   "minLevel": 20,
+   "maxLevel": 20,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ]
+   ],
+   "zone": "Wailing Caverns",
+   "source": "petopia"
+  },
+  {
+   "npcId": 4824,
+   "name": "Aku'mai Fisher",
+   "family": "Turtle",
+   "minLevel": 23,
+   "maxLevel": 24,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ],
+    [
+     "Shell Shield",
+     1
+    ]
+   ],
+   "zone": "Blackfathom Deeps",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4887,
+   "name": "Ghamoo-ra",
+   "family": "Turtle",
+   "minLevel": 25,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ]
+   ],
+   "zone": "Blackfathom Deeps",
+   "source": "petopia"
+  },
+  {
+   "npcId": 4825,
+   "name": "Aku'mai Snapjaw",
+   "family": "Turtle",
+   "minLevel": 26,
+   "maxLevel": 27,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ],
+    [
+     "Shell Shield",
+     1
+    ]
+   ],
+   "zone": "Blackfathom Deeps",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 2408,
+   "name": "Snapjaw",
+   "family": "Turtle",
+   "minLevel": 30,
+   "maxLevel": 31,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ],
+    [
+     "Shell Shield",
+     1
+    ]
+   ],
+   "zone": "Hillsbrad Foothills",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 14223,
+   "name": "Cranky Benj",
+   "family": "Turtle",
+   "minLevel": 32,
+   "maxLevel": 32,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ],
+    [
+     "Shell Shield",
+     1
+    ]
+   ],
+   "zone": "Alterac Mountains",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4143,
+   "name": "Sparkleshell Snapper",
+   "family": "Turtle",
+   "minLevel": 34,
+   "maxLevel": 35,
+   "teaches": [
+    [
+     "Bite",
+     5
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4396,
+   "name": "Mudrock Tortoise",
+   "family": "Turtle",
+   "minLevel": 36,
+   "maxLevel": 37,
+   "teaches": [
+    [
+     "Bite",
+     5
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 4400,
+   "name": "Mudrock Snapjaw",
+   "family": "Turtle",
+   "minLevel": 41,
+   "maxLevel": 42,
+   "teaches": [
+    [
+     "Bite",
+     6
+    ]
+   ],
+   "zone": "Dustwallow Marsh",
+   "source": "mmonster"
+  },
+  {
+   "npcId": null,
+   "name": "Giant Surf Glider",
+   "family": "Turtle",
+   "minLevel": 48,
+   "maxLevel": 50,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ]
+   ],
+   "zone": "Tanaris",
+   "source": "foreverchanges"
+  },
+  {
+   "npcId": 2505,
+   "name": "Saltwater Snapjaw",
+   "family": "Turtle",
+   "minLevel": 49,
+   "maxLevel": 50,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ]
+   ],
+   "zone": "The Hinterlands",
+   "source": "mmonster"
+  },
+  {
+   "npcId": 8213,
+   "name": "Ironback",
+   "family": "Turtle",
+   "minLevel": 51,
+   "maxLevel": 51,
+   "teaches": [
+    [
+     "Bite",
+     7
+    ]
+   ],
+   "zone": "The Hinterlands",
+   "source": "mmonster"
+  }
+ ],
+ "sources": [
+  "https://mmonster.co/wow-forever/guides/hunter-pets/abilities",
+  "https://mmonster.co/wow-forever/guides/hunter-pets/<family> (bat, bear, bird-of-prey, boar, carrion-bird, cat, crab, crocolisk, fox, gorilla, hyena, raptor, scorpid, spider, tallstrider, turtle, wind-serpent, wolf)",
+  "https://mmonster.co/wow-forever/guides/hunter-pets/taming",
+  "https://www.wow-petopia.com/forever/abilities.php",
+  "https://www.wow-petopia.com/forever/training.php",
+  "https://www.wow-petopia.com/forever/differences.php",
+  "https://www.wow-petopia.com/forever/family.php?id=<family> (bear, hyena, fox, birdofprey)",
+  "https://foreverchanges.pro/hunter-pets",
+  "https://wowforevertools.com/hunter-pets",
+  "https://www.warcrafttavern.com/forever/guides/hunter-pet-abilities/",
+  "https://www.warcrafttavern.com/forever/guides/hunter-pet-families/",
+  "https://conquestcapped.com/guides/wow-forever/wow-forever-hunter-pets/",
+  "https://wow4ever.quest/en/articles/habilidades-mascotas-cazador-wow-forever",
+  "https://wowforever.wclbox.com/en/lieren-chongwu (not used for data: says its teaching beasts are copied from Classic Era)"
+ ],
+ "confidence_notes": "HOW UNIQUE ABILITIES ARE LEARNED: NOT SETTLED. No source states it outright. wow4ever.quest says Blizzard has not said whether you learn them by taming or the family comes with them. conquestcapped.com says pets never learn abilities on their own and everything comes from beasts or the trainer, but that is a general statement. Evidence by group: (a) Changed Classic family abilities (Charge, Furious Howl, Lightning Breath, Prowl, Scorpid Poison, Shell Shield, Thunderstomp) keep Classic TP costs and Classic teaching beasts in mmonster and Petopia. Treated as beast-taught (high confidence). Exceptions: Thunderstomp rank 4 (lvl 60, 0 TP) has no teacher, Charge 4 has none, Lightning Breath 1 has none. (b) Demoralizing Screech: Classic-style TP 10/15/20/25. Petopia says 'No known training source'. wowforevertools gives Greater Fleshripper (154) as rank 1 teacher. Marked beast with low confidence. (c) The new 5-rank abilities (Swipe, Savage Rend, Tendon Rip, Web, Dust Cloud, Pinch, Dismember, Mine!, Sonic Blast) cost 0 TP in mmonster and Petopia (Dismember is 1 TP in mmonster, 0 in Petopia; Sonic Blast TP is unknown). Petopia lists 'No known training source' for Dismember and Dust Cloud. The only teaching beasts found are rank 1 entries from mmonster beta data (build 70450): Swipe 1 from Giant Grizzled Bear; Web 1 from Moss Stalker; Dust Cloud 1 from Galestrider and Ornery Galestrider; Savage Rend 1 from Shriekling Matriarch, Shadowgale Shriekling and Mystmane. No source names a teacher for ranks 2-5 of any of them, or for any rank of Tendon Rip, Pinch, Dismember, Mine! or Sonic Blast. 0 TP plus no teachers points toward automatic learning at pet level, but the rank 1 teachers point the other way. The 'source' field is 'beast' where a teacher exists and 'innate' (a guess) where none does. Check sourceConfidence and verify in game. (d) Trickster's Dance (1 rank, lvl 20, 10 TP) is taught by Vuldren Alpha (250874, Zephras Isle). Medium confidence. FASTER/SLOWER ATTACK: All pets swing at 2.0s base. Per-beast speed passives (Faster Attack I-VII, Slower Attack II-III) come from mmonster. conquestcapped says the tamed beast keeps them and no trainer sells them; Petopia says trainers teach them. They are kept out of 'teaches' and stored as beasts[].attackSpeedPassive, only on beasts that also teach something. About 40 beasts that only have a speed passive were left out. BEAST DATA: mmonster family pages are the main source (NPC IDs from the page's #b-<id> anchors, beta-labelled data). They match Petopia Forever's Classic-derived lists for Bite, Claw, Cower, Dash, Dive, Charge, Furious Howl and Lightning Breath 2, and also include new Forever NPCs (Zephras Isle, Riverglades, etc.). Added from Petopia: Kresh (3653, Bite 3), Ghamoo-ra (4887, Bite 4), Spawn of Hakkar (5708, Dive 3). Added from foreverchanges: Giant Surf Glider (Bite 7, no NPC ID given). Added from wowforevertools: Greater Fleshripper (154, Screech 1). Level ranges and zones follow mmonster (the first zone is kept when several are listed). Petopia's levels sometimes differ by 1-2 (e.g. Stonetusk Boar 7-8 vs 5-6). FAMILY ABILITY SETS: Bite/Claw/Dash/Dive membership agrees across warcrafttavern, Petopia and mmonster. Cower and Growl are available to all families (Petopia). mmonster lists Bat Dive starting at lvl 40 with 2 ranks, while the Dive rank table starts at 30. mmonster also lists a Bat 'Summoning' (15 TP) and an 'Intimidation' (lvl 30, 0 TP) with no details. Both are left out. DIETS: from mmonster, cross-checked against Petopia for Hyena, Fox and Bird of Prey. warcrafttavern disagrees on several: Fox +Fruit, Hyena Meat only, Bird of Prey +Fish, Gorilla +Bread, Tallstrider +Bread, Turtle +Bread. mmonster says Turtle is the only family that eats 'raw fish'. OTHER INCONSISTENCIES: mmonster's rank table gives Shadow Resistance rank 4 at lvl 40, which is probably a typo for 50 (50 is used here). The Savage Rend teachers are lvl 9-13 beasts teaching a rank that needs pet lvl 12, and two of them are not raptors. In Classic a hunter can learn from any family, so this is plausible, but it is unverified."
+}

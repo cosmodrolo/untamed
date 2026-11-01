@@ -1,0 +1,27 @@
+## Interface: 16001
+## Title: |cffabd473Untamed|r (Forever)
+## Notes: Hunter pet guide: what your pet can still learn, which beasts teach it, navigation, trip planner, pet browser and pet care.
+## Author: Alejandro Angulo
+## Version: @project-version@
+## SavedVariables: UntamedDB
+## SavedVariablesPerCharacter: UntamedCharDB
+## IconTexture: Interface\Icons\Ability_Hunter_BeastTaming
+## Category: Hunter
+## X-License: GPL-3.0
+## X-Website: https://github.com/cosmodrolo/Untamed
+
+Data\Forever.lua
+Abilities.lua
+Foods.lua
+Core.lua
+Geo.lua
+MapPins.lua
+MapPins.xml
+Minimap.lua
+Arrow.lua
+Alerts.lua
+PetCare.lua
+UI.lua
+Planner.lua
+Browser.lua
+Tabs.lua
