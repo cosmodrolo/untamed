@@ -5,10 +5,10 @@
 ## Version: @project-version@
 ## SavedVariables: UntamedDB
 ## SavedVariablesPerCharacter: UntamedCharDB
-## IconTexture: Interface\Icons\Ability_Hunter_BeastTaming
+## IconTexture: Interface\AddOns\Untamed\Media\Icon
 ## Category: Hunter
 ## X-License: GPL-3.0
-## X-Website: https://github.com/cosmodrolo/Untamed
+## X-Website: https://github.com/cosmodrolo/untamed
 
 Data\Era.lua
 Abilities.lua
