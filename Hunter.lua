@@ -1,10 +1,11 @@
 local _, ns = ...
+local L = ns.L
 
 -- Rare beast scanner and hunter essentials: ammo, trainer reminders, Mend Pet and Revive Pet.
 
 local function Alert(msg, sound)
   if RaidNotice_AddMessage and RaidWarningFrame then
-    RaidNotice_AddMessage(RaidWarningFrame, msg, ChatTypeInfo and ChatTypeInfo["RAID_WARNING"] or { r = 1, g = 0.82, b = 0 })
+    RaidNotice_AddMessage(RaidWarningFrame, msg, ChatTypeInfo and ChatTypeInfo[L["RAID_WARNING"]] or { r = 1, g = 0.82, b = 0 })
   else
     UIErrorsFrame:AddMessage(msg, 0.67, 0.83, 0.45)
   end
@@ -33,7 +34,7 @@ local function CheckRare(unit)
   rareSeen[npcId] = now
   local teaches = #b[6] > 0 and (" Teaches " .. ns.TeachesText(b) .. ".") or ""
   local speed = b[9] and (" Attack speed " .. b[9] .. ".") or ""
-  local msg = "Rare tameable nearby: " .. b[1] .. " (level " .. ns.LevelText(b) .. " " .. b[4] .. ")." .. speed .. teaches
+  local msg = L["Rare tameable nearby: "] .. b[1] .. " (level " .. ns.LevelText(b) .. " " .. b[4] .. ")." .. speed .. teaches
   Alert(msg, ns.db.targetSound)
   ns.Print(msg .. " Type /untamed rare to point the arrow at it.")
   ns.lastRare = npcId
@@ -62,7 +63,7 @@ local function CheckAmmo()
   local vendor, d
   if mapID then vendor, d = ns.NearestService("A", mapID, x, y) end
   ns.Print(string.format("Low ammo: %d left.", n) .. (vendor and (" Nearest ammo vendor: " .. ns.ServiceText(vendor, d) .. ". Type /untamed ammo for an arrow.") or ""))
-  Alert("Low ammo: " .. n .. " left", false)
+  Alert(L["Low ammo: "] .. n .. " left", false)
 end
 
 function ns.PlayerMap()
@@ -78,7 +79,7 @@ end
 
 function ns.NavigateService(kind, label)
   local mapID, x, y = ns.PlayerMap()
-  if not mapID then ns.Print("Can't tell where you are right now.") return end
+  if not mapID then ns.Print(L["Can't tell where you are right now."]) return end
   local s, d = ns.NearestService(kind, mapID, x, y)
   if not s then ns.Print("No " .. label .. " found on this continent.") return end
   ns.Arrow_Set(s[4], s[5], s[6], label .. ": " .. s[2])
@@ -91,19 +92,19 @@ local function CheckPetHealth(unit)
   local hp, max = UnitHealth("pet"), UnitHealthMax("pet")
   if ns.IsSecret(hp) or ns.IsSecret(max) or not max or max == 0 then return end
   if UnitIsDead("pet") then
-    if not deadWarned then deadWarned = true; Alert("Your pet died. Revive Pet!", true) end
+    if not deadWarned then deadWarned = true; Alert(L["Your pet died. Revive Pet!"], true) end
     return
   end
   deadWarned = false
   if InCombatLockdown() and hp / max < 0.35 and GetTime() > mendWarnAt then
     mendWarnAt = GetTime() + 8
-    UIErrorsFrame:AddMessage("Mend Pet! (" .. math.floor(hp * 100 / max) .. "%)", 0.4, 1, 0.4)
+    UIErrorsFrame:AddMessage(L["Mend Pet! ("] .. math.floor(hp * 100 / max) .. "%)", 0.4, 1, 0.4)
   end
 end
 
 local ev = CreateFrame("Frame")
-for _, e in ipairs({ "NAME_PLATE_UNIT_ADDED", "PLAYER_TARGET_CHANGED", "UPDATE_MOUSEOVER_UNIT", "PLAYER_LEVEL_UP",
-  "UNIT_HEALTH", "UNIT_INVENTORY_CHANGED", "PLAYER_REGEN_ENABLED", "BAG_UPDATE_DELAYED" }) do
+for _, e in ipairs({ L["NAME_PLATE_UNIT_ADDED"], L["PLAYER_TARGET_CHANGED"], L["UPDATE_MOUSEOVER_UNIT"], L["PLAYER_LEVEL_UP"],
+  L["UNIT_HEALTH"], L["UNIT_INVENTORY_CHANGED"], L["PLAYER_REGEN_ENABLED"], L["BAG_UPDATE_DELAYED"] }) do
   pcall(ev.RegisterEvent, ev, e)
 end
 ev:SetScript("OnEvent", function(_, event, arg1)
@@ -117,7 +118,7 @@ ev:SetScript("OnEvent", function(_, event, arg1)
       local mapID, x, y = ns.PlayerMap()
       local s, d
       if mapID then s, d = ns.NearestService("T", mapID, x, y) end
-      ns.Print("Level " .. arg1 .. "! New hunter spell ranks are usually waiting at your trainer." ..
+      ns.Print(L["Level "] .. arg1 .. "! New hunter spell ranks are usually waiting at your trainer." ..
         (s and (" Nearest hunter trainer: " .. ns.ServiceText(s, d) .. ". Type /untamed trainer for an arrow.") or ""))
     end
   else
@@ -125,12 +126,12 @@ ev:SetScript("OnEvent", function(_, event, arg1)
   end
 end)
 
-ns.On("LOGIN", function()
+ns.On(L["LOGIN"], function()
   for k, v in pairs({ rareAlert = true, ammoWarning = true, ammoThreshold = 200, trainerReminder = true, petHealthAlerts = true }) do
     if ns.db[k] == nil then ns.db[k] = v end
   end
 end)
 
 function ns.NavigateLastRare()
-  if ns.lastRare then ns.Navigate(ns.lastRare) else ns.Print("No rare beast spotted yet this session.") end
+  if ns.lastRare then ns.Navigate(ns.lastRare) else ns.Print(L["No rare beast spotted yet this session."]) end
 end

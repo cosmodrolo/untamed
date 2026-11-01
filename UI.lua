@@ -1,4 +1,5 @@
 local _, ns = ...
+local L = ns.L
 
 local ROW_H = 18
 ns.C = {
@@ -14,7 +15,7 @@ function ns.Icon(path) return "Interface\\Icons\\" .. path end
 local function ShowTooltip(owner, tip)
   if type(tip) == "function" then tip = tip() end
   if not tip then return end
-  GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+  GameTooltip:SetOwner(owner, L["ANCHOR_RIGHT"])
   for idx, line in ipairs(tip) do
     if idx == 1 then GameTooltip:AddLine(line, 1, 0.82, 0) else GameTooltip:AddLine(line, 1, 1, 1, true) end
   end
@@ -25,8 +26,8 @@ ns.ShowTooltip = ShowTooltip
 function ns.NewList(parent, topOffset)
   local list = { rows = {} }
   local scroll = CreateFrame("ScrollFrame", nil, parent, "UIPanelScrollFrameTemplate")
-  scroll:SetPoint("TOPLEFT", 4, -topOffset)
-  scroll:SetPoint("BOTTOMRIGHT", -26, 4)
+  scroll:SetPoint(L["TOPLEFT"], 4, -topOffset)
+  scroll:SetPoint(L["BOTTOMRIGHT"], -26, 4)
   local content = CreateFrame("Frame", nil, scroll)
   content:SetSize(440, 1)
   scroll:SetScrollChild(content)
@@ -38,18 +39,18 @@ function ns.NewList(parent, topOffset)
     if r then return r end
     r = CreateFrame("Button", nil, content)
     r:SetHeight(ROW_H)
-    r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    r.icon = r:CreateTexture(nil, "ARTWORK")
+    r:RegisterForClicks(L["LeftButtonUp"], L["RightButtonUp"])
+    r.icon = r:CreateTexture(nil, L["ARTWORK"])
     r.icon:SetSize(14, 14)
     r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    r.left = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    r.left:SetJustifyH("LEFT")
+    r.left = r:CreateFontString(nil, L["OVERLAY"], L["GameFontHighlightSmall"])
+    r.left:SetJustifyH(L["LEFT"])
     r.left:SetWordWrap(false)
-    r.right = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    r.right:SetJustifyH("RIGHT")
-    r.right:SetPoint("RIGHT", -4, 0)
+    r.right = r:CreateFontString(nil, L["OVERLAY"], L["GameFontHighlightSmall"])
+    r.right:SetJustifyH(L["RIGHT"])
+    r.right:SetPoint(L["RIGHT"], -4, 0)
     r.right:SetWordWrap(false)
-    local hl = r:CreateTexture(nil, "HIGHLIGHT")
+    local hl = r:CreateTexture(nil, L["HIGHLIGHT"])
     hl:SetAllPoints()
     hl:SetColorTexture(1, 1, 1, 0.08)
     r:SetScript("OnClick", function(self, button) if self.onClick then self.onClick(self, button) end end)
@@ -65,19 +66,19 @@ function ns.NewList(parent, topOffset)
       local r = GetRow(i)
       local indent, iconPath = d[1] or 0, d[2]
       r:ClearAllPoints()
-      r:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -(i - 1) * ROW_H)
-      r:SetPoint("RIGHT", content, "RIGHT", 0, 0)
+      r:SetPoint(L["TOPLEFT"], content, L["TOPLEFT"], 0, -(i - 1) * ROW_H)
+      r:SetPoint(L["RIGHT"], content, L["RIGHT"], 0, 0)
       r.icon:ClearAllPoints()
-      r.icon:SetPoint("LEFT", 4 + indent, 0)
+      r.icon:SetPoint(L["LEFT"], 4 + indent, 0)
       r.left:ClearAllPoints()
       if iconPath then
         r.icon:SetTexture(iconPath); r.icon:Show()
-        r.left:SetPoint("LEFT", r.icon, "RIGHT", 4, 0)
+        r.left:SetPoint(L["LEFT"], r.icon, L["RIGHT"], 4, 0)
       else
         r.icon:Hide()
-        r.left:SetPoint("LEFT", 4 + indent, 0)
+        r.left:SetPoint(L["LEFT"], 4 + indent, 0)
       end
-      r.left:SetPoint("RIGHT", r.right, "LEFT", -6, 0)
+      r.left:SetPoint(L["RIGHT"], r.right, L["LEFT"], -6, 0)
       r.left:SetText(d[3] or "")
       r.right:SetText(d[4] or "")
       r.onClick, r.tooltip = d[5], d[6]
@@ -92,11 +93,11 @@ end
 function ns.MakeCheck(parent, label, x, y, get, set, tip)
   local c = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
   c:SetSize(22, 22)
-  c:SetPoint("TOPLEFT", x, y)
-  local fs = c.text or c.Text or c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  fs:SetFontObject("GameFontHighlightSmall")
+  c:SetPoint(L["TOPLEFT"], x, y)
+  local fs = c.text or c.Text or c:CreateFontString(nil, L["OVERLAY"], L["GameFontHighlightSmall"])
+  fs:SetFontObject(L["GameFontHighlightSmall"])
   fs:ClearAllPoints()
-  fs:SetPoint("LEFT", c, "RIGHT", 0, 1)
+  fs:SetPoint(L["LEFT"], c, L["RIGHT"], 0, 1)
   fs:SetText(label)
   c:SetScript("OnShow", function(self) self:SetChecked(get()) end)
   c:SetScript("OnClick", function(self) set(self:GetChecked() and true or false); ns.Refresh() end)
@@ -133,17 +134,17 @@ end
 function ns.BeastTooltip(npcId, extra)
   return function()
     local b = ns.Beasts[npcId]
-    local lines = { b[1], "Level " .. ns.LevelText(b) .. " " .. b[4] .. ((b[2] > UnitLevel("player")) and C.RED .. "  (too high to tame yet)|r" or "") }
-    if #b[6] > 0 then lines[#lines + 1] = "Teaches: " .. ns.TeachesText(b) end
-    if b[9] then lines[#lines + 1] = "Attack speed: " .. b[9] .. (b[10] and ("   Look: " .. b[10]) or "") end
-    if b[8] then lines[#lines + 1] = C.ORANGE .. "Inside " .. b[8] .. ". Map pins mark the entrance.|r" end
+    local lines = { b[1], L["Level "] .. ns.LevelText(b) .. " " .. b[4] .. ((b[2] > UnitLevel("player")) and C.RED .. "  (too high to tame yet)|r" or "") }
+    if #b[6] > 0 then lines[#lines + 1] = L["Teaches: "] .. ns.TeachesText(b) end
+    if b[9] then lines[#lines + 1] = L["Attack speed: "] .. b[9] .. (b[10] and ("   Look: " .. b[10]) or "") end
+    if b[8] then lines[#lines + 1] = C.ORANGE .. L["Inside "] .. b[8] .. ". Map pins mark the entrance.|r" end
     local mapID, x, y, d = ns.NearestSpawn(npcId)
     if mapID then
       lines[#lines + 1] = string.format("Nearest: %s %.0f, %.0f (%s)", ns.ZoneName(mapID), x, y, ns.FormatDistance(d))
       local s, sd = ns.NearestService("S", mapID, x, y)
       local f, fd = ns.NearestService("F", mapID, x, y)
-      lines[#lines + 1] = C.BLUE .. "Stable master: " .. ns.ServiceText(s, sd) .. "|r"
-      lines[#lines + 1] = C.BLUE .. "Flight master: " .. ns.ServiceText(f, fd) .. "|r"
+      lines[#lines + 1] = C.BLUE .. L["Stable master: "] .. ns.ServiceText(s, sd) .. "|r"
+      lines[#lines + 1] = C.BLUE .. L["Flight master: "] .. ns.ServiceText(f, fd) .. "|r"
     end
     if extra then for _, l in ipairs(extra) do lines[#lines + 1] = l end end
     lines[#lines + 1] = C.GREY .. "Click: arrow + map pins.  Right-click: open map.  Shift-click: TomTom.|r"
@@ -186,8 +187,8 @@ local function SelectTab(key)
   local t = tabs[key]
   if not t.panel then
     t.panel = CreateFrame("Frame", nil, frame)
-    t.panel:SetPoint("TOPLEFT", 8, -112)
-    t.panel:SetPoint("BOTTOMRIGHT", -8, 8)
+    t.panel:SetPoint(L["TOPLEFT"], 8, -112)
+    t.panel:SetPoint(L["BOTTOMRIGHT"], -8, 8)
     t.build(t.panel)
   end
   t.panel:Show()
@@ -200,11 +201,11 @@ function ns.UI_Refresh()
   if t then
     local who
     if t.stabled then
-      who = string.format("%sPlanning for:|r %s  %s, level %d  %s(stabled)|r", C.GOLD, t.name, t.family, t.level or 0, C.GREY)
+      who = string.format("%sPlanning for:|r %s  %s, level %d  %s(stabled)|r", C.GOLD, t.name, ns.FamilyLabel(t.family), t.level or 0, C.GREY)
     elseif t.manual then
       who = string.format("%sPlanning for:|r %s  %s(no pet; assumes it knows nothing)|r", C.GOLD, t.family, C.GREY)
     else
-      who = string.format("%s%s|r  %s, level %d", C.GOLD, t.name or "Pet", t.family, t.level or 0)
+      who = string.format("%s%s|r  %s, level %d", C.GOLD, t.name or "Pet", ns.FamilyLabel(t.family), t.level or 0)
       if t.tpFree then who = who .. string.format("   %s%d TP free|r", C.GREY, t.tpFree) end
     end
     petLine:SetText(who)
@@ -222,20 +223,20 @@ function ns.UI_Refresh()
   local tab = activeTab and tabs[activeTab]
   if tab and tab.panel and tab.refresh then tab.refresh(tab.panel, t) end
 end
-ns.On("REFRESH", ns.UI_Refresh)
+ns.On(L["REFRESH"], ns.UI_Refresh)
 ns.On("PETCARE", function() if activeTab == "care" then ns.UI_Refresh() end end)
 
 local familyPicker
 local function BuildFamilyPicker(anchor)
   local p = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-  p:SetFrameStrata("DIALOG")
+  p:SetFrameStrata(L["DIALOG"])
   p:SetSize(250, 20 + math.ceil((#ns.Families + 1) / 2) * 22)
-  p:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -2)
+  p:SetPoint(L["TOPLEFT"], anchor, L["BOTTOMLEFT"], 0, -2)
   if p.SetBackdrop then
     p:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
       tile = true, tileSize = 16, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
   end
-  local list = { "My current pet" }
+  local list = { L["My current pet"] }
   for _, f in ipairs(ns.Families) do list[#list + 1] = f end
   for idx, fam in ipairs(list) do
     local b = ns.MakeButton(p, fam, 112, function()
@@ -245,7 +246,7 @@ local function BuildFamilyPicker(anchor)
       ns.Refresh()
     end)
     b:SetHeight(20)
-    b:SetPoint("TOPLEFT", 10 + ((idx - 1) % 2) * 116, -10 - math.floor((idx - 1) / 2) * 22)
+    b:SetPoint(L["TOPLEFT"], 10 + ((idx - 1) % 2) * 116, -10 - math.floor((idx - 1) / 2) * 22)
   end
   p:Hide()
   return p
@@ -254,47 +255,47 @@ end
 local function CreateMainFrame()
   frame = CreateFrame("Frame", "UntamedFrame", UIParent, "BasicFrameTemplateWithInset")
   frame:SetSize(620, 620)
-  frame:SetPoint("CENTER", 200, 40)
-  frame:SetFrameStrata("HIGH")
+  frame:SetPoint(L["CENTER"], 200, 40)
+  frame:SetFrameStrata(L["HIGH"])
   frame:SetMovable(true)
   frame:SetClampedToScreen(true)
   frame:EnableMouse(true)
-  frame:RegisterForDrag("LeftButton")
+  frame:RegisterForDrag(L["LeftButton"])
   frame:SetScript("OnDragStart", frame.StartMoving)
   frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
   frame:Hide()
   tinsert(UISpecialFrames, "UntamedFrame")
 
-  local title = frame.TitleText or frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  local title = frame.TitleText or frame:CreateFontString(nil, L["OVERLAY"], L["GameFontHighlight"])
   if not frame.TitleText then title:SetPoint("TOP", 0, -5) end
   title:SetText("Untamed" .. (ns.FLAVOR == "forever" and " (Forever)" or ""))
 
-  frame.petIcon = frame:CreateTexture(nil, "ARTWORK")
+  frame.petIcon = frame:CreateTexture(nil, L["ARTWORK"])
   frame.petIcon:SetSize(28, 28)
-  frame.petIcon:SetPoint("TOPLEFT", 14, -32)
+  frame.petIcon:SetPoint(L["TOPLEFT"], 14, -32)
   frame.petIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-  petLine = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  petLine:SetPoint("LEFT", frame.petIcon, "RIGHT", 8, 0)
-  petLine:SetPoint("RIGHT", frame, "RIGHT", -200, 0)
-  petLine:SetJustifyH("LEFT")
+  petLine = frame:CreateFontString(nil, L["OVERLAY"], L["GameFontNormal"])
+  petLine:SetPoint(L["LEFT"], frame.petIcon, L["RIGHT"], 8, 0)
+  petLine:SetPoint(L["RIGHT"], frame, L["RIGHT"], -200, 0)
+  petLine:SetJustifyH(L["LEFT"])
   petLine:SetWordWrap(false)
 
-  local pick = ns.MakeButton(frame, "Pick Family", 96, function() familyPicker:SetShown(not familyPicker:IsShown()) end)
-  pick:SetPoint("TOPRIGHT", -112, -34)
+  local pick = ns.MakeButton(frame, L["Pick Family"], 96, function() familyPicker:SetShown(not familyPicker:IsShown()) end)
+  pick:SetPoint(L["TOPRIGHT"], -112, -34)
   familyPicker = BuildFamilyPicker(pick)
-  local mine = ns.MakeButton(frame, "My Pet", 90, function() ns.state.mode = "pet"; ns.state.family = nil; ns.Refresh() end)
-  mine:SetPoint("LEFT", pick, "RIGHT", 4, 0)
+  local mine = ns.MakeButton(frame, L["My Pet"], 90, function() ns.state.mode = "pet"; ns.state.family = nil; ns.Refresh() end)
+  mine:SetPoint(L["LEFT"], pick, L["RIGHT"], 4, 0)
 
-  tipLine = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  tipLine:SetPoint("TOPLEFT", 16, -64)
-  tipLine:SetPoint("RIGHT", frame, "RIGHT", -14, 0)
-  tipLine:SetJustifyH("LEFT")
+  tipLine = frame:CreateFontString(nil, L["OVERLAY"], L["GameFontHighlightSmall"])
+  tipLine:SetPoint(L["TOPLEFT"], 16, -64)
+  tipLine:SetPoint(L["RIGHT"], frame, L["RIGHT"], -14, 0)
+  tipLine:SetJustifyH(L["LEFT"])
 
   local prev
   for _, k in ipairs(tabOrder) do
     local t = tabs[k]
     t.button = ns.MakeButton(frame, t.title, 82, function() SelectTab(k) end)
-    if prev then t.button:SetPoint("LEFT", prev, "RIGHT", 2, 0) else t.button:SetPoint("TOPLEFT", 12, -82) end
+    if prev then t.button:SetPoint(L["LEFT"], prev, L["RIGHT"], 2, 0) else t.button:SetPoint(L["TOPLEFT"], 12, -82) end
     prev = t.button
   end
 
@@ -322,8 +323,8 @@ do
   local function RankStatus(e, r)
     if r.known then
       local tp = ns.RankCost(e.ability, r.rank)
-      if r.tooHigh then return C.GREY .. "You know it. Pet needs level " .. r.level .. "|r" end
-      return C.GREEN .. "You know it: teach at Beast Training" .. (tp and (" (" .. tp .. " TP)") or "") .. "|r"
+      if r.tooHigh then return C.GREY .. L["You know it. Pet needs level "] .. r.level .. "|r" end
+      return C.GREEN .. L["You know it: teach at Beast Training"] .. (tp and (" (" .. tp .. " TP)") or "") .. "|r"
     end
     local n = #r.beasts
     if n == 0 then
@@ -331,7 +332,7 @@ do
       if fa and fa.source == "innate" then return C.GREY .. "No known teacher. May come with pet level|r" end
       return C.RED .. "No beast known yet|r"
     end
-    return C.WHITE .. "Tame 1 of " .. n .. " beast" .. (n > 1 and "s" or "") .. "|r"
+    return C.WHITE .. L["Tame 1 of "] .. n .. " beast" .. (n > 1 and "s" or "") .. "|r"
   end
 
   local function Build(panel)
@@ -352,7 +353,7 @@ do
         else
           rightTxt = C.GREY .. (e.current > 0 and ("pet has Rank " .. e.current) or "pet does not know it") .. "|r"
         end
-        add(0, ns.Icon(ns.AbilityIcons[ab] or "Ability_Hunter_BeastTaming"), C.GOLD .. (collapsed[ab] and "+ " or "- ") .. ab .. "|r", rightTxt,
+        add(0, ns.Icon(ns.AbilityIcons[ab] or "Ability_Hunter_BeastTaming"), C.GOLD .. (collapsed[ab] and "+ " or "- ") .. ns.AbilityLabel(ab) .. "|r", rightTxt,
           function() collapsed[ab] = not collapsed[ab]; ns.UI_Refresh() end)
         if not collapsed[ab] then
           local firstOpen = true
@@ -372,13 +373,13 @@ do
               if #beasts > 0 then ns.Pins_Focus(beasts, ab .. " " .. r.rank, false) end
               ns.UI_Refresh()
             end, { ab .. " Rank " .. r.rank,
-              r.level and ("Your pet must be level " .. r.level .. " to use this rank" .. (r.levelExact and "." or " (approximate until you open Beast Training).")) or "Level unknown.",
-              r.known and "You already know this rank. Teach it to your pet from the Beast Training window."
-                or "Tame one of these beasts, then fight with it until you learn the ability. Then teach it to any pet that can use it.",
-              "You don't need lower ranks first: the highest rank your pet's level allows is enough.",
+              r.level and (L["Your pet must be level "] .. r.level .. " to use this rank" .. (r.levelExact and "." or " (approximate until you open Beast Training).")) or L["Level unknown."],
+              r.known and L["You already know this rank. Teach it to your pet from the Beast Training window."]
+                or L["Tame one of these beasts, then fight with it until you learn the ability. Then teach it to any pet that can use it."],
+              L["You don't need lower ranks first: the highest rank your pet's level allows is enough."],
               (ns.ForeverAbilities and ns.ForeverAbilities[ab] and ns.ForeverAbilities[ab].note ~= "")
-                and (C.ORANGE .. "Forever data note: " .. ns.ForeverAbilities[ab].note .. "|r") or "",
-              "Click to pin these beasts on your map." })
+                and (C.ORANGE .. L["Forever data note: "] .. ns.ForeverAbilities[ab].note .. "|r") or "",
+              L["Click to pin these beasts on your map."] })
             if isOpen and not r.known then
               for _, npcId in ipairs(beasts) do
                 local b = ns.Beasts[npcId]
@@ -397,12 +398,12 @@ do
         for _, ab in ipairs(ns.TrainerAbilities) do
           local cur = t.known[ab]
           add(14, nil, C.WHITE .. ab .. "|r", C.GREY .. (cur and ("pet has Rank " .. cur) or "not learned") .. "|r", nil,
-            { ab, "Buy higher ranks from any Hunter pet trainer in a capital or major town, then teach them at Beast Training." })
+            { ab, L["Buy higher ranks from any Hunter pet trainer in a capital or major town, then teach them at Beast Training."] })
         end
       end
     end
     list:Set(rows)
   end
 
-  ns.RegisterTab("abilities", "Abilities", Build, Refresh)
+  ns.RegisterTab("abilities", L["Abilities"], Build, Refresh)
 end

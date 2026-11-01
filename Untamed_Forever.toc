@@ -15,10 +15,22 @@
 embeds.xml
 #@end-no-lib-strip@
 
+Init.lua
 Data\Forever.lua
+Data\Names_Forever.lua
 Abilities.lua
 Foods.lua
 Core.lua
+Locales\deDE.lua
+Locales\esES.lua
+Locales\esMX.lua
+Locales\frFR.lua
+Locales\itIT.lua
+Locales\koKR.lua
+Locales\ptBR.lua
+Locales\ruRU.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
 Locale.lua
 Geo.lua
 MapPins.lua
@@ -31,6 +43,7 @@ Leveling.lua
 Hunter.lua
 UI.lua
 Planner.lua
+Recommend.lua
 Stable.lua
 Builds.lua
 Browser.lua

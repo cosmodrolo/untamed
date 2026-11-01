@@ -1,4 +1,5 @@
 local _, ns = ...
+local L = ns.L
 
 -- Diet, happiness and feeding.
 local FEED_PET = 6991
@@ -122,15 +123,15 @@ function ns.CreateFeedButton(parent, name, w, h)
   b:SetSize(w or 150, h or 22)
   b:RegisterForClicks("AnyUp", "AnyDown")
   function b:UpdateLabel()
-    if self.food then self:SetText("Feed: " .. self.food[6]) else self:SetText("No food your pet eats") end
+    if self.food then self:SetText(L["Feed: "] .. self.food[6]) else self:SetText(L["No food your pet eats"]) end
   end
   b:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetOwner(self, L["ANCHOR_RIGHT"])
     if self.food then
-      GameTooltip:AddLine("Feed " .. self.food[6], 1, 0.82, 0)
-      GameTooltip:AddLine("You have " .. self.food[4] .. ". Picks the highest level food your pet will eat.", 1, 1, 1, true)
+      GameTooltip:AddLine(L["Feed "] .. self.food[6], 1, 0.82, 0)
+      GameTooltip:AddLine(L["You have "] .. self.food[4] .. ". Picks the highest level food your pet will eat.", 1, 1, 1, true)
     else
-      GameTooltip:AddLine("Nothing in your bags matches your pet's diet.", 1, 1, 1, true)
+      GameTooltip:AddLine(L["Nothing in your bags matches your pet's diet."], 1, 1, 1, true)
     end
     GameTooltip:Show()
   end)
@@ -149,12 +150,12 @@ local function UpdateFloater()
   floater:SetShown(show and true or false)
 end
 
-ns.On("LOGIN", function()
+ns.On(L["LOGIN"], function()
   floater = ns.CreateFeedButton(UIParent, "UntamedFeedButton", 170, 26)
   floater:SetPoint("TOP", 0, -120)
   floater:SetMovable(true)
   floater:SetClampedToScreen(true)
-  floater:RegisterForDrag("LeftButton")
+  floater:RegisterForDrag(L["LeftButton"])
   floater:SetScript("OnDragStart", function(self) if not InCombatLockdown() then self:StartMoving() end end)
   floater:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
   floater:Hide()
@@ -168,12 +169,12 @@ local function OnChange(unit)
   local h = Happiness()
   if ns.db.feedReminder and h and h < 3 and lastWarn ~= h then
     local food = ns.EdibleFood()[1]
-    ns.Print("Your pet is " .. (HAPPY_TEXT[h] or "not happy") .. ". " .. (food and ("Feed it " .. food[6] .. ".") or "You have no food it eats."))
+    ns.Print(L["Your pet is "] .. (HAPPY_TEXT[h] or "not happy") .. ". " .. (food and (L["Feed it "] .. food[6] .. ".") or L["You have no food it eats."]))
   end
   lastWarn = h
-  ns.Fire("PETCARE")
+  ns.Fire(L["PETCARE"])
 end
-ns.On("UNIT_HAPPINESS", OnChange)
-ns.On("BAG_UPDATE_DELAYED", function() UpdateFeedMacro(); ns.Fire("PETCARE") end)
-ns.On("PLAYER_REGEN_ENABLED", function() UpdateFeedMacro(); UpdateFloater() end)
-ns.On("REFRESH", function() UpdateFeedMacro(); UpdateFloater() end)
+ns.On(L["UNIT_HAPPINESS"], OnChange)
+ns.On(L["BAG_UPDATE_DELAYED"], function() UpdateFeedMacro(); ns.Fire(L["PETCARE"]) end)
+ns.On(L["PLAYER_REGEN_ENABLED"], function() UpdateFeedMacro(); UpdateFloater() end)
+ns.On(L["REFRESH"], function() UpdateFeedMacro(); UpdateFloater() end)

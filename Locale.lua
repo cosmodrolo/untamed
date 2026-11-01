@@ -38,6 +38,43 @@ local locale = GetLocale and GetLocale() or "enUS"
 for k, v in pairs(FAMILY[locale] or {}) do toEnglish[k] = v end
 for k, v in pairs(DIET[locale] or {}) do toEnglish[k] = v end
 
+-- Family names straight from the game when it can tell us (works in every language).
+local FAMILY_IDS = { [1] = "Wolf", [2] = "Cat", [3] = "Spider", [4] = "Bear", [5] = "Boar", [6] = "Crocolisk",
+  [7] = "Carrion Bird", [8] = "Crab", [9] = "Gorilla", [11] = "Raptor", [12] = "Tallstrider", [20] = "Scorpid",
+  [21] = "Turtle", [24] = "Bat", [25] = "Hyena", [26] = ns.FLAVOR == "forever" and "Bird of Prey" or "Owl",
+  [27] = "Wind Serpent", [46] = "Fox" }
+local familyLabel, abilityLabel = {}, {}
+if C_CreatureInfo and C_CreatureInfo.GetCreatureFamilyInfo then
+  for id, english in pairs(FAMILY_IDS) do
+    local ok, info = pcall(C_CreatureInfo.GetCreatureFamilyInfo, id)
+    if ok and info and info.name and info.name ~= "" then
+      toEnglish[info.name] = english
+      familyLabel[english] = info.name
+    end
+  end
+end
+for english, id in pairs(ns.AbilitySpellIDs or {}) do
+  local name = ns.SpellName and ns.SpellName(id)
+  if name then abilityLabel[english] = name end
+end
+
+-- Names to show the player, in their language.
+function ns.FamilyLabel(english) return familyLabel[english] or english end
+function ns.AbilityLabel(english) return abilityLabel[english] or english end
+
+-- Beast and NPC names in the player's language (Data\Names_*.lua).
+if ns.LocalNames then
+  for id, name in pairs(ns.LocalNames) do
+    local b = ns.Beasts[id]
+    if b then b[1] = name end
+  end
+  for _, sv in ipairs(ns.Services or {}) do
+    local name = sv[7] and ns.LocalNames[sv[7]]
+    if name then sv[2] = name end
+  end
+  ns.LocalNames = nil
+end
+
 function ns.ToEnglish(name)
   if not name then return name end
   return toEnglish[name] or name

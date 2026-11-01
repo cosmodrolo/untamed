@@ -1,4 +1,5 @@
 local _, ns = ...
+local L = ns.L
 local C = ns.C
 
 -- Stable manager: remembers every pet you own (recorded whenever it is out or
@@ -59,14 +60,14 @@ local function ReadStable()
   ns.Refresh()
 end
 
-ns.On("REFRESH", function() if UnitExists("pet") then RecordActive() end end)
+ns.On(L["REFRESH"], function() if UnitExists("pet") then RecordActive() end end)
 
 local ev = CreateFrame("Frame")
 for _, e in ipairs({ "PET_STABLE_SHOW", "PET_STABLE_UPDATE", "PET_STABLE_CLOSED" }) do pcall(ev.RegisterEvent, ev, e) end
 ev:SetScript("OnEvent", function(_, event)
   if event == "PET_STABLE_CLOSED" then
     ns.cdb.hasActivePet = UnitExists("pet") and true or ns.cdb.hasActivePet
-    ns.Fire("STABLE_CLOSED")
+    ns.Fire(L["STABLE_CLOSED"])
   else
     ReadStable()
   end
@@ -123,14 +124,14 @@ local function Refresh()
     local right = (#ups > 0 and (C.GREEN .. #ups .. " ready to teach|r   ") or "") .. status
     local selected = ns.state.mode == "stable" and ns.state.key == k
     add(0, ns.Icon(ns.FamilyIcons[p.family] or "Ability_Hunter_BeastTaming"),
-      string.format("%s%s|r  %s, level %d", selected and C.GOLD or C.WHITE, p.name, p.family, p.level or 0), right,
+      string.format("%s%s|r  %s, level %d", selected and C.GOLD or C.WHITE, p.name, ns.FamilyLabel(p.family), p.level or 0), right,
       function(_, button)
         if button == "RightButton" then
           Pets()[k] = nil
           if ns.state.key == k then ns.state.mode = "pet"; ns.state.key = nil end
         else
           ns.state.mode = "stable"; ns.state.key = k
-          ns.Print("Planning for " .. p.name .. ". The Abilities and Planner tabs now show this pet. Click My Pet to switch back.")
+          ns.Print(L["Planning for "] .. p.name .. ". The Abilities and Planner tabs now show this pet. Click My Pet to switch back.")
         end
         ns.Refresh()
       end,
@@ -139,12 +140,12 @@ local function Refresh()
         local known = {}
         for a, r in pairs(p.known or {}) do known[#known + 1] = a .. " " .. r end
         table.sort(known)
-        lines[#lines + 1] = "Knows: " .. (#known > 0 and table.concat(known, ", ") or "unknown until it has been out once")
-        if #ups > 0 then lines[#lines + 1] = C.GREEN .. "You can teach it now: " .. table.concat(ups, ", ") .. "|r" end
+        lines[#lines + 1] = L["Knows: "] .. (#known > 0 and table.concat(known, ", ") or "unknown until it has been out once")
+        if #ups > 0 then lines[#lines + 1] = C.GREEN .. L["You can teach it now: "] .. table.concat(ups, ", ") .. "|r" end
         return lines
       end)
   end
   list:Set(rows)
 end
 
-ns.RegisterTab("stable", "Stable", Build, Refresh)
+ns.RegisterTab("stable", L["Stable"], Build, Refresh)

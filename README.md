@@ -13,6 +13,7 @@ Untamed looks at the pet you have out (or a family you pick), shows every abilit
 - **Map, minimap and tooltips.** Pins for every beast your pet still needs, tooltip lines on beasts in the world, and an alert when you target one.
 - **Pet browser.** Every tameable beast, searchable by name or zone, filterable by family, rares and what you can tame now, sortable by level, name and (Classic Era) attack speed.
 - **Pet care.** Happiness, loyalty, experience, training points, diet, and the food in your bags your pet will eat, with a one-click Feed button that pops up when your pet is unhappy.
+- **Find a Pet.** Pick a role (Tank, Damage, Leveling, PvP, Utility) and get the best families and the best beasts to tame near you.
 - **Stable manager.** Remembers every pet you own and what each can learn from ranks you already know.
 - **Training point builds.** Presets and shareable build strings.
 - **Rare beast scanner, ammo and trainer reminders, Mend Pet and Revive Pet alerts, and a pet leveling helper.**
@@ -26,7 +27,8 @@ Forever reworked hunter pets (new families, new family abilities, Owl renamed Bi
 
 ## Data sources and credits
 
-- Spawn locations, stable masters and flight masters: [QuestieDB](https://github.com/Questie/QuestieDB) (GPL-3.0).
+- Spawn locations, stable masters, flight masters and localized NPC names: [QuestieDB](https://github.com/Questie/QuestieDB) (GPL-3.0).
+- Classic family damage, armor and health modifiers: [Icy Veins Classic hunter pet guide](https://www.icy-veins.com/wow-classic/hunter-dps-pets-guide).
 - Item pet food types, ammo vendors, hunter and pet trainers: [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0).
 - Classic Era tameable beasts and the abilities they teach: originally extracted from the VMaNGOS database by [shagu/vanilla-hunter-pets](https://github.com/shagu/vanilla-hunter-pets).
 - WoW Forever beast abilities: compiled from public Forever pet guides (see `tools/forever_pets.json` for the list of sources) and corrected by in-game observation.

@@ -1,4 +1,5 @@
 local _, ns = ...
+local L = ns.L
 
 -- World map pins.
 --   focus: set by clicking a rank, beast or planner stop (bigger gold pins)
@@ -14,7 +15,7 @@ local AUTO_CAP = 12
 UntamedPinMixin = CreateFromMixins(MapCanvasPinMixin)
 
 function UntamedPinMixin:OnLoad()
-  self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
+  self:UseFrameLevelType(L["PIN_FRAME_LEVEL_AREA_POI"])
   self:SetScalingLimits(1, 1.0, 1.25)
 end
 
@@ -36,24 +37,24 @@ end
 function UntamedPinMixin:OnMouseEnter()
   local info = self.info
   if not info then return end
-  GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+  GameTooltip:SetOwner(self, L["ANCHOR_RIGHT"])
   if info.service then
     GameTooltip:AddLine(info.name, 1, 0.82, 0)
-    GameTooltip:AddLine(info.service == "S" and "Stable Master" or "Flight Master", 1, 1, 1)
-    GameTooltip:AddLine("Click: navigate here", 0.7, 0.7, 0.7)
+    GameTooltip:AddLine(info.service == "S" and L["Stable Master"] or L["Flight Master"], 1, 1, 1)
+    GameTooltip:AddLine(L["Click: navigate here"], 0.7, 0.7, 0.7)
     GameTooltip:Show()
     return
   end
   local b = info.beast
   GameTooltip:AddLine(b[1], 1, 0.82, 0)
   GameTooltip:AddLine(string.format("Level %s %s", ns.LevelText(b), b[4]), 1, 1, 1)
-  if b[8] then GameTooltip:AddLine("Inside " .. b[8] .. " (entrance shown)", 1, 0.5, 0.25) end
-  if #b[6] > 0 then GameTooltip:AddLine("Teaches: " .. ns.TeachesText(b), 0.67, 0.83, 0.45, true) end
+  if b[8] then GameTooltip:AddLine(L["Inside "] .. b[8] .. " (entrance shown)", 1, 0.5, 0.25) end
+  if #b[6] > 0 then GameTooltip:AddLine(L["Teaches: "] .. ns.TeachesText(b), 0.67, 0.83, 0.45, true) end
   if info.need and #info.need > 0 then
-    GameTooltip:AddLine("Your pet needs: " .. table.concat(info.need, ", "), 0.4, 1, 0.4, true)
+    GameTooltip:AddLine(L["Your pet needs: "] .. table.concat(info.need, ", "), 0.4, 1, 0.4, true)
   end
-  if b[2] > UnitLevel("player") then GameTooltip:AddLine("Too high for you to tame right now", 1, 0.3, 0.3) end
-  GameTooltip:AddLine("Click: navigate here", 0.7, 0.7, 0.7)
+  if b[2] > UnitLevel("player") then GameTooltip:AddLine(L["Too high for you to tame right now"], 1, 0.3, 0.3) end
+  GameTooltip:AddLine(L["Click: navigate here"], 0.7, 0.7, 0.7)
   GameTooltip:Show()
 end
 
@@ -123,7 +124,7 @@ local function RefreshAll(self)
   end
 end
 
-ns.On("LOGIN", function()
+ns.On(L["LOGIN"], function()
   if not WorldMapFrame or not WorldMapFrame.AddDataProvider then return end
   provider = CreateFromMixins(MapCanvasDataProviderMixin)
   provider.RefreshAllData = RefreshAll
@@ -134,7 +135,7 @@ end)
 function ns.Pins_Refresh()
   if provider and provider:GetMap() then provider:RefreshAllData() end
 end
-ns.On("REFRESH", ns.Pins_Refresh)
+ns.On(L["REFRESH"], ns.Pins_Refresh)
 
 function ns.Pins_Clear()
   focus = nil
@@ -158,7 +159,7 @@ end
 
 function ns.OpenMapTo(mapID)
   if not mapID then return end
-  if InCombatLockdown() then ns.Print("Pins set. Open your map after combat.") return end
+  if InCombatLockdown() then ns.Print(L["Pins set. Open your map after combat."]) return end
   if not WorldMapFrame:IsShown() then ToggleWorldMap() end
   WorldMapFrame:SetMapID(mapID)
 end
@@ -168,7 +169,7 @@ function ns.Pins_Focus(npcList, label, openMap)
   for _, id in ipairs(npcList) do focus.npcs[id] = true end
   if openMap then
     local mapID = BestZone(npcList)
-    if mapID then ns.OpenMapTo(mapID) else ns.Print("No known spawn location for " .. label .. ".") end
+    if mapID then ns.OpenMapTo(mapID) else ns.Print(L["No known spawn location for "] .. label .. ".") end
   end
   ns.Refresh()
 end

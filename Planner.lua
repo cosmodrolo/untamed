@@ -1,11 +1,12 @@
 local _, ns = ...
+local L = ns.L
 local C = ns.C
 
 -- Trip planner: for each ability your pet can use, find the best rank its level
 -- allows, pick the closest tameable beast that teaches it (one beast can cover
 -- several), and order the stops by distance with stable and flight masters.
 
-local route = nil   -- { stops = {...}, index = n } while "Start route" is active
+local route = nil   -- { stops = {...}, index = n } while L["Start route"] is active
 
 local function Tameable(npcId, playerLevel)
   local b = ns.Beasts[npcId]
@@ -127,7 +128,7 @@ end
 
 local function GoalsText(goals)
   local t = {}
-  for _, g in ipairs(goals) do t[#t + 1] = g.ability .. " " .. g.rank end
+  for _, g in ipairs(goals) do t[#t + 1] = ns.AbilityLabel(g.ability) .. " " .. g.rank end
   return table.concat(t, ", ")
 end
 
@@ -136,9 +137,9 @@ local function NavigateStop(s)
     local sv = s.service
     ns.Arrow_Set(sv[4], sv[5], sv[6], (s.kind == "stable" and "Stable your pet: " or "Get your pet back: ") .. sv[2])
     if s.kind == "stable" then
-      ns.Print("First stop: stable your pet with " .. sv[2] .. " in " .. ns.ZoneName(sv[4]) .. ". You can only tame with no pet out.")
+      ns.Print(L["First stop: stable your pet with "] .. sv[2] .. " in " .. ns.ZoneName(sv[4]) .. ". You can only tame with no pet out.")
     else
-      ns.Print("Last stop: abandon the tamed beast, then take your pet back from " .. sv[2] .. " in " .. ns.ZoneName(sv[4]) .. ".")
+      ns.Print(L["Last stop: abandon the tamed beast, then take your pet back from "] .. sv[2] .. " in " .. ns.ZoneName(sv[4]) .. ".")
     end
     return
   end
@@ -155,7 +156,7 @@ local function Advance(msg)
     if msg then ns.Print(msg) end
     NavigateStop(nxt)
   else
-    ns.Print("Route complete! Teach your pet its new ranks at Beast Training.")
+    ns.Print(L["Route complete! Teach your pet its new ranks at Beast Training."])
     route = nil
     ns.Arrow_Clear()
   end
@@ -163,17 +164,17 @@ local function Advance(msg)
 end
 
 local function StartRoute(trip)
-  if #trip.route == 0 then ns.Print("Nothing to travel for right now.") return end
+  if #trip.route == 0 then ns.Print(L["Nothing to travel for right now."]) return end
   route = { stops = trip.route, index = 1 }
   NavigateStop(route.stops[1])
-  ns.Print("Route started: " .. #route.stops .. " stops. It moves on by itself as you go.")
+  ns.Print(L["Route started: "] .. #route.stops .. " stops. It moves on by itself as you go.")
 end
 
 function ns.Route_Next()
-  if route then Advance("Skipped to the next stop.") else ns.Print("No route running. Start one from the Planner tab.") end
+  if route then Advance(L["Skipped to the next stop."]) else ns.Print(L["No route running. Start one from the Planner tab."]) end
 end
 
-ns.On("LEARNED", function(ability, rank)
+ns.On(L["LEARNED"], function(ability, rank)
   if not route then return end
   local s = route.stops[route.index]
   if not s or s.kind ~= "beast" then return end
@@ -183,20 +184,20 @@ ns.On("LEARNED", function(ability, rank)
   for _, g in ipairs(s.goals) do if not g.done then return end end
   local nxt = route.stops[route.index + 1]
   if nxt and nxt.kind == "beast" then
-    Advance("Learned it! Abandon the tamed beast (right-click its portrait), then head to " .. ns.Beasts[nxt.npcId][1] .. ".")
+    Advance(L["Learned it! Abandon the tamed beast (right-click its portrait), then head to "] .. ns.Beasts[nxt.npcId][1] .. ".")
   else
-    Advance("Learned it!")
+    Advance(L["Learned it!"])
   end
 end)
 
 -- Stable steps finish when you close the stable window in the right state.
-ns.On("STABLE_CLOSED", function()
+ns.On(L["STABLE_CLOSED"], function()
   if not route then return end
   local s = route.stops[route.index]
   if not s then return end
   if s.kind == "stable" and not UnitExists("pet") then
     ns.cdb.hasActivePet = false
-    Advance("Pet stabled. On to the first beast!")
+    Advance(L["Pet stabled. On to the first beast!"])
   elseif s.kind == "return" and UnitExists("pet") then
     Advance(nil)
   end
@@ -208,18 +209,18 @@ end)
 local list, lastTrip
 
 local function Build(panel)
-  ns.MakeButton(panel, "Start Route", 110, function() if lastTrip then StartRoute(lastTrip) end end):SetPoint("TOPLEFT", 4, -2)
-  ns.MakeButton(panel, "Pin All Stops", 110, function()
+  ns.MakeButton(panel, L["Start Route"], 110, function() if lastTrip then StartRoute(lastTrip) end end):SetPoint(L["TOPLEFT"], 4, -2)
+  ns.MakeButton(panel, L["Pin All Stops"], 110, function()
     if not lastTrip then return end
     local ids = {}
     for _, s in ipairs(lastTrip.stops) do ids[#ids + 1] = s.npcId end
-    if #ids > 0 then ns.Pins_Focus(ids, "Trip planner stops", true) end
-  end):SetPoint("TOPLEFT", 118, -2)
-  ns.MakeButton(panel, "Next Stop", 90, function() ns.Route_Next() end):SetPoint("TOPLEFT", 232, -2)
-  ns.MakeButton(panel, "Stop Route", 90, function() route = nil; ns.Arrow_Clear(); ns.Refresh() end):SetPoint("TOPLEFT", 326, -2)
-  ns.MakeCheck(panel, "Plan for my level", 424, -2,
+    if #ids > 0 then ns.Pins_Focus(ids, L["Trip planner stops"], true) end
+  end):SetPoint(L["TOPLEFT"], 118, -2)
+  ns.MakeButton(panel, L["Next Stop"], 90, function() ns.Route_Next() end):SetPoint(L["TOPLEFT"], 232, -2)
+  ns.MakeButton(panel, L["Stop Route"], 90, function() route = nil; ns.Arrow_Clear(); ns.Refresh() end):SetPoint(L["TOPLEFT"], 326, -2)
+  ns.MakeCheck(panel, L["Plan for my level"], 424, -2,
     function() return ns.db.planForPlayerLevel end, function(v) ns.db.planForPlayerLevel = v end,
-    "Plan ranks for your own level instead of your pet's current level (your pet will level up to use them).")
+    L["Plan ranks for your own level instead of your pet's current level (your pet will level up to use them)."])
   list = ns.NewList(panel, 30)
 end
 
@@ -239,9 +240,9 @@ local function Refresh(panel, t)
     string.format("%s%d stop%s|r", C.WHITE, #trip.stops, #trip.stops == 1 and "" or "s"))
   add(14, nil, string.format("Training points needed: about %d%s", trip.tpNeed,
     tpFree and string.format("   (%s%d free now|r)", tpFree >= trip.tpNeed and C.GREEN or C.ORANGE, tpFree) or ""), "", nil,
-    { "Training points", "Estimated from rank costs. Your pet earns more training points as it levels and as its loyalty grows." })
+    { L["Training points"], L["Estimated from rank costs. Your pet earns more training points as it levels and as its loyalty grows."] })
   add(14, nil, C.GREY .. "The route stables your pet first, then each beast, then brings you back for your pet.|r", "", nil,
-    { "How taming for abilities works", "You can only have one pet out. Stable your pet at a stable master (or keep a free stable slot), tame the beast, fight with it until you see \"You have learned a new ability\", then abandon it and get your pet back. Teach the new rank at Beast Training." })
+    { L["How taming for abilities works"], "You can only have one pet out. Stable your pet at a stable master (or keep a free stable slot), tame the beast, fight with it until you see \"You have learned a new ability\", then abandon it and get your pet back. Teach the new rank at Beast Training." })
 
   if #trip.teach > 0 then
     add(0, nil, C.GOLD .. "Teach now at Beast Training|r")
@@ -268,8 +269,8 @@ local function Refresh(panel, t)
           function() NavigateStop(s) end,
           { label, sv[2] .. " (Stable Master), " .. ns.ZoneName(sv[4]) .. string.format(" %.0f, %.0f", sv[5], sv[6]),
             s.kind == "stable" and "You can't tame while you have a pet, even a dismissed one. This stable master is the best stop on the way to your first beast."
-              or "When you're done learning, abandon the last tamed beast and collect your pet here.",
-            "Click for an arrow." })
+              or L["When you're done learning, abandon the last tamed beast and collect your pet here."],
+            L["Click for an arrow."] })
         if s.dist then add(26, nil, C.GREY .. ns.FormatDistance(s.dist) .. " from you|r", "") end
       else
         local b = ns.Beasts[s.npcId]
@@ -278,13 +279,13 @@ local function Refresh(panel, t)
           C.HUNTER .. GoalsText(s.goals) .. "|r",
           function(_, button)
             if button == "RightButton" then ns.Pins_Focus({ s.npcId }, b[1], true) else NavigateStop(s) end
-          end, ns.BeastTooltip(s.npcId, { C.HUNTER .. "For your pet: " .. GoalsText(s.goals) .. "|r" }))
+          end, ns.BeastTooltip(s.npcId, { C.HUNTER .. L["For your pet: "] .. GoalsText(s.goals) .. "|r" }))
         add(26, nil, C.GREY .. (s.mapID and ns.ZoneName(s.mapID) .. string.format(" %.0f, %.0f", s.x, s.y) or "location unknown") .. "|r",
           C.GREY .. (s.dist and ns.FormatDistance(s.dist) or "") .. "|r")
         if s.flight then
-          add(26, ns.Icon("Ability_Mount_Gryphon_01"), C.BLUE .. "Fly: " .. s.flight[2] .. ", " .. ns.ZoneName(s.flight[4]) .. "|r",
-            C.GREY .. ns.FormatDistance(s.flightD) .. "|r", function() ns.Arrow_Set(s.flight[4], s.flight[5], s.flight[6], "Flight: " .. s.flight[2]) end,
-            { "Nearest flight master", "Closest flight master to this beast for your faction. Click for an arrow." })
+          add(26, ns.Icon("Ability_Mount_Gryphon_01"), C.BLUE .. L["Fly: "] .. s.flight[2] .. ", " .. ns.ZoneName(s.flight[4]) .. "|r",
+            C.GREY .. ns.FormatDistance(s.flightD) .. "|r", function() ns.Arrow_Set(s.flight[4], s.flight[5], s.flight[6], L["Flight: "] .. s.flight[2]) end,
+            { L["Nearest flight master"], L["Closest flight master to this beast for your faction. Click for an arrow."] })
         end
       end
     end
@@ -293,7 +294,7 @@ local function Refresh(panel, t)
   end
 
   if #trip.skipped > 0 then
-    add(0, nil, C.ORANGE .. "No tameable beast yet for: " .. table.concat(trip.skipped, ", ") .. "|r")
+    add(0, nil, C.ORANGE .. L["No tameable beast yet for: "] .. table.concat(trip.skipped, ", ") .. "|r")
   end
 
   add(0, nil, C.GOLD .. "Abilities in this plan|r", C.GREY .. "click to include or skip|r")
@@ -308,4 +309,4 @@ local function Refresh(panel, t)
   list:Set(rows)
 end
 
-ns.RegisterTab("plan", "Planner", Build, Refresh)
+ns.RegisterTab("plan", L["Planner"], Build, Refresh)

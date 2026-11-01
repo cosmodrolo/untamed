@@ -1,4 +1,5 @@
 local _, ns = ...
+local L = ns.L
 local C = ns.C
 
 ---------------------------------------------------------------------------
@@ -8,7 +9,7 @@ do
   local list, feedBtn
   local function Build(panel)
     feedBtn = ns.CreateFeedButton(panel, "UntamedTabFeedButton", 220, 22)
-    feedBtn:SetPoint("TOPLEFT", 4, -2)
+    feedBtn:SetPoint(L["TOPLEFT"], 4, -2)
     list = ns.NewList(panel, 30)
   end
   local function Refresh()
@@ -22,7 +23,7 @@ do
     end
     add(0, ns.Icon("Ability_Hunter_BeastTraining"), C.GOLD .. "Happiness|r", info.happyText ..
       (info.damage and (C.GREY .. "  (" .. info.damage .. "% damage)|r") or ""), nil,
-      { "Happiness", "Happy pets deal 125% damage, content 100%, unhappy 75%. Unhappy pets lose loyalty and can run away." })
+      { L["Happiness"], "Happy pets deal 125% damage, content 100%, unhappy 75%. Unhappy pets lose loyalty and can run away." })
     if info.loyalty then add(0, nil, C.GOLD .. "Loyalty|r", C.WHITE .. info.loyalty .. "|r") end
     if info.xp and info.nextXP and info.nextXP > 0 then
       add(0, nil, C.GOLD .. "Experience|r", string.format("%s%d / %d (%d%%)|r", C.WHITE, info.xp, info.nextXP, info.xp * 100 / info.nextXP))
@@ -45,8 +46,8 @@ do
       else
         local zones, lo = ns.LevelingZones(petLevel, playerLevel)
         add(0, nil, C.GOLD .. "Where to level your pet|r", C.GREY .. "mobs level " .. lo .. "+ give it XP|r", nil,
-          { "Pet experience", "Pets only gain experience from mobs that aren't grey to them, and never above your own level.",
-            "Zones are listed by how well their mobs fit your pet's level." })
+          { L["Pet experience"], L["Pets only gain experience from mobs that aren't grey to them, and never above your own level."],
+            L["Zones are listed by how well their mobs fit your pet's level."] })
         for i = 1, math.min(5, #zones) do
           local z = zones[i]
           add(14, nil, C.WHITE .. ns.ZoneName(z.mapID) .. "|r", C.GREY .. "mobs " .. z.min .. "-" .. z.max .. "|r")
@@ -55,7 +56,7 @@ do
     end
     list:Set(rows)
   end
-  ns.RegisterTab("care", "Pet Care", Build, Refresh)
+  ns.RegisterTab("care", L["Pet Care"], Build, Refresh)
 end
 
 ---------------------------------------------------------------------------
@@ -75,8 +76,8 @@ end
 
 function ns.ImportObserved(text)
   local entries = { strsplit(";", text or "") }
-  if entries[1] ~= "UNTAMED-DATA1" then ns.Print("That doesn't look like Untamed tame data.") return end
-  if entries[2] ~= ns.FLAVOR then ns.Print("That data is for " .. tostring(entries[2]) .. ", not this game version.") return end
+  if entries[1] ~= "UNTAMED-DATA1" then ns.Print(L["That doesn't look like Untamed tame data."]) return end
+  if entries[2] ~= ns.FLAVOR then ns.Print(L["That data is for "] .. tostring(entries[2]) .. ", not this game version.") return end
   local n = 0
   for i = 3, #entries do
     local head, body = entries[i]:match("^([^:]*):(.*)$")
@@ -92,7 +93,7 @@ function ns.ImportObserved(text)
       end
     end
   end
-  ns.Print("Imported " .. n .. " recorded beasts. /reload to merge them into the lists.")
+  ns.Print(L["Imported "] .. n .. " recorded beasts. /reload to merge them into the lists.")
 end
 
 ---------------------------------------------------------------------------
@@ -105,55 +106,55 @@ local function BuildSettings(panel, top)
     ns.MakeCheck(panel, label, x, y, function() return ns.db[key] end, function(v) ns.db[key] = v end, tip)
     y = y - 24
   end
-  check("Zone alerts in chat", "zoneAlerts", "Print a message when you enter a zone with beasts that teach your pet something new.")
-  check("World map: pins for every beast my pet needs", "autoPins")
-  check("Minimap: pins for nearby beasts my pet needs", "minimapPins")
-  check("Tooltips: show what a beast teaches", "tooltipInfo")
-  check("Alert when I target a beast my pet needs", "targetAlert")
-  check("Alert when a rare tameable beast is nearby", "rareAlert", "Watches nameplates, your target and mouseover. Turn on enemy nameplates to spot rares from further away.")
-  check("Play a sound with alerts", "targetSound")
-  check("Feed reminder and pop-up Feed button", "feedReminder")
-  check("Low ammo warning", "ammoWarning", "Warns below 200 arrows or bullets and points you to the nearest ammo vendor.")
-  check("New spell ranks reminder on level up", "trainerReminder")
-  check("Mend Pet and Revive Pet alerts", "petHealthAlerts")
-  check("Hide ranks above my pet's level", "hideTooHigh")
-  check("Show minimap button", "showMinimap")
+  check(L["Zone alerts in chat"], "zoneAlerts", L["Print a message when you enter a zone with beasts that teach your pet something new."])
+  check(L["World map: pins for every beast my pet needs"], "autoPins")
+  check(L["Minimap: pins for nearby beasts my pet needs"], "minimapPins")
+  check(L["Tooltips: show what a beast teaches"], "tooltipInfo")
+  check(L["Alert when I target a beast my pet needs"], "targetAlert")
+  check(L["Alert when a rare tameable beast is nearby"], "rareAlert", L["Watches nameplates, your target and mouseover. Turn on enemy nameplates to spot rares from further away."])
+  check(L["Play a sound with alerts"], "targetSound")
+  check(L["Feed reminder and pop-up Feed button"], "feedReminder")
+  check(L["Low ammo warning"], "ammoWarning", L["Warns below 200 arrows or bullets and points you to the nearest ammo vendor."])
+  check(L["New spell ranks reminder on level up"], "trainerReminder")
+  check(L["Mend Pet and Revive Pet alerts"], "petHealthAlerts")
+  check(L["Hide ranks above my pet's level"], "hideTooHigh")
+  check(L["Show minimap button"], "showMinimap")
   y = y - 8
-  local exp = ns.MakeButton(panel, "Export my tame data", 160, function()
+  local exp = ns.MakeButton(panel, L["Export my tame data"], 160, function()
     local text, n = ns.ExportObserved()
-    ns.TextPopup("Export tame data (" .. n .. " beasts)", text)
+    ns.TextPopup(L["Export tame data ("] .. n .. " beasts)", text)
   end)
-  exp:SetPoint("TOPLEFT", 12, y)
-  local imp = ns.MakeButton(panel, "Import tame data", 160, function()
-    ns.TextPopup("Import tame data", "", ns.ImportObserved)
+  exp:SetPoint(L["TOPLEFT"], 12, y)
+  local imp = ns.MakeButton(panel, L["Import tame data"], 160, function()
+    ns.TextPopup(L["Import tame data"], "", ns.ImportObserved)
   end)
-  imp:SetPoint("LEFT", exp, "RIGHT", 6, 0)
+  imp:SetPoint(L["LEFT"], exp, L["RIGHT"], 6, 0)
   y = y - 30
-  local note = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  note:SetPoint("TOPLEFT", 12, y)
-  note:SetPoint("RIGHT", panel, "RIGHT", -12, 0)
-  note:SetJustifyH("LEFT")
-  note:SetText(C.GREY .. "When you tame a beast, Untamed records the abilities it really had. Export that data to share corrections." ..
+  local note = panel:CreateFontString(nil, L["OVERLAY"], L["GameFontHighlightSmall"])
+  note:SetPoint(L["TOPLEFT"], 12, y)
+  note:SetPoint(L["RIGHT"], panel, L["RIGHT"], -12, 0)
+  note:SetJustifyH(L["LEFT"])
+  note:SetText(C.GREY .. L["When you tame a beast, Untamed records the abilities it really had. Export that data to share corrections."] ..
     (ns.FLAVOR == "forever" and " This matters most on Forever, where public data is still incomplete." or "") ..
     "\nKey bindings: Options > Keybindings > AddOns > Untamed.   Type /untamed help for slash commands.|r")
 end
 ns.BuildSettings = BuildSettings
 
-ns.RegisterTab("settings", "Settings", function(panel) BuildSettings(panel) end, function() end)
-ns.On("REFRESH", function() ns.Fire("MINIMAP_TOGGLE") end)
+ns.RegisterTab("settings", L["Settings"], function(panel) BuildSettings(panel) end, function() end)
+ns.On(L["REFRESH"], function() ns.Fire(L["MINIMAP_TOGGLE"]) end)
 
 -- Game options panel
-ns.On("LOGIN", function()
+ns.On(L["LOGIN"], function()
   local panel = CreateFrame("Frame")
-  panel.name = "Untamed"
-  local title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-  title:SetPoint("TOPLEFT", 16, -16)
+  panel.name = L["Untamed"]
+  local title = panel:CreateFontString(nil, L["OVERLAY"], L["GameFontNormalLarge"])
+  title:SetPoint(L["TOPLEFT"], 16, -16)
   title:SetText("|cffabd473Untamed|r  The hunter's companion")
-  local open = ns.MakeButton(panel, "Open Untamed", 140, function() ns.UI_Show() end)
-  open:SetPoint("TOPLEFT", 16, -44)
+  local open = ns.MakeButton(panel, L["Open Untamed"], 140, function() ns.UI_Show() end)
+  open:SetPoint(L["TOPLEFT"], 16, -44)
   BuildSettings(panel, -76)
   if Settings and Settings.RegisterCanvasLayoutCategory then
-    local cat = Settings.RegisterCanvasLayoutCategory(panel, "Untamed")
+    local cat = Settings.RegisterCanvasLayoutCategory(panel, L["Untamed"])
     Settings.RegisterAddOnCategory(cat)
     ns.settingsCategory = cat
   elseif InterfaceOptions_AddCategory then
@@ -164,35 +165,35 @@ end)
 ---------------------------------------------------------------------------
 -- Data broker launcher (button collectors and LibDBIcon, when present)
 ---------------------------------------------------------------------------
-ns.On("LOGIN", function()
+ns.On(L["LOGIN"], function()
   local LDB = LibStub and LibStub("LibDataBroker-1.1", true)
   if not LDB then return end
-  local launcher = LDB:NewDataObject("Untamed", {
-    type = "launcher", text = "Untamed", icon = "Interface\\AddOns\\Untamed\\Media\\Icon",
+  local launcher = LDB:NewDataObject(L["Untamed"], {
+    type = "launcher", text = L["Untamed"], icon = "Interface\\AddOns\\Untamed\\Media\\Icon",
     OnClick = function(_, button) if button == "RightButton" then ns.ZoneAlert(true) else ns.UI_Toggle() end end,
     OnTooltipShow = function(tt)
       tt:AddLine("|cffabd473Untamed|r")
-      tt:AddLine("Left-click: open window", 1, 1, 1)
-      tt:AddLine("Right-click: check this zone", 1, 1, 1)
+      tt:AddLine(L["Left-click: open window"], 1, 1, 1)
+      tt:AddLine(L["Right-click: check this zone"], 1, 1, 1)
     end,
   })
   local icon = LibStub("LibDBIcon-1.0", true)
   if icon then
     ns.db.ldbIcon = ns.db.ldbIcon or { hide = not ns.db.showMinimap }
-    icon:Register("Untamed", launcher, ns.db.ldbIcon)
+    icon:Register(L["Untamed"], launcher, ns.db.ldbIcon)
     ns.usingLDBIcon = true
-    ns.Fire("MINIMAP_TOGGLE")
+    ns.Fire(L["MINIMAP_TOGGLE"])
   end
 end)
 
 ---------------------------------------------------------------------------
 -- Key bindings (Bindings.xml)
 ---------------------------------------------------------------------------
-BINDING_HEADER_UNTAMED = "Untamed"
-BINDING_NAME_UNTAMED_TOGGLE = "Open or close the window"
-BINDING_NAME_UNTAMED_NEXT = "Next route stop"
-BINDING_NAME_UNTAMED_CLEAR = "Clear the arrow and map focus"
-BINDING_NAME_UNTAMED_ZONE = "Check this zone"
+BINDING_HEADER_UNTAMED = L["Untamed"]
+BINDING_NAME_UNTAMED_TOGGLE = L["Open or close the window"]
+BINDING_NAME_UNTAMED_NEXT = L["Next route stop"]
+BINDING_NAME_UNTAMED_CLEAR = L["Clear the arrow and map focus"]
+BINDING_NAME_UNTAMED_ZONE = L["Check this zone"]
 function Untamed_Toggle() ns.UI_Toggle() end
 function Untamed_NextStop() ns.Route_Next() end
 function Untamed_Clear() ns.Pins_Clear(); ns.Arrow_Clear() end

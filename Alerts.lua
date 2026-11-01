@@ -1,4 +1,5 @@
 local _, ns = ...
+local L = ns.L
 
 -- Adds pet-skill info to beast tooltips and alerts you when you target a beast your pet needs.
 
@@ -29,7 +30,7 @@ local function AddUnitLines(tooltip, unit)
   tooltip:Show()
 end
 
-ns.On("LOGIN", function()
+ns.On(L["LOGIN"], function()
   local okScript, hasScript = pcall(GameTooltip.HasScript, GameTooltip, "OnTooltipSetUnit")
   if okScript and hasScript then
     GameTooltip:HookScript("OnTooltipSetUnit", function(self)
@@ -63,7 +64,7 @@ ev:SetScript("OnEvent", function()
   if b[2] > UnitLevel("player") then return end
   local msg = b[1] .. " teaches " .. table.concat(need, ", ") .. " for your pet!"
   if RaidNotice_AddMessage and RaidWarningFrame then
-    RaidNotice_AddMessage(RaidWarningFrame, msg, ChatTypeInfo and ChatTypeInfo["RAID_WARNING"] or { r = 1, g = 0.82, b = 0 })
+    RaidNotice_AddMessage(RaidWarningFrame, msg, ChatTypeInfo and ChatTypeInfo[L["RAID_WARNING"]] or { r = 1, g = 0.82, b = 0 })
   else
     UIErrorsFrame:AddMessage(msg, 0.67, 0.83, 0.45)
   end

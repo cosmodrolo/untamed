@@ -8,6 +8,7 @@ externals:
 
 ignore:
   - tools
+  - Locales/README.md
   - tests
   - README.md
   - CHANGELOG.md

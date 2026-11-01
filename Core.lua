@@ -1,4 +1,5 @@
 local ADDON, ns = ...
+local L = ns.L
 
 local PREFIX = "|cffabd473Untamed|r: "
 function ns.Print(msg) DEFAULT_CHAT_FRAME:AddMessage(PREFIX .. msg) end
@@ -129,7 +130,7 @@ end
 
 function ns.TeachesText(b)
   local parts = {}
-  for i = 1, #b[6], 2 do parts[#parts + 1] = b[6][i] .. " " .. b[6][i + 1] end
+  for i = 1, #b[6], 2 do parts[#parts + 1] = (ns.AbilityLabel and ns.AbilityLabel(b[6][i]) or b[6][i]) .. " " .. b[6][i + 1] end
   return table.concat(parts, ", ")
 end
 
@@ -305,7 +306,7 @@ function ns.ZoneAlert(force)
   if not ns.db.zoneAlerts and not force then return end
   local t = ns.Target()
   if not t then
-    if force then ns.Print("No pet out. Summon your pet or pick a family with /untamed.") end
+    if force then ns.Print(L["No pet out. Summon your pet or pick a family with /untamed."]) end
     return
   end
   local mapID = C_Map.GetBestMapForUnit("player")
@@ -333,13 +334,13 @@ function ns.ZoneAlert(force)
   if not force and lastAlert[mapID] == sig then return end
   lastAlert[mapID] = sig
   if #found == 0 then
-    if force then ns.Print("Nothing new for your " .. t.family .. " to learn from beasts in this zone.") end
+    if force then ns.Print(L["Nothing new for your "] .. t.family .. " to learn from beasts in this zone.") end
     return
   end
   local shown = {}
   for i = 1, math.min(4, #found) do shown[i] = found[i] end
   local more = #found > 4 and string.format(" and %d more", #found - 4) or ""
-  ns.Print("New pet skills in this zone: " .. table.concat(shown, ", ") .. more .. ". Type /untamed to see them.")
+  ns.Print(L["New pet skills in this zone: "] .. table.concat(shown, ", ") .. more .. ". Type /untamed to see them.")
 end
 
 ---------------------------------------------------------------------------
@@ -364,7 +365,7 @@ local function RecordTamedPet()
   ns.BuildIndex()
   local list = {}
   for a, r in pairs(spells) do list[#list + 1] = a .. " " .. r end
-  if #list > 0 then ns.Print("Recorded " .. p.name .. ": " .. table.concat(list, ", ") .. ".") end
+  if #list > 0 then ns.Print(L["Recorded "] .. p.name .. ": " .. table.concat(list, ", ") .. ".") end
   ns.Refresh()
 end
 
@@ -376,7 +377,7 @@ function ns.On(event, fn) ns.callbacks[event] = ns.callbacks[event] or {}; table
 function ns.Fire(event, ...) for _, fn in ipairs(ns.callbacks[event] or {}) do fn(...) end end
 
 function ns.Refresh()
-  ns.Fire("REFRESH")
+  ns.Fire(L["REFRESH"])
 end
 
 local learnPatterns = {}
@@ -395,16 +396,16 @@ ev:SetScript("OnEvent", function(self, event, arg1, arg2, arg3, arg4)
   elseif event == "PLAYER_LOGIN" then
     AddLearnPattern(ERR_LEARN_SPELL_S)
     AddLearnPattern(ERR_LEARN_ABILITY_S)
-    for _, e in ipairs({ "UNIT_PET", "PET_BAR_UPDATE", "SPELLS_CHANGED", "UNIT_LEVEL", "ZONE_CHANGED_NEW_AREA",
-      "PLAYER_ENTERING_WORLD", "CHAT_MSG_SYSTEM", "UNIT_SPELLCAST_SUCCEEDED", "UNIT_SPELLCAST_START",
-      "UNIT_HAPPINESS", "UNIT_PET_TRAINING_POINTS", "BAG_UPDATE_DELAYED", "PLAYER_REGEN_ENABLED" }) do
+    for _, e in ipairs({ L["UNIT_PET"], L["PET_BAR_UPDATE"], L["SPELLS_CHANGED"], L["UNIT_LEVEL"], L["ZONE_CHANGED_NEW_AREA"],
+      L["PLAYER_ENTERING_WORLD"], L["CHAT_MSG_SYSTEM"], L["UNIT_SPELLCAST_SUCCEEDED"], L["UNIT_SPELLCAST_START"],
+      L["UNIT_HAPPINESS"], L["UNIT_PET_TRAINING_POINTS"], L["BAG_UPDATE_DELAYED"], L["PLAYER_REGEN_ENABLED"] }) do
       pcall(self.RegisterEvent, self, e)
     end
     pcall(self.RegisterEvent, self, "CRAFT_SHOW")
     pcall(self.RegisterEvent, self, "CRAFT_UPDATE")
     pcall(self.RegisterEvent, self, "TRAINER_SHOW")
     pcall(self.RegisterEvent, self, "TRAINER_UPDATE")
-    ns.Fire("LOGIN")
+    ns.Fire(L["LOGIN"])
   elseif event == "CRAFT_SHOW" or event == "CRAFT_UPDATE" then
     ns.ScanBeastTraining()
   elseif event == "TRAINER_SHOW" or event == "TRAINER_UPDATE" then
@@ -438,7 +439,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, arg2, arg3, arg4)
         if name and ns.AbilityFamilies[name] then
           ns.cdb.known[name] = ns.cdb.known[name] or {}
           ns.cdb.known[name][tonumber(r)] = true
-          ns.Fire("LEARNED", name, tonumber(r))
+          ns.Fire(L["LEARNED"], name, tonumber(r))
           ns.Refresh()
         end
       end
@@ -464,22 +465,22 @@ SlashCmdList.UNTAMED = function(msg)
     ns.ZoneAlert(true)
   elseif msg == "alerts" then
     ns.db.zoneAlerts = not ns.db.zoneAlerts
-    ns.Print("Zone alerts " .. (ns.db.zoneAlerts and "on." or "off."))
+    ns.Print(L["Zone alerts "] .. (ns.db.zoneAlerts and "on." or "off."))
     ns.Refresh()
   elseif msg == "clear" then
     if ns.Pins_Clear then ns.Pins_Clear() end
     if ns.Arrow_Clear then ns.Arrow_Clear() end
   elseif msg == "minimap" then
     ns.db.showMinimap = not ns.db.showMinimap
-    ns.Fire("MINIMAP_TOGGLE")
+    ns.Fire(L["MINIMAP_TOGGLE"])
   elseif msg == "ammo" then
-    ns.NavigateService("A", "Ammo vendor")
+    ns.NavigateService("A", L["Ammo vendor"])
   elseif msg == "trainer" then
-    ns.NavigateService("T", "Hunter trainer")
+    ns.NavigateService("T", L["Hunter trainer"])
   elseif msg == "pettrainer" then
-    ns.NavigateService("P", "Pet trainer")
+    ns.NavigateService("P", L["Pet trainer"])
   elseif msg == "stable" then
-    ns.NavigateService("S", "Stable master")
+    ns.NavigateService("S", L["Stable master"])
   elseif msg == "rare" then
     ns.NavigateLastRare()
   elseif msg == "next" then

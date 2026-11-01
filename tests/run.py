@@ -13,6 +13,7 @@ CASES = [
     ("Untamed_Forever.toc", ["mock.lua", "mock_forever.lua"], "scenario_forever.lua"),
     ("Untamed_Vanilla.toc", ["mock.lua"], "scenario_features.lua"),
     ("Untamed_Forever.toc", ["mock.lua", "mock_forever.lua"], "scenario_features.lua"),
+    ("Untamed_Vanilla.toc", ["mock.lua", "mock_deDE.lua"], "scenario_locale.lua"),
 ]
 
 def run(toc, mocks, scenario):

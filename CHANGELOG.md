@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.3.0
+- New Find a Pet tab: pick Tank, Damage, Leveling, PvP or Utility and get the best families for it (from Classic family stat bonuses and abilities), the best beasts of each family you can tame now (fastest attack, highest level, closest), and a one-click starting build.
+- Beast, stable master, flight master, vendor and trainer names now show in your game language (9 languages, from QuestieDB).
+- Ability and family names show in your game language, and family names are matched through the game itself so every language works.
+- Translation framework: all window text can be translated on CurseForge.
+
 ## v2.2.0
 - Trip planner now starts at the best stable master when you have a pet out and ends by bringing you back for it. The route moves on by itself when you stable your pet and when you learn each ability. New Next Stop button and key binding.
 - Stable manager: remembers every pet you own and shows which ranks you already know that each can use. Click a pet to plan for it.

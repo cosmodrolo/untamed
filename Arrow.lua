@@ -1,4 +1,5 @@
 local _, ns = ...
+local L = ns.L
 
 -- On-screen navigation arrow. Drag to move, right-click to stop.
 local frame, arrow, title, dist
@@ -8,11 +9,11 @@ local ARRIVE = 25
 local function Create()
   frame = CreateFrame("Button", "UntamedArrow", UIParent)
   frame:SetSize(120, 92)
-  frame:SetFrameStrata("MEDIUM")
+  frame:SetFrameStrata(L["MEDIUM"])
   frame:SetMovable(true)
   frame:SetClampedToScreen(true)
-  frame:RegisterForDrag("LeftButton")
-  frame:RegisterForClicks("RightButtonUp")
+  frame:RegisterForDrag(L["LeftButton"])
+  frame:RegisterForClicks(L["RightButtonUp"])
   frame:SetScript("OnDragStart", frame.StartMoving)
   frame:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
@@ -24,24 +25,24 @@ local function Create()
   if pos then frame:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else frame:SetPoint("TOP", 0, -160) end
   frame:SetScale(ns.db.arrowScale or 1)
 
-  arrow = frame:CreateTexture(nil, "ARTWORK")
+  arrow = frame:CreateTexture(nil, L["ARTWORK"])
   arrow:SetSize(56, 56)
   arrow:SetPoint("TOP", 0, 0)
   arrow:SetTexture(ns.FLAVOR == "forever" and "Interface\\Minimap\\MinimapArrow" or "Interface\\WorldMap\\WorldMapArrow")
   arrow:SetVertexColor(0.67, 0.83, 0.45)
 
-  title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  title:SetPoint("TOP", arrow, "BOTTOM", 0, 0)
+  title = frame:CreateFontString(nil, L["OVERLAY"], L["GameFontNormal"])
+  title:SetPoint("TOP", arrow, L["BOTTOM"], 0, 0)
   title:SetWidth(220)
-  dist = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  dist:SetPoint("TOP", title, "BOTTOM", 0, -2)
+  dist = frame:CreateFontString(nil, L["OVERLAY"], L["GameFontHighlightSmall"])
+  dist:SetPoint("TOP", title, L["BOTTOM"], 0, -2)
   dist:SetWidth(220)
 
   frame:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-    GameTooltip:AddLine("Untamed arrow", 1, 0.82, 0)
+    GameTooltip:SetOwner(self, L["ANCHOR_BOTTOM"])
+    GameTooltip:AddLine(L["Untamed arrow"], 1, 0.82, 0)
     if target then GameTooltip:AddLine(target.label, 1, 1, 1, true) end
-    GameTooltip:AddLine("Drag to move. Right-click to stop.", 0.7, 0.7, 0.7)
+    GameTooltip:AddLine(L["Drag to move. Right-click to stop."], 0.7, 0.7, 0.7)
     GameTooltip:Show()
   end)
   frame:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -67,7 +68,7 @@ local function Create()
       if not target.arrived then
         target.arrived = true
         PlaySound(SOUNDKIT and SOUNDKIT.MAP_PING or 3175)
-        ns.Fire("ARROW_ARRIVED", target)
+        ns.Fire(L["ARROW_ARRIVED"], target)
       end
       return
     end
@@ -86,7 +87,7 @@ function ns.Arrow_Set(mapID, x, y, label, npcId)
   if not frame then Create() end
   local c, e, n = ns.ToWorld(mapID, x, y)
   if not c then
-    ns.Print("Can't navigate there (no map position). Map pins still show it.")
+    ns.Print(L["Can't navigate there (no map position). Map pins still show it."])
     return
   end
   target = { mapID = mapID, x = x, y = y, label = label, npcId = npcId, cont = c, east = e, north = n }
@@ -102,7 +103,7 @@ function ns.Navigate(npcId)
   if not mapID or not x then
     local zone = next(b[7])
     ns.Print(zone and (b[1] .. " is somewhere in " .. (ns.ZoneName(zone)) .. ". Exact spots aren't known yet.")
-      or ("No known location for " .. b[1] .. "."))
+      or (L["No known location for "] .. b[1] .. "."))
     return
   end
   local label = b[1] .. (b[8] and (" (inside " .. b[8] .. ")") or "")
