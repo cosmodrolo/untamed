@@ -134,19 +134,19 @@ local function Refresh()
     add(0, nil, C.ORANGE .. L["Forever reworked pet stats, so these picks are based on family abilities only."] .. "|r", "")
   end
   local ranked = ns.RankFamilies(role)
-  add(0, nil, C.GOLD .. string.format(L["Best families for %s"], roleLabel) .. "|r",
+  add(0, nil, C.GREY .. string.format(L["Best families for %s"], roleLabel) .. "|r",
     C.GREY .. L["click a beast for an arrow"] .. "|r")
   for i = 1, math.min(4, #ranked) do
     local f = ranked[i]
     add(0, ns.Icon(ns.FamilyIcons[f.family] or "Ability_Hunter_BeastTaming"),
-      string.format("%s%d. %s|r", i == 1 and C.GREEN or C.WHITE, i, ns.FamilyLabel(f.family)), C.GREY .. table.concat(f.reasons, "  |  ") .. "|r",
+      string.format("%s%d. %s|r", i == 1 and C.GREEN or C.GOLD, i, ns.FamilyLabel(f.family)), C.GREY .. table.concat(f.reasons, "  |  ") .. "|r",
       function()
         ns.state.mode = "manual"; ns.state.family = f.family
         ns.cdb.builds = ns.cdb.builds or {}
         ns.Print(string.format(L["Planning for a %s. The Abilities, Planner and Builds tabs now show it."], f.family))
         ns.Refresh()
       end,
-      { ns.FamilyLabel(f.family), table.concat(f.reasons, "\n"), L["Click to plan for this family."] })
+      { ns.FamilyLabel(f.family), table.concat(f.reasons, "\n"), L["Click to plan for this family."] }, { header = true })
     local beasts = ns.BestBeasts(f.family, role, 3)
     if #beasts == 0 then
       add(28, nil, C.GREY .. L["none you can tame at your level yet"] .. "|r", "")
@@ -156,19 +156,19 @@ local function Refresh()
       local right = ns.ZonesText(b)
       if b[9] then right = C.GREY .. b[9] .. "s|r  " .. right end
       add(28, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"),
-        string.format("%s%s|r %s", b[5] and C.ORANGE or C.WHITE, b[1], C.GREY .. ns.LevelText(b) .. "|r"), right,
+        string.format("%s%s|r", b[5] and C.ORANGE or C.WHITE, b[1]), right,
         ns.BeastClick(e.id), ns.BeastTooltip(e.id, {
           (b[9] and b[9] <= 1.2) and (C.GREEN .. L["Fast attack speed: great for damage."] .. "|r") or nil,
-        }))
+        }), { mid = C.GREY .. ns.LevelText(b) .. "|r" })
     end
   end
-  add(0, nil, C.GOLD .. L["Starting build"] .. "|r", C.GREY .. L["click to apply it on the Builds tab"] .. "|r", function()
+  add(0, ns.Icon("INV_Misc_Book_09"), L["Starting build"], C.GREY .. L["click to apply it on the Builds tab"] .. "|r", function()
     local t = ns.Target()
     if not t then ns.Print(L["Summon your pet or pick a family first."]) return end
     if ns.ApplyPreset then ns.ApplyPreset(t, ROLE_TO_PRESET[role]) end
     ns.UI_Show("builds")
-  end)
+  end, nil, { header = true })
   list:Set(rows)
 end
 
-ns.RegisterTab("recommend", "Find a Pet", Build, Refresh)
+ns.RegisterTab("recommend", L["Find a Pet"], Build, Refresh)

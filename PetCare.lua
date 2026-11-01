@@ -12,6 +12,7 @@ local function Happiness()
   elseif GetPetHappiness then h, dmg, loyaltyRate = GetPetHappiness() end
   return h, dmg, loyaltyRate
 end
+ns.PetHappiness = Happiness
 
 local function Diet()
   local list
@@ -126,7 +127,7 @@ function ns.CreateFeedButton(parent, name, w, h)
     if self.food then self:SetText(L["Feed: "] .. self.food[6]) else self:SetText(L["No food your pet eats"]) end
   end
   b:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, L["ANCHOR_RIGHT"])
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
     if self.food then
       GameTooltip:AddLine(L["Feed "] .. self.food[6], 1, 0.82, 0)
       GameTooltip:AddLine(L["You have "] .. self.food[4] .. ". Picks the highest level food your pet will eat.", 1, 1, 1, true)
@@ -150,12 +151,12 @@ local function UpdateFloater()
   floater:SetShown(show and true or false)
 end
 
-ns.On(L["LOGIN"], function()
+ns.On("LOGIN", function()
   floater = ns.CreateFeedButton(UIParent, "UntamedFeedButton", 170, 26)
   floater:SetPoint("TOP", 0, -120)
   floater:SetMovable(true)
   floater:SetClampedToScreen(true)
-  floater:RegisterForDrag(L["LeftButton"])
+  floater:RegisterForDrag("LeftButton")
   floater:SetScript("OnDragStart", function(self) if not InCombatLockdown() then self:StartMoving() end end)
   floater:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
   floater:Hide()
@@ -172,9 +173,9 @@ local function OnChange(unit)
     ns.Print(L["Your pet is "] .. (HAPPY_TEXT[h] or "not happy") .. ". " .. (food and (L["Feed it "] .. food[6] .. ".") or L["You have no food it eats."]))
   end
   lastWarn = h
-  ns.Fire(L["PETCARE"])
+  ns.Fire("PETCARE")
 end
-ns.On(L["UNIT_HAPPINESS"], OnChange)
-ns.On(L["BAG_UPDATE_DELAYED"], function() UpdateFeedMacro(); ns.Fire(L["PETCARE"]) end)
-ns.On(L["PLAYER_REGEN_ENABLED"], function() UpdateFeedMacro(); UpdateFloater() end)
-ns.On(L["REFRESH"], function() UpdateFeedMacro(); UpdateFloater() end)
+ns.On("UNIT_HAPPINESS", OnChange)
+ns.On("BAG_UPDATE_DELAYED", function() UpdateFeedMacro(); ns.Fire("PETCARE") end)
+ns.On("PLAYER_REGEN_ENABLED", function() UpdateFeedMacro(); UpdateFloater() end)
+ns.On("REFRESH", function() UpdateFeedMacro(); UpdateFloater() end)

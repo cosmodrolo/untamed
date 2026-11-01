@@ -72,5 +72,7 @@ check(ns.db.observed[ns.FLAVOR][99999] and ns.db.observed[ns.FLAVOR][99999].spel
 -- Key bindings and settings panel
 Untamed_Toggle(); Untamed_Toggle(); Untamed_Clear(); Untamed_Zone(); Untamed_NextStop()
 ns.UI_Show("settings")
+ns.UI_Show("recommend")
+ns.UI_ViewingMenu(); ns.UI_ViewingMenu()
 check(ns.ToEnglish("Bite") == "Bite", "locale passthrough")
 print("DONE")

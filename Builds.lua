@@ -10,23 +10,23 @@ function ns.TextPopup(title, text, onAccept)
   if not popup then
     popup = CreateFrame("Frame", "UntamedTextPopup", UIParent, "BasicFrameTemplateWithInset")
     popup:SetSize(460, 260)
-    popup:SetPoint(L["CENTER"])
-    popup:SetFrameStrata(L["DIALOG"])
+    popup:SetPoint("CENTER")
+    popup:SetFrameStrata("DIALOG")
     popup:EnableMouse(true)
     popup:SetMovable(true)
-    popup:RegisterForDrag(L["LeftButton"])
+    popup:RegisterForDrag("LeftButton")
     popup:SetScript("OnDragStart", popup.StartMoving)
     popup:SetScript("OnDragStop", popup.StopMovingOrSizing)
     tinsert(UISpecialFrames, "UntamedTextPopup")
-    popup.title = popup.TitleText or popup:CreateFontString(nil, L["OVERLAY"], L["GameFontHighlight"])
+    popup.title = popup.TitleText or popup:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     if not popup.TitleText then popup.title:SetPoint("TOP", 0, -5) end
-    popup.hint = popup:CreateFontString(nil, L["OVERLAY"], L["GameFontHighlightSmall"])
-    popup.hint:SetPoint(L["TOPLEFT"], 14, -30)
-    popup.hint:SetPoint(L["RIGHT"], -14, 0)
-    popup.hint:SetJustifyH(L["LEFT"])
+    popup.hint = popup:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    popup.hint:SetPoint("TOPLEFT", 14, -30)
+    popup.hint:SetPoint("RIGHT", -14, 0)
+    popup.hint:SetJustifyH("LEFT")
     local sf = CreateFrame("ScrollFrame", nil, popup, "UIPanelScrollFrameTemplate")
-    sf:SetPoint(L["TOPLEFT"], 14, -50)
-    sf:SetPoint(L["BOTTOMRIGHT"], -32, 44)
+    sf:SetPoint("TOPLEFT", 14, -50)
+    sf:SetPoint("BOTTOMRIGHT", -32, 44)
     local eb = CreateFrame("EditBox", nil, sf)
     eb:SetMultiLine(true)
     eb:SetFontObject("ChatFontNormal")
@@ -39,8 +39,8 @@ function ns.TextPopup(title, text, onAccept)
       if popup.onAccept then popup.onAccept(popup.edit:GetText() or "") end
       popup:Hide()
     end)
-    popup.ok:SetPoint(L["BOTTOMRIGHT"], -14, 12)
-    ns.MakeButton(popup, L["Close"], 90, function() popup:Hide() end):SetPoint(L["RIGHT"], popup.ok, L["LEFT"], -6, 0)
+    popup.ok:SetPoint("BOTTOMRIGHT", -14, 12)
+    ns.MakeButton(popup, L["Close"], 90, function() popup:Hide() end):SetPoint("RIGHT", popup.ok, "LEFT", -6, 0)
   end
   popup.title:SetText(title)
   popup.onAccept = onAccept
@@ -150,7 +150,7 @@ local function Build(panel)
       ns.cdb.builds[t.family] = Preset(t.family, ns.db.planForPlayerLevel and UnitLevel("player") or t.level or UnitLevel("player"), role)
       ns.Refresh()
     end)
-    btn:SetPoint(L["TOPLEFT"], x, -2)
+    btn:SetPoint("TOPLEFT", x, -2)
     btn:SetScript("OnEnter", function(self) ns.ShowTooltip(self, { label .. " preset", tip }) end)
     btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
   end
@@ -159,13 +159,13 @@ local function Build(panel)
   presetBtn("PvP", "pvp", 172, L["Damage plus Great Stamina and mobility."])
   ns.MakeButton(panel, L["Clear"], 70, function()
     local t = ns.Target(); if t then ns.cdb.builds[t.family] = {}; ns.Refresh() end
-  end):SetPoint(L["TOPLEFT"], 256, -2)
+  end):SetPoint("TOPLEFT", 256, -2)
   ns.MakeButton(panel, L["Export"], 76, function()
     local t = ns.Target(); if t then ns.TextPopup(L["Export build"], ExportBuild(t.family, BuildFor(t.family))) end
-  end):SetPoint(L["TOPLEFT"], 330, -2)
+  end):SetPoint("TOPLEFT", 330, -2)
   ns.MakeButton(panel, L["Import"], 76, function()
     ns.TextPopup(L["Import build"], "", ImportBuild)
-  end):SetPoint(L["TOPLEFT"], 410, -2)
+  end):SetPoint("TOPLEFT", 410, -2)
   list = ns.NewList(panel, 30)
 end
 
@@ -188,7 +188,7 @@ local function Refresh(panel, t)
       totalTP and (" of " .. totalTP) or ""),
     nil, { L["Training points"], L["Total cost of the ranks in this build"] .. (totalTP and (", against the " .. totalTP .. " training points your pet has in total.") or "."),
       unknown and L["Some costs are unknown until you open Beast Training once (shown as +)."] or "",
-      L["Pets gain training points as they level and as their loyalty grows."] })
+      L["Pets gain training points as they level and as their loyalty grows."] }, { header = true })
   add(0, nil, C.GREY .. "Left-click a row to raise its rank, right-click to lower it.|r", "")
   for _, a in ipairs(BuildAbilities(t.family)) do
     local r = build[a] or 0
@@ -203,7 +203,7 @@ local function Refresh(panel, t)
       right = C.GREY .. "not in build|r"
     end
     add(0, ns.Icon(ns.AbilityIcons[a] or "Ability_Hunter_BeastTraining"),
-      string.format("%s%s|r %s", r > 0 and C.WHITE or C.GREY, a, r > 0 and (L["Rank "] .. r) or ""),
+      string.format("%s%s|r", r > 0 and C.WHITE or C.GREY, ns.AbilityLabel(a)),
       right,
       function(_, button)
         if button == "RightButton" then build[a] = (r > 1) and (r - 1) or nil
@@ -211,7 +211,8 @@ local function Refresh(panel, t)
         ns.Refresh()
       end,
       { a, L["Best rank at pet level "] .. level .. ": " .. (max > 0 and max or "none yet"),
-        have > 0 and (L["Your pet has Rank "] .. have) or L["Your pet doesn't have it."] })
+        have > 0 and (L["Your pet has Rank "] .. have) or L["Your pet doesn't have it."] },
+      { mid = r > 0 and (C.WHITE .. L["Rank "] .. r .. "|r") or "" })
   end
   list:Set(rows)
 end

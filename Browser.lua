@@ -11,12 +11,12 @@ local SORT_LABEL = { level = L["Sort: Level"], name = L["Sort: Name"], speed = L
 local function Build(panel)
   search = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
   search:SetSize(140, 20)
-  search:SetPoint(L["TOPLEFT"], 10, -3)
+  search:SetPoint("TOPLEFT", 10, -3)
   search:SetAutoFocus(false)
   search:SetScript("OnTextChanged", function(self) filter.text = (self:GetText() or ""):lower(); ns.UI_Refresh() end)
   search:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-  local hint = search:CreateFontString(nil, L["OVERLAY"], L["GameFontDisableSmall"])
-  hint:SetPoint(L["LEFT"], 4, 0)
+  local hint = search:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+  hint:SetPoint("LEFT", 4, 0)
   hint:SetText(L["Search name or zone"])
   search:HookScript("OnEditFocusGained", function() hint:Hide() end)
   search:HookScript("OnEditFocusLost", function(self) hint:SetShown((self:GetText() or "") == "") end)
@@ -31,8 +31,8 @@ local function Build(panel)
     famBtn:SetText(filter.family and ns.FamilyLabel(filter.family) or L["All families"])
     ns.UI_Refresh()
   end)
-  famBtn:RegisterForClicks(L["LeftButtonUp"], L["RightButtonUp"])
-  famBtn:SetPoint(L["LEFT"], search, L["RIGHT"], 8, 0)
+  famBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  famBtn:SetPoint("LEFT", search, "RIGHT", 8, 0)
   famBtn:SetScript("OnEnter", function(self) ns.ShowTooltip(self, { "Family filter", "Left-click: next family. Right-click: previous." }) end)
   famBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
@@ -44,7 +44,7 @@ local function Build(panel)
     sortBtn:SetText(SORT_LABEL[filter.sort])
     ns.UI_Refresh()
   end)
-  sortBtn:SetPoint(L["LEFT"], famBtn, L["RIGHT"], 4, 0)
+  sortBtn:SetPoint("LEFT", famBtn, "RIGHT", 4, 0)
 
   ns.MakeCheck(panel, L["Tameable now"], 4, -26, function() return filter.tameable end, function(v) filter.tameable = v end)
   ns.MakeCheck(panel, L["Rares only"], 124, -26, function() return filter.rare end, function(v) filter.rare = v end)
@@ -78,15 +78,15 @@ local function Refresh()
     return x[1] < y[1]
   end)
   local rows = {}
-  rows[1] = { 0, nil, C.GOLD .. #ids .. " beasts|r", C.GREY .. "click for arrow, right-click for map|r" }
+  rows[1] = { 0, nil, #ids .. L[" beasts"], C.GREY .. L["click for arrow, right-click for map"] .. "|r", nil, nil, { header = true } }
   for i = 1, math.min(#ids, 400) do
     local id = ids[i]
     local b = B[id]
     local lv = (b[2] > playerLevel) and C.RED or C.WHITE
-    local left = string.format("%s%s|r %s%s|r", b[5] and C.ORANGE or C.WHITE, b[1], lv, ns.LevelText(b))
+    local left = string.format("%s%s|r", b[5] and C.ORANGE or C.WHITE, b[1])
     local right = ns.ZonesText(b)
     if b[9] then right = C.GREY .. b[9] .. "s|r  " .. right end
-    rows[#rows + 1] = { 0, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"), left, right, ns.BeastClick(id), ns.BeastTooltip(id) }
+    rows[#rows + 1] = { 0, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"), left, right, ns.BeastClick(id), ns.BeastTooltip(id), { mid = lv .. ns.LevelText(b) .. "|r" } }
   end
   list:Set(rows)
 end

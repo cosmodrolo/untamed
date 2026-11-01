@@ -174,7 +174,7 @@ function ns.Route_Next()
   if route then Advance(L["Skipped to the next stop."]) else ns.Print(L["No route running. Start one from the Planner tab."]) end
 end
 
-ns.On(L["LEARNED"], function(ability, rank)
+ns.On("LEARNED", function(ability, rank)
   if not route then return end
   local s = route.stops[route.index]
   if not s or s.kind ~= "beast" then return end
@@ -191,7 +191,7 @@ ns.On(L["LEARNED"], function(ability, rank)
 end)
 
 -- Stable steps finish when you close the stable window in the right state.
-ns.On(L["STABLE_CLOSED"], function()
+ns.On("STABLE_CLOSED", function()
   if not route then return end
   local s = route.stops[route.index]
   if not s then return end
@@ -209,15 +209,15 @@ end)
 local list, lastTrip
 
 local function Build(panel)
-  ns.MakeButton(panel, L["Start Route"], 110, function() if lastTrip then StartRoute(lastTrip) end end):SetPoint(L["TOPLEFT"], 4, -2)
+  ns.MakeButton(panel, L["Start Route"], 110, function() if lastTrip then StartRoute(lastTrip) end end):SetPoint("TOPLEFT", 4, -2)
   ns.MakeButton(panel, L["Pin All Stops"], 110, function()
     if not lastTrip then return end
     local ids = {}
     for _, s in ipairs(lastTrip.stops) do ids[#ids + 1] = s.npcId end
     if #ids > 0 then ns.Pins_Focus(ids, L["Trip planner stops"], true) end
-  end):SetPoint(L["TOPLEFT"], 118, -2)
-  ns.MakeButton(panel, L["Next Stop"], 90, function() ns.Route_Next() end):SetPoint(L["TOPLEFT"], 232, -2)
-  ns.MakeButton(panel, L["Stop Route"], 90, function() route = nil; ns.Arrow_Clear(); ns.Refresh() end):SetPoint(L["TOPLEFT"], 326, -2)
+  end):SetPoint("TOPLEFT", 118, -2)
+  ns.MakeButton(panel, L["Next Stop"], 90, function() ns.Route_Next() end):SetPoint("TOPLEFT", 232, -2)
+  ns.MakeButton(panel, L["Stop Route"], 90, function() route = nil; ns.Arrow_Clear(); ns.Refresh() end):SetPoint("TOPLEFT", 326, -2)
   ns.MakeCheck(panel, L["Plan for my level"], 424, -2,
     function() return ns.db.planForPlayerLevel end, function(v) ns.db.planForPlayerLevel = v end,
     L["Plan ranks for your own level instead of your pet's current level (your pet will level up to use them)."])
@@ -237,7 +237,7 @@ local function Refresh(panel, t)
   local tpFree = t.tpFree
   add(0, ns.Icon("Ability_Hunter_BeastTaming"),
     string.format("%sTrip for your %s|r (ranks up to pet level %d)", C.GOLD, t.family, trip.planLevel),
-    string.format("%s%d stop%s|r", C.WHITE, #trip.stops, #trip.stops == 1 and "" or "s"))
+    string.format("%s%d stop%s|r", C.WHITE, #trip.stops, #trip.stops == 1 and "" or "s"), nil, nil, { header = true })
   add(14, nil, string.format("Training points needed: about %d%s", trip.tpNeed,
     tpFree and string.format("   (%s%d free now|r)", tpFree >= trip.tpNeed and C.GREEN or C.ORANGE, tpFree) or ""), "", nil,
     { L["Training points"], L["Estimated from rank costs. Your pet earns more training points as it levels and as its loyalty grows."] })
@@ -245,7 +245,7 @@ local function Refresh(panel, t)
     { L["How taming for abilities works"], "You can only have one pet out. Stable your pet at a stable master (or keep a free stable slot), tame the beast, fight with it until you see \"You have learned a new ability\", then abandon it and get your pet back. Teach the new rank at Beast Training." })
 
   if #trip.teach > 0 then
-    add(0, nil, C.GOLD .. "Teach now at Beast Training|r")
+    add(0, nil, L["Teach now at Beast Training"], "", nil, nil, { header = true })
     for _, g in ipairs(trip.teach) do
       local tp = ns.RankCost(g.ability, g.rank)
       add(14, ns.Icon(ns.AbilityIcons[g.ability] or "Ability_Hunter_BeastTraining"), C.GREEN .. g.ability .. " Rank " .. g.rank .. "|r",
@@ -254,7 +254,7 @@ local function Refresh(panel, t)
   end
 
   if #trip.stops > 0 then
-    add(0, nil, C.GOLD .. "Route (closest first)|r", route and (C.GREEN .. "running: stop " .. route.index .. " of " .. #route.stops .. "|r") or "")
+    add(0, nil, L["Route (closest first)"], route and (C.GREEN .. "running: stop " .. route.index .. " of " .. #route.stops .. "|r") or "", nil, nil, { header = true })
     local n = 0
     for _, s in ipairs(trip.route) do
       n = n + 1
@@ -275,11 +275,12 @@ local function Refresh(panel, t)
       else
         local b = ns.Beasts[s.npcId]
         add(4, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"),
-          string.format("%s%d. %s|r %s", numColor, n, b[1], C.GREY .. ns.LevelText(b) .. "|r"),
+          string.format("%s%d. %s|r", numColor, n, b[1]),
           C.HUNTER .. GoalsText(s.goals) .. "|r",
           function(_, button)
             if button == "RightButton" then ns.Pins_Focus({ s.npcId }, b[1], true) else NavigateStop(s) end
-          end, ns.BeastTooltip(s.npcId, { C.HUNTER .. L["For your pet: "] .. GoalsText(s.goals) .. "|r" }))
+          end, ns.BeastTooltip(s.npcId, { C.HUNTER .. L["For your pet: "] .. GoalsText(s.goals) .. "|r" }),
+          { mid = C.GREY .. ns.LevelText(b) .. "|r" })
         add(26, nil, C.GREY .. (s.mapID and ns.ZoneName(s.mapID) .. string.format(" %.0f, %.0f", s.x, s.y) or "location unknown") .. "|r",
           C.GREY .. (s.dist and ns.FormatDistance(s.dist) or "") .. "|r")
         if s.flight then
@@ -297,12 +298,13 @@ local function Refresh(panel, t)
     add(0, nil, C.ORANGE .. L["No tameable beast yet for: "] .. table.concat(trip.skipped, ", ") .. "|r")
   end
 
-  add(0, nil, C.GOLD .. "Abilities in this plan|r", C.GREY .. "click to include or skip|r")
+  add(0, nil, L["Abilities in this plan"], C.GREY .. L["click to include or skip"] .. "|r", nil, nil, { header = true })
   for _, ab in ipairs(ns.AbilityOrder) do
     local fams = ns.AbilityFamilies[ab]
     if fams and fams[t.family] then
       local on = ns.cdb.plan[ab] ~= false
-      add(14, ns.Icon(ns.AbilityIcons[ab] or "Ability_Hunter_BeastTaming"), (on and C.WHITE .. "[x] " or C.GREY .. "[  ] ") .. ab .. "|r", "",
+      add(14, ns.Icon(ns.AbilityIcons[ab] or "Ability_Hunter_BeastTaming"), (on and C.WHITE or C.GREY) .. ns.AbilityLabel(ab) .. "|r",
+        on and (C.GREEN .. L["included"] .. "|r") or (C.GREY .. L["skipped"] .. "|r"),
         function() if on then ns.cdb.plan[ab] = false else ns.cdb.plan[ab] = nil end; ns.UI_Refresh() end)
     end
   end

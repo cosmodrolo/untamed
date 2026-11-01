@@ -15,7 +15,7 @@ local AUTO_CAP = 12
 UntamedPinMixin = CreateFromMixins(MapCanvasPinMixin)
 
 function UntamedPinMixin:OnLoad()
-  self:UseFrameLevelType(L["PIN_FRAME_LEVEL_AREA_POI"])
+  self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
   self:SetScalingLimits(1, 1.0, 1.25)
 end
 
@@ -37,7 +37,7 @@ end
 function UntamedPinMixin:OnMouseEnter()
   local info = self.info
   if not info then return end
-  GameTooltip:SetOwner(self, L["ANCHOR_RIGHT"])
+  GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
   if info.service then
     GameTooltip:AddLine(info.name, 1, 0.82, 0)
     GameTooltip:AddLine(info.service == "S" and L["Stable Master"] or L["Flight Master"], 1, 1, 1)
@@ -124,7 +124,7 @@ local function RefreshAll(self)
   end
 end
 
-ns.On(L["LOGIN"], function()
+ns.On("LOGIN", function()
   if not WorldMapFrame or not WorldMapFrame.AddDataProvider then return end
   provider = CreateFromMixins(MapCanvasDataProviderMixin)
   provider.RefreshAllData = RefreshAll
@@ -135,7 +135,7 @@ end)
 function ns.Pins_Refresh()
   if provider and provider:GetMap() then provider:RefreshAllData() end
 end
-ns.On(L["REFRESH"], ns.Pins_Refresh)
+ns.On("REFRESH", ns.Pins_Refresh)
 
 function ns.Pins_Clear()
   focus = nil

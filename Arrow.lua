@@ -9,11 +9,11 @@ local ARRIVE = 25
 local function Create()
   frame = CreateFrame("Button", "UntamedArrow", UIParent)
   frame:SetSize(120, 76)
-  frame:SetFrameStrata(L["MEDIUM"])
+  frame:SetFrameStrata("MEDIUM")
   frame:SetMovable(true)
   frame:SetClampedToScreen(true)
-  frame:RegisterForDrag(L["LeftButton"])
-  frame:RegisterForClicks(L["RightButtonUp"])
+  frame:RegisterForDrag("LeftButton")
+  frame:RegisterForClicks("RightButtonUp")
   frame:SetScript("OnDragStart", frame.StartMoving)
   frame:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
@@ -25,22 +25,22 @@ local function Create()
   if pos then frame:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else frame:SetPoint("TOP", 0, -160) end
   frame:SetScale(ns.db.arrowScale or 1)
 
-  arrow = frame:CreateTexture(nil, L["ARTWORK"])
+  arrow = frame:CreateTexture(nil, "ARTWORK")
   arrow:SetSize(44, 44)
   arrow:SetPoint("TOP", 0, 0)
   arrow:SetTexture("Interface\\AddOns\\Untamed\\Media\\Arrow")
   if arrow.SetSnapToPixelGrid then arrow:SetSnapToPixelGrid(false); arrow:SetTexelSnappingBias(0) end
   arrow:SetVertexColor(0.35, 0.95, 0.35)
 
-  title = frame:CreateFontString(nil, L["OVERLAY"], L["GameFontNormal"])
-  title:SetPoint("TOP", arrow, L["BOTTOM"], 0, 0)
+  title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  title:SetPoint("TOP", arrow, "BOTTOM", 0, 0)
   title:SetWidth(220)
-  dist = frame:CreateFontString(nil, L["OVERLAY"], L["GameFontHighlightSmall"])
-  dist:SetPoint("TOP", title, L["BOTTOM"], 0, -2)
+  dist = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  dist:SetPoint("TOP", title, "BOTTOM", 0, -2)
   dist:SetWidth(220)
 
   frame:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, L["ANCHOR_BOTTOM"])
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
     GameTooltip:AddLine(L["Untamed arrow"], 1, 0.82, 0)
     if target then GameTooltip:AddLine(target.label, 1, 1, 1, true) end
     GameTooltip:AddLine(L["Drag to move. Right-click to stop."], 0.7, 0.7, 0.7)
@@ -69,7 +69,7 @@ local function Create()
       if not target.arrived then
         target.arrived = true
         PlaySound(SOUNDKIT and SOUNDKIT.MAP_PING or 3175)
-        ns.Fire(L["ARROW_ARRIVED"], target)
+        ns.Fire("ARROW_ARRIVED", target)
       end
       return
     end

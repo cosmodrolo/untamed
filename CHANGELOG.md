@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.4.0
+- Redesigned window: tabs moved to a sidebar grouped into My Pet and Taming, with Settings at the bottom.
+- New header with your pet's portrait, happiness, experience and training point bars, and one "Viewing" menu to switch between your pet, any stabled pet, or a family.
+- Each page has a title and short description, sunken Blizzard panels, section headings, real expand and collapse buttons, a level column and striped rows.
+- Tips and the current map focus moved to a status bar at the bottom.
+- The window can be resized from the bottom-right corner and remembers its size and position.
+- Layout and event names are no longer marked for translation.
+
 ## v2.3.1
 - New smooth navigation arrow, drawn for Untamed, that turns from green to yellow to red the further you are facing away from the target.
 - Tab buttons now size themselves to fit the window, so Settings no longer runs off the edge.

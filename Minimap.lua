@@ -19,17 +19,17 @@ local function GetPin(i)
   p = CreateFrame("Frame", nil, Minimap)
   p:SetSize(12, 12)
   p:SetFrameLevel(Minimap:GetFrameLevel() + 5)
-  p.border = p:CreateTexture(nil, L["BACKGROUND"])
-  p.border:SetPoint(L["TOPLEFT"], -1, 1); p.border:SetPoint(L["BOTTOMRIGHT"], 1, -1)
+  p.border = p:CreateTexture(nil, "BACKGROUND")
+  p.border:SetPoint("TOPLEFT", -1, 1); p.border:SetPoint("BOTTOMRIGHT", 1, -1)
   p.border:SetColorTexture(0, 0, 0, 0.9)
-  p.icon = p:CreateTexture(nil, L["ARTWORK"])
+  p.icon = p:CreateTexture(nil, "ARTWORK")
   p.icon:SetAllPoints()
   p.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
   p:EnableMouse(true)
   p:SetScript("OnEnter", function(self)
     local b = self.beast
     if not b then return end
-    GameTooltip:SetOwner(self, L["ANCHOR_RIGHT"])
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
     GameTooltip:AddLine(b[1], 1, 0.82, 0)
     GameTooltip:AddLine(L["Level "] .. ns.LevelText(b) .. " " .. b[4], 1, 1, 1)
     if #b[6] > 0 then GameTooltip:AddLine(L["Teaches: "] .. ns.TeachesText(b), 0.67, 0.83, 0.45, true) end
@@ -60,7 +60,7 @@ local function RebuildCandidates(mapID)
   end
   candidateStamp = GetTime()
 end
-ns.On(L["REFRESH"], function() candidateMap = nil end)
+ns.On("REFRESH", function() candidateMap = nil end)
 
 local function Update()
   local shown = 0
@@ -88,7 +88,7 @@ local function Update()
             p.icon:SetTexture("Interface\\Icons\\" .. (ns.FamilyIcons[c[4][4]] or "Ability_Hunter_BeastTaming"))
             p.border:SetColorTexture(c[6] and 1 or 0, c[6] and 0.82 or 0, 0, 0.9)
             p:ClearAllPoints()
-            p:SetPoint(L["CENTER"], Minimap, L["CENTER"], x / radiusYd * radiusPx, y / radiusYd * radiusPx)
+            p:SetPoint("CENTER", Minimap, "CENTER", x / radiusYd * radiusPx, y / radiusYd * radiusPx)
             p:Show()
           end
         end
@@ -105,36 +105,36 @@ local mm
 local function UpdateButtonPos()
   local a = math.rad(ns.db.minimapAngle or 200)
   mm:ClearAllPoints()
-  mm:SetPoint(L["CENTER"], Minimap, L["CENTER"], math.cos(a) * 80, math.sin(a) * 80)
+  mm:SetPoint("CENTER", Minimap, "CENTER", math.cos(a) * 80, math.sin(a) * 80)
 end
 
-ns.On(L["MINIMAP_TOGGLE"], function()
+ns.On("MINIMAP_TOGGLE", function()
   if ns.usingLDBIcon then
     if mm then mm:Hide() end
     local icon = LibStub("LibDBIcon-1.0", true)
     if icon then
       ns.db.ldbIcon.hide = not ns.db.showMinimap
-      if ns.db.showMinimap then icon:Show(L["Untamed"]) else icon:Hide(L["Untamed"]) end
+      if ns.db.showMinimap then icon:Show("Untamed") else icon:Hide("Untamed") end
     end
   elseif mm then
     mm:SetShown(ns.db.showMinimap and not ns.usingLDBIcon)
   end
 end)
 
-ns.On(L["LOGIN"], function()
+ns.On("LOGIN", function()
   mm = CreateFrame("Button", "UntamedMinimapButton", Minimap)
   mm:SetSize(31, 31)
-  mm:SetFrameStrata(L["MEDIUM"])
+  mm:SetFrameStrata("MEDIUM")
   mm:SetFrameLevel(8)
-  mm:RegisterForClicks(L["LeftButtonUp"], L["RightButtonUp"])
-  mm:RegisterForDrag(L["LeftButton"])
-  local icon = mm:CreateTexture(nil, L["BACKGROUND"])
+  mm:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  mm:RegisterForDrag("LeftButton")
+  local icon = mm:CreateTexture(nil, "BACKGROUND")
   icon:SetSize(20, 20)
-  icon:SetPoint(L["CENTER"], 0, 1)
+  icon:SetPoint("CENTER", 0, 1)
   icon:SetTexture("Interface\\AddOns\\Untamed\\Media\\MinimapIcon")
-  local border = mm:CreateTexture(nil, L["OVERLAY"])
+  local border = mm:CreateTexture(nil, "OVERLAY")
   border:SetSize(53, 53)
-  border:SetPoint(L["TOPLEFT"])
+  border:SetPoint("TOPLEFT")
   border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
   mm:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
   mm:SetScript("OnClick", function(_, button)
@@ -151,8 +151,8 @@ ns.On(L["LOGIN"], function()
   end)
   mm:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
   mm:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, L["ANCHOR_LEFT"])
-    GameTooltip:AddLine(L["Untamed"], 1, 0.82, 0)
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+    GameTooltip:AddLine("Untamed", 1, 0.82, 0)
     GameTooltip:AddLine(L["Left-click: open window"], 1, 1, 1)
     GameTooltip:AddLine(L["Right-click: check this zone"], 1, 1, 1)
     GameTooltip:AddLine(L["Drag: move button"], 1, 1, 1)

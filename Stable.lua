@@ -60,14 +60,14 @@ local function ReadStable()
   ns.Refresh()
 end
 
-ns.On(L["REFRESH"], function() if UnitExists("pet") then RecordActive() end end)
+ns.On("REFRESH", function() if UnitExists("pet") then RecordActive() end end)
 
 local ev = CreateFrame("Frame")
 for _, e in ipairs({ "PET_STABLE_SHOW", "PET_STABLE_UPDATE", "PET_STABLE_CLOSED" }) do pcall(ev.RegisterEvent, ev, e) end
 ev:SetScript("OnEvent", function(_, event)
   if event == "PET_STABLE_CLOSED" then
     ns.cdb.hasActivePet = UnitExists("pet") and true or ns.cdb.hasActivePet
-    ns.Fire(L["STABLE_CLOSED"])
+    ns.Fire("STABLE_CLOSED")
   else
     ReadStable()
   end
@@ -115,7 +115,7 @@ local function Refresh()
   if #keys == 0 then
     add(0, nil, C.GREY .. "No pets recorded yet. Summon each pet once, or open the stable at a stable master.|r")
   else
-    add(0, nil, C.GOLD .. "Your pets|r", C.GREY .. "click to plan for that pet, right-click to forget|r")
+    add(0, nil, L["Your pets"], C.GREY .. L["click to plan for that pet, right-click to forget"] .. "|r", nil, nil, { header = true })
   end
   for _, k in ipairs(keys) do
     local p = Pets()[k]

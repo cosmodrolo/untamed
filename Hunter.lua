@@ -5,7 +5,7 @@ local L = ns.L
 
 local function Alert(msg, sound)
   if RaidNotice_AddMessage and RaidWarningFrame then
-    RaidNotice_AddMessage(RaidWarningFrame, msg, ChatTypeInfo and ChatTypeInfo[L["RAID_WARNING"]] or { r = 1, g = 0.82, b = 0 })
+    RaidNotice_AddMessage(RaidWarningFrame, msg, ChatTypeInfo and ChatTypeInfo["RAID_WARNING"] or { r = 1, g = 0.82, b = 0 })
   else
     UIErrorsFrame:AddMessage(msg, 0.67, 0.83, 0.45)
   end
@@ -103,8 +103,8 @@ local function CheckPetHealth(unit)
 end
 
 local ev = CreateFrame("Frame")
-for _, e in ipairs({ L["NAME_PLATE_UNIT_ADDED"], L["PLAYER_TARGET_CHANGED"], L["UPDATE_MOUSEOVER_UNIT"], L["PLAYER_LEVEL_UP"],
-  L["UNIT_HEALTH"], L["UNIT_INVENTORY_CHANGED"], L["PLAYER_REGEN_ENABLED"], L["BAG_UPDATE_DELAYED"] }) do
+for _, e in ipairs({ "NAME_PLATE_UNIT_ADDED", "PLAYER_TARGET_CHANGED", "UPDATE_MOUSEOVER_UNIT", "PLAYER_LEVEL_UP",
+  "UNIT_HEALTH", "UNIT_INVENTORY_CHANGED", "PLAYER_REGEN_ENABLED", "BAG_UPDATE_DELAYED" }) do
   pcall(ev.RegisterEvent, ev, e)
 end
 ev:SetScript("OnEvent", function(_, event, arg1)
@@ -126,7 +126,7 @@ ev:SetScript("OnEvent", function(_, event, arg1)
   end
 end)
 
-ns.On(L["LOGIN"], function()
+ns.On("LOGIN", function()
   for k, v in pairs({ rareAlert = true, ammoWarning = true, ammoThreshold = 200, trainerReminder = true, petHealthAlerts = true }) do
     if ns.db[k] == nil then ns.db[k] = v end
   end

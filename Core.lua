@@ -377,7 +377,7 @@ function ns.On(event, fn) ns.callbacks[event] = ns.callbacks[event] or {}; table
 function ns.Fire(event, ...) for _, fn in ipairs(ns.callbacks[event] or {}) do fn(...) end end
 
 function ns.Refresh()
-  ns.Fire(L["REFRESH"])
+  ns.Fire("REFRESH")
 end
 
 local learnPatterns = {}
@@ -396,16 +396,16 @@ ev:SetScript("OnEvent", function(self, event, arg1, arg2, arg3, arg4)
   elseif event == "PLAYER_LOGIN" then
     AddLearnPattern(ERR_LEARN_SPELL_S)
     AddLearnPattern(ERR_LEARN_ABILITY_S)
-    for _, e in ipairs({ L["UNIT_PET"], L["PET_BAR_UPDATE"], L["SPELLS_CHANGED"], L["UNIT_LEVEL"], L["ZONE_CHANGED_NEW_AREA"],
-      L["PLAYER_ENTERING_WORLD"], L["CHAT_MSG_SYSTEM"], L["UNIT_SPELLCAST_SUCCEEDED"], L["UNIT_SPELLCAST_START"],
-      L["UNIT_HAPPINESS"], L["UNIT_PET_TRAINING_POINTS"], L["BAG_UPDATE_DELAYED"], L["PLAYER_REGEN_ENABLED"] }) do
+    for _, e in ipairs({ "UNIT_PET", "PET_BAR_UPDATE", "SPELLS_CHANGED", "UNIT_LEVEL", "ZONE_CHANGED_NEW_AREA",
+      "PLAYER_ENTERING_WORLD", "CHAT_MSG_SYSTEM", "UNIT_SPELLCAST_SUCCEEDED", "UNIT_SPELLCAST_START",
+      "UNIT_HAPPINESS", "UNIT_PET_TRAINING_POINTS", "BAG_UPDATE_DELAYED", "PLAYER_REGEN_ENABLED" }) do
       pcall(self.RegisterEvent, self, e)
     end
     pcall(self.RegisterEvent, self, "CRAFT_SHOW")
     pcall(self.RegisterEvent, self, "CRAFT_UPDATE")
     pcall(self.RegisterEvent, self, "TRAINER_SHOW")
     pcall(self.RegisterEvent, self, "TRAINER_UPDATE")
-    ns.Fire(L["LOGIN"])
+    ns.Fire("LOGIN")
   elseif event == "CRAFT_SHOW" or event == "CRAFT_UPDATE" then
     ns.ScanBeastTraining()
   elseif event == "TRAINER_SHOW" or event == "TRAINER_UPDATE" then
@@ -439,7 +439,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, arg2, arg3, arg4)
         if name and ns.AbilityFamilies[name] then
           ns.cdb.known[name] = ns.cdb.known[name] or {}
           ns.cdb.known[name][tonumber(r)] = true
-          ns.Fire(L["LEARNED"], name, tonumber(r))
+          ns.Fire("LEARNED", name, tonumber(r))
           ns.Refresh()
         end
       end
@@ -472,7 +472,7 @@ SlashCmdList.UNTAMED = function(msg)
     if ns.Arrow_Clear then ns.Arrow_Clear() end
   elseif msg == "minimap" then
     ns.db.showMinimap = not ns.db.showMinimap
-    ns.Fire(L["MINIMAP_TOGGLE"])
+    ns.Fire("MINIMAP_TOGGLE")
   elseif msg == "ammo" then
     ns.NavigateService("A", L["Ammo vendor"])
   elseif msg == "trainer" then
