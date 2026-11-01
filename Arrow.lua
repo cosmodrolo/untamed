@@ -8,7 +8,7 @@ local ARRIVE = 25
 
 local function Create()
   frame = CreateFrame("Button", "UntamedArrow", UIParent)
-  frame:SetSize(120, 92)
+  frame:SetSize(120, 76)
   frame:SetFrameStrata(L["MEDIUM"])
   frame:SetMovable(true)
   frame:SetClampedToScreen(true)
@@ -26,10 +26,11 @@ local function Create()
   frame:SetScale(ns.db.arrowScale or 1)
 
   arrow = frame:CreateTexture(nil, L["ARTWORK"])
-  arrow:SetSize(56, 56)
+  arrow:SetSize(44, 44)
   arrow:SetPoint("TOP", 0, 0)
-  arrow:SetTexture(ns.FLAVOR == "forever" and "Interface\\Minimap\\MinimapArrow" or "Interface\\WorldMap\\WorldMapArrow")
-  arrow:SetVertexColor(0.67, 0.83, 0.45)
+  arrow:SetTexture("Interface\\AddOns\\Untamed\\Media\\Arrow")
+  if arrow.SetSnapToPixelGrid then arrow:SetSnapToPixelGrid(false); arrow:SetTexelSnappingBias(0) end
+  arrow:SetVertexColor(0.35, 0.95, 0.35)
 
   title = frame:CreateFontString(nil, L["OVERLAY"], L["GameFontNormal"])
   title:SetPoint("TOP", arrow, L["BOTTOM"], 0, 0)
@@ -73,11 +74,21 @@ local function Create()
       return
     end
     target.arrived = false
-    arrow:SetVertexColor(0.67, 0.83, 0.45)
     local facing = GetPlayerFacing and GetPlayerFacing()
     if facing and not ns.IsSecret(facing) then
       local bearing = math.atan2(-(target.east - pe), target.north - pn)
-      arrow:SetRotation(bearing - facing)
+      local turn = bearing - facing
+      arrow:SetRotation(turn)
+      -- Green when you're heading at it, yellow off to the side, red when it's behind you.
+      local off = math.abs(((turn + math.pi) % (2 * math.pi)) - math.pi) / math.pi
+      if off < 0.5 then
+        arrow:SetVertexColor(0.35 + 1.3 * off, 0.95 - 0.2 * off, 0.35 - 0.3 * off)
+      else
+        local t = (off - 0.5) * 2
+        arrow:SetVertexColor(1, 0.85 - 0.55 * t, 0.2 + 0.05 * t)
+      end
+    else
+      arrow:SetVertexColor(0.35, 0.95, 0.35)
     end
     dist:SetText(ns.FormatDistance(d))
   end)

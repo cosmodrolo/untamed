@@ -1,6 +1,7 @@
 # Changelog
 
 ## v2.3.1
+- New smooth navigation arrow, drawn for Untamed, that turns from green to yellow to red the further you are facing away from the target.
 - Tab buttons now size themselves to fit the window, so Settings no longer runs off the edge.
 
 ## v2.3.0
