@@ -7,7 +7,8 @@ These scripts regenerate the generated data files. They expect source checkouts 
 - `SRC/cdb/Full_DB/ClassicDB_*.sql.gz` (from https://github.com/cmangos/classic-db)
 
 ```
-python tools/build_data.py SRC era Data/Era.lua
-python tools/build_data.py SRC forever Data/Forever.lua tools/forever_pets.json
+python tools/build_services.py SRC/cdb/full.sql services.json   # full.sql = the unzipped ClassicDB dump
+python tools/build_data.py SRC era Data/Era.lua - services.json
+python tools/build_data.py SRC forever Data/Forever.lua tools/forever_pets.json services.json
 python tools/build_foods.py SRC/cdb/Full_DB/ClassicDB_1_12_1_z2815.sql.gz Foods.lua
 ```

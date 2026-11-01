@@ -1,7 +1,7 @@
 -- WoW API mock for smoke-testing Untamed (v2)
 local NILKEYS = { TitleText = true, text = true, Text = true, GetUnit = false }
 local function newObj(name)
-  local o = { _name = name, _shown = false, _scripts = {}, _attr = {} }
+  local o = { _name = name, _shown = false, _scripts = {}, _attr = {}, _events = {} }
   local mt = {}
   mt.__index = function(t, k)
     if NILKEYS[k] then return nil end
@@ -15,6 +15,7 @@ local function newObj(name)
     if k == "GetChecked" then return function() return true end end
     if k == "SetText" then return function(self, s) self._text = s end end
     if k == "GetText" then return function(self) return self._text end end
+    if k == "RegisterEvent" then return function(self, e) self._events[e] = true end end
     if k == "SetAttribute" then return function(self, a, v) self._attr[a] = v end end
     if k == "GetAttribute" then return function(self, a) return self._attr[a] end end
     if k == "GetWidth" then return function() return 140 end end
@@ -34,7 +35,7 @@ CreateFrame = function(kind, name, parent, template)
   return o
 end
 function FIRE(event, ...)
-  for _, f in ipairs(EVENT_FRAMES) do if f._scripts.OnEvent then f._scripts.OnEvent(f, event, ...) end end
+  for _, f in ipairs(EVENT_FRAMES) do if f._scripts.OnEvent and f._events and f._events[event] then f._scripts.OnEvent(f, event, ...) end end
 end
 function TICK(n) for _ = 1, n or 1 do for _, f in ipairs(EVENT_FRAMES) do if f._scripts.OnUpdate then f._scripts.OnUpdate(f, 0.2) end end end end
 UIParent = newObj("UIParent"); Minimap = newObj("Minimap")
@@ -132,3 +133,19 @@ CRAFTS = { { "Bite", "Rank 1", "available", 0, nil, 1, 1 }, { "Bite", "Rank 2", 
 GetCraftDisplaySkillLine = function() return "Beast Training" end
 GetNumCrafts = function() return #CRAFTS end
 GetCraftInfo = function(i) return unpack(CRAFTS[i]) end
+
+time = os.time; date = os.date
+GetLocale = function() return "enUS" end
+UnitClass = function() return "Hunter", "HUNTER" end
+strtrim = function(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
+AMMO = 150
+GetInventoryItemID = function(u, slot) if slot == 0 then return 2512 end end
+GetInventoryItemCount = function() return AMMO end
+UnitHealth = function() return 30 end
+UnitHealthMax = function() return 100 end
+UnitIsDead = function() return false end
+Settings = { RegisterCanvasLayoutCategory = function() return {} end, RegisterAddOnCategory = function() end }
+NUM_PET_STABLE_SLOTS = 2
+STABLE = { [0] = { nil, "Ruff", 24, "Wolf" }, [2] = { nil, "Slasher", 30, "Cat" } }
+GetStablePetInfo = function(i) local s = STABLE[i]; if s then return s[1], s[2], s[3], s[4] end end
+GetPetExperience = function() return PETXP or 300, 1000 end

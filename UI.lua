@@ -122,7 +122,7 @@ end
 function ns.ZonesText(b)
   if b[8] then return C.ORANGE .. b[8] .. "|r" end
   local names = {}
-  for mapID in pairs(b[7]) do names[#names + 1] = ns.ZoneNames[mapID] or ("Map " .. mapID) end
+  for mapID in pairs(b[7]) do names[#names + 1] = ns.ZoneName(mapID) end
   table.sort(names)
   if #names == 0 then return C.GREY .. "unknown|r" end
   if #names > 2 then return names[1] .. ", " .. names[2] .. " +" .. (#names - 2) end
@@ -139,7 +139,7 @@ function ns.BeastTooltip(npcId, extra)
     if b[8] then lines[#lines + 1] = C.ORANGE .. "Inside " .. b[8] .. ". Map pins mark the entrance.|r" end
     local mapID, x, y, d = ns.NearestSpawn(npcId)
     if mapID then
-      lines[#lines + 1] = string.format("Nearest: %s %.0f, %.0f (%s)", ns.ZoneNames[mapID] or "?", x, y, ns.FormatDistance(d))
+      lines[#lines + 1] = string.format("Nearest: %s %.0f, %.0f (%s)", ns.ZoneName(mapID), x, y, ns.FormatDistance(d))
       local s, sd = ns.NearestService("S", mapID, x, y)
       local f, fd = ns.NearestService("F", mapID, x, y)
       lines[#lines + 1] = C.BLUE .. "Stable master: " .. ns.ServiceText(s, sd) .. "|r"
@@ -199,7 +199,9 @@ function ns.UI_Refresh()
   local t = ns.Target()
   if t then
     local who
-    if t.manual then
+    if t.stabled then
+      who = string.format("%sPlanning for:|r %s  %s, level %d  %s(stabled)|r", C.GOLD, t.name, t.family, t.level or 0, C.GREY)
+    elseif t.manual then
       who = string.format("%sPlanning for:|r %s  %s(no pet; assumes it knows nothing)|r", C.GOLD, t.family, C.GREY)
     else
       who = string.format("%s%s|r  %s, level %d", C.GOLD, t.name or "Pet", t.family, t.level or 0)
@@ -251,7 +253,7 @@ end
 
 local function CreateMainFrame()
   frame = CreateFrame("Frame", "UntamedFrame", UIParent, "BasicFrameTemplateWithInset")
-  frame:SetSize(520, 600)
+  frame:SetSize(620, 620)
   frame:SetPoint("CENTER", 200, 40)
   frame:SetFrameStrata("HIGH")
   frame:SetMovable(true)
@@ -291,7 +293,7 @@ local function CreateMainFrame()
   local prev
   for _, k in ipairs(tabOrder) do
     local t = tabs[k]
-    t.button = ns.MakeButton(frame, t.title, 96, function() SelectTab(k) end)
+    t.button = ns.MakeButton(frame, t.title, 82, function() SelectTab(k) end)
     if prev then t.button:SetPoint("LEFT", prev, "RIGHT", 2, 0) else t.button:SetPoint("TOPLEFT", 12, -82) end
     prev = t.button
   end
@@ -301,7 +303,7 @@ end
 
 function ns.UI_Show(key)
   if not frame then CreateMainFrame() end
-  local map = { plan = "plan", browse = "browse", care = "care", settings = "settings" }
+  local map = { plan = "plan", browse = "browse", care = "care", settings = "settings", builds = "builds", stable = "stable" }
   frame:Show()
   SelectTab(map[key] or activeTab or "abilities")
 end

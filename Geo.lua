@@ -116,5 +116,5 @@ end
 
 function ns.ServiceText(s, d)
   if not s then return "none found on this continent" end
-  return string.format("%s, %s (%s away)", s[2], ns.ZoneNames[s[4]] or "?", ns.FormatDistance(d))
+  return string.format("%s, %s (%s away)", s[2], ns.ZoneName(s[4]), ns.FormatDistance(d))
 end

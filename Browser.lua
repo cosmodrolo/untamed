@@ -58,7 +58,7 @@ local function Matches(b, playerLevel)
   if filter.teaches and #b[6] == 0 then return false end
   if filter.text ~= "" then
     local hay = b[1]:lower() .. " " .. (b[8] or ""):lower()
-    for mapID in pairs(b[7]) do hay = hay .. " " .. (ns.ZoneNames[mapID] or ""):lower() end
+    for mapID in pairs(b[7]) do hay = hay .. " " .. (ns.ZoneName(mapID)):lower() end
     if not hay:find(filter.text, 1, true) then return false end
   end
   return true

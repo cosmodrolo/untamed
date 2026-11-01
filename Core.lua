@@ -158,7 +158,7 @@ end
 -- Returns { name, family, level, known = { [ability] = highestRank } } or nil
 function ns.ScanPet()
   if not UnitExists("pet") then return nil end
-  local family = UnitCreatureFamily("pet")
+  local family = ns.ToEnglish(UnitCreatureFamily("pet"))
   if not family then return nil end
   if family == "Owl" and FOREVER then family = "Bird of Prey" end
   local info = { name = UnitName("pet"), family = family, level = UnitLevel("pet"), known = {} }
@@ -166,6 +166,7 @@ function ns.ScanPet()
   for i = 1, (num or 0) do
     local name, sub = GetPetSpellName(i)
     if name and not ns.IsSecret(name) then
+      name = ns.ToEnglish(name)
       local r = ParseRank(sub) or 1
       if r > (info.known[name] or 0) then info.known[name] = r end
     end
@@ -179,6 +180,7 @@ end
 ---------------------------------------------------------------------------
 local function Record(name, sub, reqLevel, tp)
   if not name or ns.IsSecret(name) then return false end
+  name = ns.ToEnglish(name)
   local r = ParseRank(sub) or 1
   ns.cdb.known[name] = ns.cdb.known[name] or {}
   ns.cdb.known[name][r] = true
@@ -258,15 +260,24 @@ function ns.Plan(family, petLevel, knownRanks)
   return out
 end
 
-ns.state = { mode = "pet" }  -- mode = "pet" | "manual"
+ns.state = { mode = "pet" }  -- mode = "pet" | "manual" | "stable"
 
 function ns.Target()
   local s = ns.state
   if s.mode == "manual" and s.family then
     return { family = s.family, level = UnitLevel("player"), known = {}, manual = true }
   end
+  if s.mode == "stable" and s.key and ns.cdb.pets and ns.cdb.pets[s.key] then
+    local p = ns.cdb.pets[s.key]
+    local cur = UnitExists("pet") and ns.PetKey(UnitName("pet"), ns.ToEnglish(UnitCreatureFamily("pet")))
+    if cur ~= s.key then
+      return { name = p.name, family = p.family, level = p.level, known = p.known or {}, stabled = true }
+    end
+  end
   return ns.ScanPet()
 end
+
+function ns.PetKey(name, family) return (name or "?") .. "|" .. (family or "?") end
 
 -- Every beast that teaches something the current pet still needs and you don't know: [npcId] = { "Bite 3", ... }
 function ns.NeededSet()
@@ -423,6 +434,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, arg2, arg3, arg4)
       if what then
         local name, r = what:match("^(.-) %(.-(%d+)%)$")
         if not name then name, r = what, 1 end
+        name = ns.ToEnglish(name)
         if name and ns.AbilityFamilies[name] then
           ns.cdb.known[name] = ns.cdb.known[name] or {}
           ns.cdb.known[name][tonumber(r)] = true
@@ -460,11 +472,24 @@ SlashCmdList.UNTAMED = function(msg)
   elseif msg == "minimap" then
     ns.db.showMinimap = not ns.db.showMinimap
     ns.Fire("MINIMAP_TOGGLE")
-  elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" then
+  elseif msg == "ammo" then
+    ns.NavigateService("A", "Ammo vendor")
+  elseif msg == "trainer" then
+    ns.NavigateService("T", "Hunter trainer")
+  elseif msg == "pettrainer" then
+    ns.NavigateService("P", "Pet trainer")
+  elseif msg == "stable" then
+    ns.NavigateService("S", "Stable master")
+  elseif msg == "rare" then
+    ns.NavigateLastRare()
+  elseif msg == "next" then
+    ns.Route_Next()
+  elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" or msg == "builds" then
     if ns.UI_Show then ns.UI_Show(msg) end
   elseif msg == "help" then
     ns.Print("/untamed  open the window   |  /untamed plan, browse, care, settings  open a tab")
-    ns.Print("/untamed zone  what your pet can learn in this zone")
+    ns.Print("/untamed zone  what your pet can learn in this zone   |  /untamed next  skip to the next route stop")
+    ns.Print("/untamed ammo, trainer, pettrainer, stable  arrow to the nearest one   |  /untamed rare  arrow to the last rare seen")
     ns.Print("/untamed clear  clear map focus and the navigation arrow")
     ns.Print("/untamed alerts  toggle zone alerts   |  /untamed minimap  toggle the minimap button")
   else

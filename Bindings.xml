@@ -1,0 +1,6 @@
+<Bindings>
+  <Binding name="UNTAMED_TOGGLE" header="UNTAMED" category="ADDONS">Untamed_Toggle()</Binding>
+  <Binding name="UNTAMED_NEXT" category="ADDONS">Untamed_NextStop()</Binding>
+  <Binding name="UNTAMED_CLEAR" category="ADDONS">Untamed_Clear()</Binding>
+  <Binding name="UNTAMED_ZONE" category="ADDONS">Untamed_Zone()</Binding>
+</Bindings>

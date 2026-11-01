@@ -10,7 +10,13 @@ Sources:
 import re, sys, json, os
 
 SRC, FLAVOR, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
-FJSON = sys.argv[4] if len(sys.argv) > 4 else None
+FJSON = sys.argv[4] if len(sys.argv) > 4 and sys.argv[4] != "-" else None
+SJSON = sys.argv[5] if len(sys.argv) > 5 else None   # services.json from build_services.py
+SVC = json.load(open(SJSON)) if SJSON else {"ammo": {}, "hunterTrainer": [], "petTrainer": [], "spellIds": {}}
+EXTRA = {}
+for k in SVC["ammo"]: EXTRA[int(k)] = "A"
+for k in SVC["hunterTrainer"]: EXTRA[int(k)] = "T"
+for k in SVC["petTrainer"]: EXTRA[int(k)] = "P"
 Q = os.path.join(SRC, "QuestieDB")
 if FLAVOR == "era":
     NPCDB = os.path.join(Q, "data/Classic/classicNpcDB.lua")
@@ -155,14 +161,15 @@ for line in open(NPCDB, encoding="utf-8"):
     nid = int(m.group(1))
     flags_m = re.search(r",(\d+)\},?\s*$", line)
     flags = int(flags_m.group(1)) if flags_m else 0
-    if nid in tame or (flags & (8 | 8192)):
+    if nid in tame or (flags & (8 | 8192)) or nid in EXTRA:
         try:
             rec = P(m.group(2)).val()
         except Exception as e:
             log("parse fail", nid, e); continue
         if nid in tame: npcdb[nid] = rec
-        if flags & (8 | 8192) and isinstance(rec, list) and "test" not in str(rec[0]).lower():
-            services_raw.append((nid, rec, flags))
+        if isinstance(rec, list) and "test" not in str(rec[0]).lower():
+            if flags & (8 | 8192): services_raw.append((nid, rec, "S" if flags & 8192 else "F"))
+            if nid in EXTRA: services_raw.append((nid, rec, EXTRA[nid]))
 
 # ---------------------------------------------------------------- emit
 def thin(points, grid=1.2, cap=45):
@@ -208,8 +215,7 @@ for nid in sorted(tame, key=lambda n: (str(tame[n]["fam"]), tame[n]["lo"], n)):
         lval(inst), lval(b["speed"]), lval(b["skin"])))
 
 svc_lines = []
-for nid, rec, flags in services_raw:
-    kind = "S" if flags & 8192 else "F"
+for nid, rec, kind in services_raw:
     fac = rec[12] if len(rec) > 12 and rec[12] else "AH"
     sp = rec[6] if len(rec) > 6 and isinstance(rec[6], dict) else {}
     for area, pts in sp.items():
@@ -248,7 +254,9 @@ with open(OUT, "w", encoding="utf-8") as f:
         removed = [a for a in ["Screech"] if a not in fams]
         f.write("ns.ForeverRemoved = {%s}\n" % ",".join(lstr(a) for a in removed))
         f.write("ns.ForeverDiets = {\n" + "\n".join('  [%s]={%s},' % (lstr(k), ",".join(lstr(x) for x in v.get("diet", []))) for k, v in sorted(fj["families"].items())) + "\n}\n")
+    f.write("-- Pet ability spell IDs (one per ability) so localized clients can map names back to English.\n")
+    f.write("ns.AbilitySpellIDs = {%s}\n" % ",".join('[%s]=%d' % (lstr(k), v[0]) for k, v in sorted(SVC["spellIds"].items())))
     f.write("ns.ZoneNames = {\n" + "\n".join('  [%d]=%s,' % (ui, lstr(nm)) for ui, nm in sorted(set(zmap.values()))) + "\n}\n")
 
 log("beasts written:", len(lines), "teaching:", sum(1 for b in tame.values() if b["spells"]), "no spawn:", len(nospawn))
-log("services:", len(svc_lines), "S", sum(1 for l in svc_lines if '"S"' in l), "F", sum(1 for l in svc_lines if '"F"' in l))
+log("services:", {k: sum(1 for l in svc_lines if l.startswith('  {"%s"' % k)) for k in "SFATP"})

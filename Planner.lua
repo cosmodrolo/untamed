@@ -95,6 +95,33 @@ function ns.BuildTrip(t)
     ordered[#ordered + 1] = s
   end
   trip.stops = ordered
+
+  -- The full route: stable your pet first (only one pet can be out), then each beast,
+  -- then take your pet back from the stable master nearest the last beast.
+  trip.route = {}
+  local petOut = not t.manual and ns.HasActivePet()
+  if #ordered > 0 and petOut then
+    local first = ordered[1]
+    local best, bestCost, bestD
+    local fac = ns.PlayerFaction()
+    local fc, fe, fn
+    if first.mapID then fc, fe, fn = ns.ToWorld(first.mapID, first.x, first.y) end
+    for _, sv in ipairs(ns.Services) do
+      if sv[1] == "S" and (sv[3] == "AH" or sv[3]:find(fac, 1, true)) then
+        local sc, se, sn = ns.ToWorld(sv[4], sv[5], sv[6])
+        local d1 = ns.Distance(pc, pe, pn, sc, se, sn)
+        local d2 = ns.Distance(sc, se, sn, fc, fe, fn)
+        local cost = (d1 or 50000) + (d2 or 50000)
+        if not bestCost or cost < bestCost then best, bestCost, bestD = sv, cost, d1 end
+      end
+    end
+    if best then trip.route[#trip.route + 1] = { kind = "stable", service = best, dist = bestD } end
+  end
+  for _, st in ipairs(ordered) do st.kind = "beast"; trip.route[#trip.route + 1] = st end
+  if #ordered > 0 and petOut then
+    local last = ordered[#ordered]
+    if last.stable then trip.route[#trip.route + 1] = { kind = "return", service = last.stable, dist = last.stableD } end
+  end
   return trip
 end
 
@@ -105,35 +132,73 @@ local function GoalsText(goals)
 end
 
 local function NavigateStop(s)
+  if s.kind == "stable" or s.kind == "return" then
+    local sv = s.service
+    ns.Arrow_Set(sv[4], sv[5], sv[6], (s.kind == "stable" and "Stable your pet: " or "Get your pet back: ") .. sv[2])
+    if s.kind == "stable" then
+      ns.Print("First stop: stable your pet with " .. sv[2] .. " in " .. ns.ZoneName(sv[4]) .. ". You can only tame with no pet out.")
+    else
+      ns.Print("Last stop: abandon the tamed beast, then take your pet back from " .. sv[2] .. " in " .. ns.ZoneName(sv[4]) .. ".")
+    end
+    return
+  end
   local b = ns.Beasts[s.npcId]
   if s.mapID then ns.Arrow_Set(s.mapID, s.x, s.y, b[1] .. " (" .. GoalsText(s.goals) .. ")", s.npcId) end
   ns.Pins_Focus({ s.npcId }, b[1], false)
 end
 
+local function Advance(msg)
+  if not route then return end
+  route.index = route.index + 1
+  local nxt = route.stops[route.index]
+  if nxt then
+    if msg then ns.Print(msg) end
+    NavigateStop(nxt)
+  else
+    ns.Print("Route complete! Teach your pet its new ranks at Beast Training.")
+    route = nil
+    ns.Arrow_Clear()
+  end
+  ns.Refresh()
+end
+
 local function StartRoute(trip)
-  if #trip.stops == 0 then ns.Print("Nothing to travel for right now.") return end
-  route = { stops = trip.stops, index = 1 }
+  if #trip.route == 0 then ns.Print("Nothing to travel for right now.") return end
+  route = { stops = trip.route, index = 1 }
   NavigateStop(route.stops[1])
-  ns.Print("Route started: stop 1 of " .. #route.stops .. ". It moves on when you learn the ability.")
+  ns.Print("Route started: " .. #route.stops .. " stops. It moves on by itself as you go.")
+end
+
+function ns.Route_Next()
+  if route then Advance("Skipped to the next stop.") else ns.Print("No route running. Start one from the Planner tab.") end
 end
 
 ns.On("LEARNED", function(ability, rank)
   if not route then return end
   local s = route.stops[route.index]
-  if not s then return end
+  if not s or s.kind ~= "beast" then return end
   for _, g in ipairs(s.goals) do
     if g.ability == ability and rank >= g.rank then g.done = true end
   end
   for _, g in ipairs(s.goals) do if not g.done then return end end
-  route.index = route.index + 1
-  local nxt = route.stops[route.index]
-  if nxt then
-    ns.Print("Stop done. Next: " .. ns.Beasts[nxt.npcId][1] .. ". Abandon the tamed beast and get your pet back from a stable master when you're ready.")
-    NavigateStop(nxt)
+  local nxt = route.stops[route.index + 1]
+  if nxt and nxt.kind == "beast" then
+    Advance("Learned it! Abandon the tamed beast (right-click its portrait), then head to " .. ns.Beasts[nxt.npcId][1] .. ".")
   else
-    ns.Print("Route complete! Get your pet from a stable master and teach it everything at Beast Training.")
-    route = nil
-    ns.Arrow_Clear()
+    Advance("Learned it!")
+  end
+end)
+
+-- Stable steps finish when you close the stable window in the right state.
+ns.On("STABLE_CLOSED", function()
+  if not route then return end
+  local s = route.stops[route.index]
+  if not s then return end
+  if s.kind == "stable" and not UnitExists("pet") then
+    ns.cdb.hasActivePet = false
+    Advance("Pet stabled. On to the first beast!")
+  elseif s.kind == "return" and UnitExists("pet") then
+    Advance(nil)
   end
 end)
 
@@ -150,8 +215,9 @@ local function Build(panel)
     for _, s in ipairs(lastTrip.stops) do ids[#ids + 1] = s.npcId end
     if #ids > 0 then ns.Pins_Focus(ids, "Trip planner stops", true) end
   end):SetPoint("TOPLEFT", 118, -2)
-  ns.MakeButton(panel, "Stop Route", 100, function() route = nil; ns.Arrow_Clear() end):SetPoint("TOPLEFT", 232, -2)
-  ns.MakeCheck(panel, "Plan for my level", 340, -2,
+  ns.MakeButton(panel, "Next Stop", 90, function() ns.Route_Next() end):SetPoint("TOPLEFT", 232, -2)
+  ns.MakeButton(panel, "Stop Route", 90, function() route = nil; ns.Arrow_Clear(); ns.Refresh() end):SetPoint("TOPLEFT", 326, -2)
+  ns.MakeCheck(panel, "Plan for my level", 424, -2,
     function() return ns.db.planForPlayerLevel end, function(v) ns.db.planForPlayerLevel = v end,
     "Plan ranks for your own level instead of your pet's current level (your pet will level up to use them).")
   list = ns.NewList(panel, 30)
@@ -174,7 +240,7 @@ local function Refresh(panel, t)
   add(14, nil, string.format("Training points needed: about %d%s", trip.tpNeed,
     tpFree and string.format("   (%s%d free now|r)", tpFree >= trip.tpNeed and C.GREEN or C.ORANGE, tpFree) or ""), "", nil,
     { "Training points", "Estimated from rank costs. Your pet earns more training points as it levels and as its loyalty grows." })
-  add(14, nil, C.GREY .. "Before each tame: stable your pet. After you learn the ability, abandon the tamed beast and take your pet back.|r", "", nil,
+  add(14, nil, C.GREY .. "The route stables your pet first, then each beast, then brings you back for your pet.|r", "", nil,
     { "How taming for abilities works", "You can only have one pet out. Stable your pet at a stable master (or keep a free stable slot), tame the beast, fight with it until you see \"You have learned a new ability\", then abandon it and get your pet back. Teach the new rank at Beast Training." })
 
   if #trip.teach > 0 then
@@ -187,27 +253,39 @@ local function Refresh(panel, t)
   end
 
   if #trip.stops > 0 then
-    add(0, nil, C.GOLD .. "Stops (closest first)|r")
-    for i, s in ipairs(trip.stops) do
-      local b = ns.Beasts[s.npcId]
-      local current = route and route.stops[route.index] and route.stops[route.index].npcId == s.npcId
-      add(4, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"),
-        string.format("%s%d. %s|r %s", current and C.GREEN or C.WHITE, i, b[1], C.GREY .. ns.LevelText(b) .. "|r"),
-        C.HUNTER .. GoalsText(s.goals) .. "|r",
-        function(_, button)
-          if button == "RightButton" then ns.Pins_Focus({ s.npcId }, b[1], true) else NavigateStop(s) end
-        end, ns.BeastTooltip(s.npcId, { C.HUNTER .. "For your pet: " .. GoalsText(s.goals) .. "|r" }))
-      add(26, nil, C.GREY .. (s.mapID and (ns.ZoneNames[s.mapID] or "?") .. string.format(" %.0f, %.0f", s.x, s.y) or "location unknown") .. "|r",
-        C.GREY .. (s.dist and ns.FormatDistance(s.dist) or "") .. "|r")
-      if s.stable then
-        add(26, ns.Icon("Ability_Hunter_BeastCall"), C.BLUE .. "Stable: " .. s.stable[2] .. ", " .. (ns.ZoneNames[s.stable[4]] or "?") .. "|r",
-          C.GREY .. ns.FormatDistance(s.stableD) .. "|r", function() ns.Arrow_Set(s.stable[4], s.stable[5], s.stable[6], "Stable: " .. s.stable[2]) end,
-          { "Nearest stable master", "Closest stable master to this beast for your faction. Click for an arrow." })
-      end
-      if s.flight then
-        add(26, ns.Icon("Ability_Mount_Gryphon_01"), C.BLUE .. "Fly: " .. s.flight[2] .. ", " .. (ns.ZoneNames[s.flight[4]] or "?") .. "|r",
-          C.GREY .. ns.FormatDistance(s.flightD) .. "|r", function() ns.Arrow_Set(s.flight[4], s.flight[5], s.flight[6], "Flight: " .. s.flight[2]) end,
-          { "Nearest flight master", "Closest flight master to this beast for your faction. Click for an arrow." })
+    add(0, nil, C.GOLD .. "Route (closest first)|r", route and (C.GREEN .. "running: stop " .. route.index .. " of " .. #route.stops .. "|r") or "")
+    local n = 0
+    for _, s in ipairs(trip.route) do
+      n = n + 1
+      local current = route and route.stops[route.index] and route.stops[route.index].kind == s.kind
+        and (s.kind ~= "beast" or route.stops[route.index].npcId == s.npcId)
+      local numColor = current and C.GREEN or C.WHITE
+      if s.kind == "stable" or s.kind == "return" then
+        local sv = s.service
+        local label = s.kind == "stable" and "Stable your pet" or "Abandon the tamed beast and take your pet back"
+        add(4, ns.Icon("Ability_Hunter_BeastCall"), string.format("%s%d. %s|r", numColor, n, label),
+          C.BLUE .. sv[2] .. ", " .. ns.ZoneName(sv[4]) .. "|r",
+          function() NavigateStop(s) end,
+          { label, sv[2] .. " (Stable Master), " .. ns.ZoneName(sv[4]) .. string.format(" %.0f, %.0f", sv[5], sv[6]),
+            s.kind == "stable" and "You can't tame while you have a pet, even a dismissed one. This stable master is the best stop on the way to your first beast."
+              or "When you're done learning, abandon the last tamed beast and collect your pet here.",
+            "Click for an arrow." })
+        if s.dist then add(26, nil, C.GREY .. ns.FormatDistance(s.dist) .. " from you|r", "") end
+      else
+        local b = ns.Beasts[s.npcId]
+        add(4, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"),
+          string.format("%s%d. %s|r %s", numColor, n, b[1], C.GREY .. ns.LevelText(b) .. "|r"),
+          C.HUNTER .. GoalsText(s.goals) .. "|r",
+          function(_, button)
+            if button == "RightButton" then ns.Pins_Focus({ s.npcId }, b[1], true) else NavigateStop(s) end
+          end, ns.BeastTooltip(s.npcId, { C.HUNTER .. "For your pet: " .. GoalsText(s.goals) .. "|r" }))
+        add(26, nil, C.GREY .. (s.mapID and ns.ZoneName(s.mapID) .. string.format(" %.0f, %.0f", s.x, s.y) or "location unknown") .. "|r",
+          C.GREY .. (s.dist and ns.FormatDistance(s.dist) or "") .. "|r")
+        if s.flight then
+          add(26, ns.Icon("Ability_Mount_Gryphon_01"), C.BLUE .. "Fly: " .. s.flight[2] .. ", " .. ns.ZoneName(s.flight[4]) .. "|r",
+            C.GREY .. ns.FormatDistance(s.flightD) .. "|r", function() ns.Arrow_Set(s.flight[4], s.flight[5], s.flight[6], "Flight: " .. s.flight[2]) end,
+            { "Nearest flight master", "Closest flight master to this beast for your faction. Click for an arrow." })
+        end
       end
     end
   elseif #trip.teach == 0 then

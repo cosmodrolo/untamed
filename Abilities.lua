@@ -84,6 +84,20 @@ ns.RankTP = {
   ["Cower"] = { 8, 10, 12, 14, 16, 18 },
 }
 
+-- Pet trainer abilities (levels and training points; values read in game win over these).
+do
+  local R = { 5, 15, 45, 90 }
+  local trainer = {
+    ["Growl"] = { { 1, 10, 20, 30, 40, 50, 60 }, { 0, 0, 0, 0, 0, 0, 0 } },
+    ["Natural Armor"] = { { 1, 12, 18, 24, 30, 36, 42, 48, 54, 60 }, { 1, 5, 10, 15, 25, 50, 75, 100, 125, 150 } },
+    ["Great Stamina"] = { { 1, 12, 18, 24, 30, 36, 42, 48, 54, 60 }, { 5, 10, 15, 25, 50, 75, 100, 125, 150, 185 } },
+    ["Arcane Resistance"] = { { 20, 30, 40, 50 }, R }, ["Fire Resistance"] = { { 20, 30, 40, 50 }, R },
+    ["Frost Resistance"] = { { 20, 30, 40, 50 }, R }, ["Nature Resistance"] = { { 20, 30, 40, 50 }, R },
+    ["Shadow Resistance"] = { { 20, 30, 40, 50 }, R },
+  }
+  for ability, v in pairs(trainer) do ns.RankLevels[ability] = v[1]; ns.RankTP[ability] = v[2] end
+end
+
 ns.TrainerAbilities = {
   "Growl", "Natural Armor", "Great Stamina",
   "Arcane Resistance", "Fire Resistance", "Frost Resistance", "Nature Resistance", "Shadow Resistance",

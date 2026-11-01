@@ -107,7 +107,18 @@ local function UpdateButtonPos()
   mm:SetPoint("CENTER", Minimap, "CENTER", math.cos(a) * 80, math.sin(a) * 80)
 end
 
-ns.On("MINIMAP_TOGGLE", function() if mm then mm:SetShown(ns.db.showMinimap) end end)
+ns.On("MINIMAP_TOGGLE", function()
+  if ns.usingLDBIcon then
+    if mm then mm:Hide() end
+    local icon = LibStub("LibDBIcon-1.0", true)
+    if icon then
+      ns.db.ldbIcon.hide = not ns.db.showMinimap
+      if ns.db.showMinimap then icon:Show("Untamed") else icon:Hide("Untamed") end
+    end
+  elseif mm then
+    mm:SetShown(ns.db.showMinimap and not ns.usingLDBIcon)
+  end
+end)
 
 ns.On("LOGIN", function()
   mm = CreateFrame("Button", "UntamedMinimapButton", Minimap)
@@ -148,7 +159,7 @@ ns.On("LOGIN", function()
   end)
   mm:SetScript("OnLeave", function() GameTooltip:Hide() end)
   UpdateButtonPos()
-  mm:SetShown(ns.db.showMinimap)
+  mm:SetShown(ns.db.showMinimap and not ns.usingLDBIcon)
 
   local ticker = CreateFrame("Frame")
   local t = 0

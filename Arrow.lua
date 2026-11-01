@@ -56,7 +56,7 @@ local function Create()
     local d = ns.Distance(pc, pe, pn, target.cont, target.east, target.north)
     if not d then
       arrow:Hide()
-      dist:SetText("|cffff9933On " .. (ns.ZoneNames[target.mapID] or "another zone") .. ". Travel to that continent first.|r")
+      dist:SetText("|cffff9933On " .. (ns.ZoneName(target.mapID)) .. ". Travel to that continent first.|r")
       return
     end
     arrow:Show()
@@ -101,7 +101,7 @@ function ns.Navigate(npcId)
   local mapID, x, y = ns.NearestSpawn(npcId)
   if not mapID or not x then
     local zone = next(b[7])
-    ns.Print(zone and (b[1] .. " is somewhere in " .. (ns.ZoneNames[zone] or "an unknown zone") .. ". Exact spots aren't known yet.")
+    ns.Print(zone and (b[1] .. " is somewhere in " .. (ns.ZoneName(zone)) .. ". Exact spots aren't known yet.")
       or ("No known location for " .. b[1] .. "."))
     return
   end

@@ -16,7 +16,9 @@ local function Diet()
   local list
   if C_PetInfo and C_PetInfo.GetPetFoodTypes then list = C_PetInfo.GetPetFoodTypes()
   elseif GetPetFoodTypes then list = { GetPetFoodTypes() } end
-  return list or {}
+  local out = {}
+  for i, d in ipairs(list or {}) do out[i] = ns.ToEnglish(d) end
+  return out
 end
 
 local function ItemLevel(itemID)

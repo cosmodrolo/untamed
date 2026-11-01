@@ -5,15 +5,21 @@
 ## Version: @project-version@
 ## SavedVariables: UntamedDB
 ## SavedVariablesPerCharacter: UntamedCharDB
+## OptionalDeps: LibStub, LibDataBroker-1.1, LibDBIcon-1.0
 ## IconTexture: Interface\AddOns\Untamed\Media\Icon
 ## Category: Hunter
 ## X-License: GPL-3.0
 ## X-Website: https://github.com/cosmodrolo/untamed
 
+#@no-lib-strip@
+embeds.xml
+#@end-no-lib-strip@
+
 Data\Era.lua
 Abilities.lua
 Foods.lua
 Core.lua
+Locale.lua
 Geo.lua
 MapPins.lua
 MapPins.xml
@@ -21,7 +27,11 @@ Minimap.lua
 Arrow.lua
 Alerts.lua
 PetCare.lua
+Leveling.lua
+Hunter.lua
 UI.lua
 Planner.lua
+Stable.lua
+Builds.lua
 Browser.lua
 Tabs.lua
