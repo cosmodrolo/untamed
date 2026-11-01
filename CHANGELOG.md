@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.3.1
+- Tab buttons now size themselves to fit the window, so Settings no longer runs off the edge.
+
 ## v2.3.0
 - New Find a Pet tab: pick Tank, Damage, Leveling, PvP or Utility and get the best families for it (from Classic family stat bonuses and abilities), the best beasts of each family you can tame now (fastest attack, highest level, closest), and a one-click starting build.
 - Beast, stable master, flight master, vendor and trainer names now show in your game language (9 languages, from QuestieDB).

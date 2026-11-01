@@ -291,11 +291,20 @@ local function CreateMainFrame()
   tipLine:SetPoint(L["RIGHT"], frame, L["RIGHT"], -14, 0)
   tipLine:SetJustifyH(L["LEFT"])
 
+  -- Size the tab buttons so they always fit the window, however many tabs there are.
   local prev
+  local gap = 2
+  local tabW = math.floor((frame:GetWidth() - 24 - gap * (#tabOrder - 1)) / #tabOrder)
   for _, k in ipairs(tabOrder) do
     local t = tabs[k]
-    t.button = ns.MakeButton(frame, t.title, 82, function() SelectTab(k) end)
-    if prev then t.button:SetPoint(L["LEFT"], prev, L["RIGHT"], 2, 0) else t.button:SetPoint(L["TOPLEFT"], 12, -82) end
+    t.button = ns.MakeButton(frame, t.title, tabW, function() SelectTab(k) end)
+    local fs = t.button.GetFontString and t.button:GetFontString()
+    if fs and fs.GetStringWidth and fs:GetStringWidth() > tabW - 10 then
+      t.button:SetNormalFontObject(GameFontNormalSmall)
+      t.button:SetHighlightFontObject(GameFontHighlightSmall)
+      if t.button.SetDisabledFontObject then t.button:SetDisabledFontObject(GameFontDisableSmall) end
+    end
+    if prev then t.button:SetPoint(L["LEFT"], prev, L["RIGHT"], gap, 0) else t.button:SetPoint(L["TOPLEFT"], 12, -82) end
     prev = t.button
   end
 
