@@ -22,6 +22,19 @@ local function MyFaction()
   return f == "Horde" and "H" or "A"
 end
 
+-- Race bit for quest race masks (0 = any race).
+local RACE_BIT = { Human = 1, Orc = 2, Dwarf = 4, NightElf = 8, Scourge = 16, Undead = 16, Tauren = 32, Gnome = 64, Troll = 128 }
+local ALLIANCE_RACES, HORDE_RACES = 1 + 4 + 8 + 64, 2 + 16 + 32 + 128
+local function QuestForMe(mask)
+  if not mask or mask == 0 then return true end
+  local _, race = UnitRace("player")
+  local bit = RACE_BIT[race or ""]
+  if not bit then return true end
+  -- A mask covering one whole faction means "this faction"; otherwise it's race-specific.
+  return math.floor(mask / bit) % 2 == 1
+end
+ns.QuestForMe = QuestForMe
+
 local function ItemIcon(id)
   if C_Item and C_Item.GetItemIconByID then return C_Item.GetItemIconByID(id) end
   return GetItemIcon and GetItemIcon(id) or "Interface\\Icons\\INV_Misc_QuestionMark"
@@ -32,22 +45,32 @@ local function ItemInfo(id)
   return GetItemInfo(id)
 end
 
+local QUALITY_HEX = { [0] = "|cff9d9d9d", "|cffffffff", "|cff1eff00", "|cff0070dd", "|cffa335ee", "|cffff8000" }
 local function QualityColor(id)
   local _, _, q = ItemInfo(id)
   if q and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[q] then return ITEM_QUALITY_COLORS[q].hex end
-  if C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, id) end
+  local db = DB
+  local it = db and db.I[id]
+  if it and it[13] and QUALITY_HEX[it[13]] then return QUALITY_HEX[it[13]] end
   return C.WHITE
 end
 
 -- Distance from the player to a map point (nil when on another continent or unknown).
 local function DistTo(map, x, y, pc, pe, pn)
-  if not map or map == 0 then return nil end
+  if not map or map == 0 or not x or x == 0 then return nil end
   local c, e, n = ns.ToWorld(map, x, y)
   if not c then return nil end
   return ns.Distance(pc, pe, pn, c, e, n)
 end
+ns.DistTo = DistTo
 
--- Every source of an item, nearest first. Each: { kind, label, npcName, map, x, y, inst, dist }
+local function ContainerName(db, id)
+  local it = db.I[id]
+  return (it and it[1]) or (db.C and db.C[id]) or ("#" .. id)
+end
+
+-- Every source of an item, nearest first. Each: { kind, name, map, x, y, inst, dist, ... }
+-- kinds: vendor, quest, drop, dungeon, chest, inside, crafted, fishing
 function ns.ItemSources(id)
   local db = ns.SearchDB()
   local it = db and db.I[id]
@@ -55,29 +78,35 @@ function ns.ItemSources(id)
   local pc, pe, pn = ns.PlayerWorld()
   local fac = MyFaction()
   local out = {}
-  local function addNpc(kind, npcId, extra)
+  local function addNpc(kind, npcId)
     local n = db.N[npcId]
     if not n then return end
     if kind == "vendor" and n[8] ~= "" and not n[8]:find(fac, 1, true) then return end
-    out[#out + 1] = { kind = kind, name = n[1] .. (extra or ""), map = n[5], x = n[6], y = n[7],
+    if kind == "drop" and n[10] ~= "" then kind = "dungeon" end
+    out[#out + 1] = { kind = kind, name = n[1], map = n[5], x = n[6], y = n[7],
       inst = n[10] ~= "" and n[10] or nil, dist = DistTo(n[5], n[6], n[7], pc, pe, pn), npcId = npcId }
   end
   for _, v in ipairs(it[6] or {}) do addNpc("vendor", v) end
   for _, d in ipairs(it[7] or {}) do addNpc("drop", d) end
   for _, o in ipairs(it[9] or {}) do
     local ob = db.O[o]
-    if ob then out[#out + 1] = { kind = "object", name = ob[1], map = ob[2], x = ob[3], y = ob[4], inst = ob[5] ~= "" and ob[5] or nil,
-      dist = DistTo(ob[2], ob[3], ob[4], pc, pe, pn) } end
+    if ob then
+      out[#out + 1] = { kind = "chest", name = ob[1], map = ob[2], x = ob[3], y = ob[4], inst = ob[5] ~= "" and ob[5] or nil,
+        spots = ob[6] or 0, dist = DistTo(ob[2], ob[3], ob[4], pc, pe, pn) }
+    end
   end
   for _, q in ipairs(it[10] or {}) do
     local qq = db.Q[q]
-    if qq then
+    if qq and QuestForMe(qq[4]) then
       local n = db.N[qq[3]]
       out[#out + 1] = { kind = "quest", name = qq[1], giver = n and n[1], map = n and n[5], x = n and n[6], y = n and n[7],
         inst = n and n[10] ~= "" and n[10] or nil, dist = n and DistTo(n[5], n[6], n[7], pc, pe, pn), level = qq[2] }
     end
   end
-  local rank = { vendor = 1, quest = 2, drop = 3, object = 4 }
+  for _, c in ipairs(it[17] or {}) do out[#out + 1] = { kind = "inside", name = ContainerName(db, c), itemID = c } end
+  if it[18] and it[18] ~= "" then out[#out + 1] = { kind = "crafted", name = it[18] } end
+  for _, z in ipairs(it[19] or {}) do out[#out + 1] = { kind = "fishing", name = ns.ZoneName(z), map = z } end
+  local rank = { vendor = 1, quest = 2, drop = 3, dungeon = 4, chest = 5, inside = 6, crafted = 7, fishing = 8 }
   table.sort(out, function(a, b)
     if (a.dist ~= nil) ~= (b.dist ~= nil) then return a.dist ~= nil end
     if a.dist and b.dist and a.dist ~= b.dist then return a.dist < b.dist end
@@ -86,26 +115,110 @@ function ns.ItemSources(id)
   return out, it
 end
 
-local KIND = { vendor = L["Sold by"], drop = L["Drops from"], object = L["Found in"], quest = L["Quest reward"] }
+-- Which ways an item can be had (fast, no distances): set of kinds plus "world" and "ah".
+function ns.ItemWays(id)
+  local db = ns.SearchDB()
+  local it = db and db.I[id]
+  local w = {}
+  if not it then return w end
+  local fac = MyFaction()
+  local plainVendor = false
+  for _, v in ipairs(it[6] or {}) do
+    local n = db.N[v]
+    if n and (n[8] == "" or n[8]:find(fac, 1, true)) then
+      w.vendor = true
+      -- Quartermasters and supply officers sell for reputation.
+      local t = n[4] or ""
+      if not (t:find("Quartermaster", 1, true) or t:find("Supply Officer", 1, true)) then plainVendor = true end
+    end
+  end
+  if w.vendor and not plainVendor then w.repVendor = true; w.rep = true end
+  for _, q in ipairs(it[10] or {}) do
+    local qq = db.Q[q]
+    if qq and QuestForMe(qq[4]) then w.quest = true break end
+  end
+  for _, d in ipairs(it[7] or {}) do
+    local n = db.N[d]
+    if n then if n[10] ~= "" then w.dungeon = true else w.drop = true end end
+  end
+  if it[8] > #(it[7] or {}) then w.world = true end
+  if it[9] then w.chest = true end
+  if it[17] then w.inside = true end
+  if it[18] and it[18] ~= "" then w.crafted = true end
+  if it[19] then w.fishing = true end
+  if (it[20] or 0) > 0 then w.rep = true end
+  -- Not bound on pickup and not junk: other players can sell it on the Auction House.
+  if (it[15] == 0 or it[15] == 2) and (it[13] or 1) >= 2 and (it[4] == 2 or it[4] == 4) then w.ah = true end
+  return w
+end
+
+local KIND = { vendor = L["Sold by"], drop = L["Drops from"], dungeon = L["Dungeon drop"], chest = L["Found in"],
+  quest = L["Quest reward"], inside = L["Found inside"], crafted = L["Crafted"], fishing = L["Fishing"] }
+local SHORT = { vendor = L["Vendor"], drop = L["Drop"], dungeon = L["Dungeon"], chest = L["Chest"], quest = L["Quest"],
+  inside = L["Inside"], crafted = L["Crafted"], fishing = L["Fishing"] }
+local KIND_COLOR = { vendor = C.GREEN, quest = C.BLUE, dungeon = C.ORANGE, drop = C.WHITE, chest = C.GOLD, inside = C.GOLD,
+  crafted = C.HUNTER, fishing = C.BLUE }
+ns.SourceShort, ns.SourceColor = SHORT, KIND_COLOR
+
+local function Where(s)
+  if s.inst then return C.ORANGE .. s.inst .. "|r" end
+  if s.map and s.map ~= 0 then return ns.ZoneName(s.map) end
+  return nil
+end
 
 local function SourceLine(s)
-  local where = s.inst and (C.ORANGE .. s.inst .. "|r") or (s.map and s.map ~= 0 and ns.ZoneName(s.map)) or L["unknown location"]
-  local who = s.kind == "quest" and (s.name .. (s.giver and (C.GREY .. ", " .. L["from "] .. s.giver .. "|r") or "")) or s.name
-  return string.format("%s%s:|r %s  %s(%s%s)|r", C.GOLD, KIND[s.kind], who, C.GREY, where, s.dist and (", " .. ns.FormatDistance(s.dist)) or "")
+  local where = Where(s)
+  local who = s.name
+  if s.kind == "quest" then who = s.name .. (s.giver and (C.GREY .. ", " .. L["from "] .. s.giver .. "|r") or "") end
+  if s.kind == "chest" and s.spots > 5 then who = who .. C.GREY .. " (" .. string.format(L["spawns in %d spots"], s.spots) .. ")|r" end
+  if s.kind == "crafted" then who = s.name == "Crafted" and L["a profession"] or s.name end
+  local extra = where and (where .. (s.dist and (", " .. ns.FormatDistance(s.dist)) or "")) or (s.kind == "chest" and L["random spawns"] or nil)
+  return string.format("%s%s:|r %s%s", C.GOLD, KIND[s.kind], who, extra and (C.GREY .. "  (" .. extra .. ")|r") or "")
+end
+
+-- Short "how and where" for one row: nearest source.
+function ns.SourceSummary(id)
+  local srcs = ns.ItemSources(id)
+  local s = srcs[1]
+  if not s then
+    local w = ns.ItemWays(id)
+    if w.world then return C.GREY .. L["World drop"] .. "|r" end
+    return C.GREY .. L["unknown"] .. "|r"
+  end
+  local where = Where(s)
+  if s.kind == "inside" then where = s.name end
+  if s.kind == "crafted" then where = s.name == "Crafted" and "" or s.name end
+  return (KIND_COLOR[s.kind] or C.WHITE) .. SHORT[s.kind] .. "|r" .. (where and where ~= "" and (C.GREY .. ", " .. where .. "|r") or "")
+    .. (s.dist and (C.GREY .. ", " .. ns.FormatDistance(s.dist) .. "|r") or ""), s
 end
 
 local function GoTo(s)
-  if not s or not s.map or s.map == 0 then ns.Print(L["No map position for that source."]) return end
+  if s and s.kind == "inside" then ns.SearchFor(s.name) return end
+  if not s or not s.map or s.map == 0 or not s.x or s.x == 0 then
+    if s and s.map and s.map ~= 0 then ns.Print(string.format(L["%s: somewhere in %s (no exact spot known)."], s.name, ns.ZoneName(s.map)))
+    else ns.Print(L["No map position for that source."]) end
+    return
+  end
   local label = (s.kind == "quest" and s.giver or s.name) .. (s.inst and (" (" .. L["inside "] .. s.inst .. ")") or "")
   ns.Arrow_Set(s.map, s.x, s.y, label)
 end
 
 local function ItemTooltip(id)
-  return function(owner)
+  return function()
     local srcs, it = ns.ItemSources(id)
     local lines = { (it and it[1]) or "?", itemID = id }
     if it and it[3] > 0 then lines[#lines + 1] = L["Requires level "] .. it[3] end
-    if it and it[8] > #(it[7] or {}) then lines[#lines + 1] = C.GREY .. string.format(L["World drop: drops from %d different creatures."], it[8]) .. "|r" end
+    local w = ns.ItemWays(id)
+    if w.world then lines[#lines + 1] = C.GREY .. string.format(L["World drop: drops from %d different creatures."], it[8]) .. "|r" end
+    if w.ah then lines[#lines + 1] = C.GREY .. L["Not bound when picked up, so you can often buy it on the Auction House."] .. "|r" end
+    if w.repVendor and not ((it[20] or 0) > 0) then
+      lines[#lines + 1] = C.ORANGE .. L["Sold by a quartermaster: usually needs reputation."] .. "|r"
+    elseif w.rep then
+      local fname = GetFactionInfoByID and GetFactionInfoByID(it[20]) or (L["faction "] .. it[20])
+      local rname = _G["FACTION_STANDING_LABEL" .. (it[21] + 1)] or ("rank " .. it[21])
+      lines[#lines + 1] = C.ORANGE .. string.format(L["Needs %s reputation with %s."], rname, fname) .. "|r"
+    end
+    if it and it[16] and it[16] > 0 and w.vendor and ns.Money then lines[#lines + 1] = C.GREY .. L["Vendor price: "] .. "|r" .. ns.Money(it[16]) end
     for i = 1, math.min(8, #srcs) do lines[#lines + 1] = SourceLine(srcs[i]) end
     if #srcs > 8 then lines[#lines + 1] = C.GREY .. string.format(L["and %d more"], #srcs - 8) .. "|r" end
     lines[#lines + 1] = C.GREY .. L["Click: arrow to the nearest source.  Shift-click: link in chat."] .. "|r"
@@ -121,6 +234,8 @@ local function ItemClick(id)
       return
     end
     local srcs = ns.ItemSources(id)
+    -- Prefer a source we can point an arrow at.
+    for _, s in ipairs(srcs) do if s.map and s.map ~= 0 and s.x and s.x ~= 0 then GoTo(s) return end end
     GoTo(srcs[1])
   end
 end
@@ -131,18 +246,69 @@ local function NpcLine(n)
   return where
 end
 
+-- Can the player use (wear or wield) this item?
+local MELEE_OK = { [0] = true, [1] = true, [6] = true, [7] = true, [8] = true, [10] = true, [13] = true, [15] = true, [16] = true }
+local RANGED_OK = { [2] = true, [3] = true, [18] = true }
+function ns.CanUseItem(it, level)
+  level = level or UnitLevel("player")
+  if it[3] > level then return false end
+  if it[4] == 4 then
+    if it[5] == 3 and level < 40 then return false end
+    return it[5] <= 3
+  elseif it[4] == 2 then
+    return MELEE_OK[it[5]] or RANGED_OK[it[5]] or false
+  end
+  return true
+end
+
 ---------------------------------------------------------------------------
 -- Search tab
 ---------------------------------------------------------------------------
 do
-  local list, box, kindBtn
-  local KINDS = { "all", "items", "npcs" }
-  local KIND_LABEL = { all = L["Everything"], items = L["Items"], npcs = L["NPCs"] }
-  local kind, query = "all", ""
+  local list, box
+  local f = { type = "all", kind = "any", source = "any", quality = 0, usable = false, near = false }
+  local query = ""
+
+  local TYPES = { { "all", L["Everything"] }, { "items", L["Items"] }, { "npcs", L["NPCs"] }, { "beasts", L["Tameable beasts"] }, { "vendors", L["Vendors"] } }
+  local SLOT_INV = { head = { 1 }, neck = { 2 }, shoulder = { 3 }, back = { 16 }, chest = { 5, 20 }, wrist = { 9 }, hands = { 10 },
+    waist = { 6 }, legs = { 7 }, feet = { 8 }, finger = { 11 }, trinket = { 12 } }
+  local KINDS = {
+    { "any", L["Any item"] }, { "armor", L["Armor (any slot)"] }, { "head", L["Head"] }, { "neck", L["Neck"] }, { "shoulder", L["Shoulders"] },
+    { "back", L["Back"] }, { "chest", L["Chest"] }, { "wrist", L["Wrists"] }, { "hands", L["Hands"] }, { "waist", L["Waist"] },
+    { "legs", L["Legs"] }, { "feet", L["Feet"] }, { "finger", L["Rings"] }, { "trinket", L["Trinkets"] },
+    { "ranged", L["Bows, guns, crossbows"] }, { "melee", L["Melee weapons"] }, { "ammo", L["Ammo"] }, { "quiver", L["Quivers and pouches"] },
+    { "food", L["Pet food"] }, { "bag", L["Bags"] }, { "consumable", L["Potions and food"] }, { "recipe", L["Recipes"] },
+  }
+  local SOURCES = { { "any", L["Any source"] }, { "vendor", L["Vendor"] }, { "quest", L["Quest"] }, { "drop", L["Open-world drop"] },
+    { "dungeon", L["Dungeon"] }, { "chest", L["Chest or node"] }, { "world", L["World drop"] }, { "inside", L["Inside another item"] },
+    { "crafted", L["Crafted"] }, { "fishing", L["Fishing"] }, { "ah", L["Auction House"] } }
+  local QUALS = { { 0, L["Any quality"] }, { 2, L["Uncommon or better"] }, { 3, L["Rare or better"] }, { 4, L["Epic"] } }
+
+  local function KindMatch(it)
+    local k = f.kind
+    if k == "any" then return true end
+    local cls, sub, inv = it[4], it[5], it[14] or 0
+    if k == "armor" then return cls == 4 end
+    if SLOT_INV[k] then
+      for _, v in ipairs(SLOT_INV[k]) do if inv == v then return true end end
+      return false
+    end
+    if k == "ranged" then return cls == 2 and RANGED_OK[sub] or false end
+    if k == "melee" then return cls == 2 and not RANGED_OK[sub] and sub ~= 19 and sub ~= 20 end
+    if k == "ammo" then return cls == 6 end
+    if k == "quiver" then return cls == 11 end
+    if k == "food" then return (it[11] or 0) > 0 end
+    if k == "bag" then return cls == 1 end
+    if k == "consumable" then return cls == 0 end
+    if k == "recipe" then return cls == 9 end
+    return true
+  end
+
+  local function FiltersActive() return f.kind ~= "any" or f.source ~= "any" or f.quality > 0 or f.usable or f.type == "beasts" or f.type == "vendors" end
 
   local function Build(panel)
     box = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
-    box:SetSize(240, 20)
+    box:SetSize(200, 20)
     box:SetPoint("TOPLEFT", 10, -3)
     box:SetAutoFocus(false)
     box:SetScript("OnTextChanged", function(self) query = (self:GetText() or ""):lower(); ns.UI_Refresh() end)
@@ -153,63 +319,107 @@ do
     hint:SetText(L["Item, NPC or beast name"])
     box:HookScript("OnEditFocusGained", function() hint:Hide() end)
     box:HookScript("OnEditFocusLost", function(self) hint:SetShown((self:GetText() or "") == "") end)
-    local idx = 1
-    kindBtn = ns.MakeButton(panel, KIND_LABEL.all, 110, function()
-      idx = idx % #KINDS + 1; kind = KINDS[idx]; kindBtn:SetText(KIND_LABEL[kind]); ns.UI_Refresh()
-    end)
-    kindBtn:SetPoint("LEFT", box, "RIGHT", 8, 0)
-    list = ns.NewList(panel, 30)
+
+    local t = ns.MakeDropdown(panel, 130, TYPES, function() return f.type end, function(v) f.type = v end)
+    t:SetPoint("LEFT", box, "RIGHT", 8, 0)
+    local k = ns.MakeDropdown(panel, 150, KINDS, function() return f.kind end, function(v) f.kind = v end)
+    k:SetPoint("LEFT", t, "RIGHT", 4, 0)
+    local s = ns.MakeDropdown(panel, 140, SOURCES, function() return f.source end, function(v) f.source = v end)
+    s:SetPoint("TOPLEFT", 4, -28)
+    local q = ns.MakeDropdown(panel, 140, QUALS, function() return f.quality end, function(v) f.quality = v end)
+    q:SetPoint("LEFT", s, "RIGHT", 4, 0)
+    ns.MakeCheck(panel, L["Usable by me"], 296, -28, function() return f.usable end, function(v) f.usable = v end,
+      L["Only gear you can wear at your level (leather, mail from 40, and weapons hunters can use)."])
+    ns.MakeCheck(panel, L["Near me"], 410, -28, function() return f.near end, function(v) f.near = v end,
+      L["Only things on your continent, nearest first."])
+    list = ns.NewList(panel, 56)
   end
 
   local function Refresh()
     local rows = {}
     local function add(...) rows[#rows + 1] = { ... } end
-    if #query < 3 then
+    if #query < 3 and not FiltersActive() then
       add(0, nil, L["Search everything"], "", nil, nil, { header = true })
       add(0, nil, C.GREY .. L["Type at least 3 letters: an item (Heavy Shot, Hawkeye's Tunic), an NPC (Hogor Thunderhoof) or a beast."] .. "|r")
+      add(0, nil, C.GREY .. L["Or leave the box empty and pick filters, for example Bows, guns, crossbows + Vendor + Usable by me + Near me."] .. "|r")
       add(0, nil, C.GREY .. L["Click a result for an arrow to the nearest place to get it. Hover for every source."] .. "|r")
       list:Set(rows) return
     end
     local db = ns.SearchDB()
     if not db then add(0, nil, C.RED .. L["Search data is missing."] .. "|r"); list:Set(rows) return end
-    local CAP = 120
-    local items, npcs = {}, {}
-    if kind ~= "npcs" then
+    local CAP, level = 150, UnitLevel("player")
+    local q = #query >= 3 and query or nil
+    local pc, pe, pn = ns.PlayerWorld()
+    local items, npcs, dist = {}, {}, {}
+
+    local wantItems = f.type == "all" or f.type == "items"
+    local wantNpcs = f.type ~= "items" and f.kind == "any" and f.source == "any" and f.quality == 0 and not f.usable
+    if wantItems then
       for id, it in pairs(db.I) do
-        if it[1]:lower():find(query, 1, true) then items[#items + 1] = id end
+        if (not q or it[1]:lower():find(q, 1, true)) and KindMatch(it) and (it[13] or 1) >= f.quality
+          and (not f.usable or ns.CanUseItem(it, level)) then
+          if f.source == "any" or ns.ItemWays(id)[f.source] then items[#items + 1] = id end
+        end
+      end
+      if f.near then
+        if #items > 800 then
+          table.sort(items, function(a, b) return db.I[a][2] > db.I[b][2] end)
+          for i = #items, 801, -1 do items[i] = nil end
+        end
+        local kept = {}
+        for _, id in ipairs(items) do
+          local s = ns.ItemSources(id)[1]
+          if s and s.dist then dist[id] = s.dist; kept[#kept + 1] = id end
+        end
+        items = kept
       end
       table.sort(items, function(a, b)
+        if f.near and dist[a] ~= dist[b] then return dist[a] < dist[b] end
         local x, y = db.I[a], db.I[b]
-        local px, py = x[1]:lower():sub(1, #query) == query, y[1]:lower():sub(1, #query) == query
-        if px ~= py then return px end
+        if q then
+          local px, py = x[1]:lower():sub(1, #q) == q, y[1]:lower():sub(1, #q) == q
+          if px ~= py then return px end
+        end
         if x[2] ~= y[2] then return x[2] > y[2] end
         return x[1] < y[1]
       end)
     end
-    if kind ~= "items" then
-      for id, n in pairs(db.N) do
-        if n[1]:lower():find(query, 1, true) then npcs[#npcs + 1] = id end
+    if wantNpcs and (q or f.type == "beasts" or f.type == "vendors") then
+      local vendors
+      if f.type == "vendors" then
+        vendors = {}
+        for _, it in pairs(db.I) do for _, v in ipairs(it[6] or {}) do vendors[v] = true end end
       end
-      table.sort(npcs, function(a, b) return db.N[a][1] < db.N[b][1] end)
+      for id, n in pairs(db.N) do
+        if (not q or n[1]:lower():find(q, 1, true))
+          and (f.type ~= "beasts" or ns.Beasts[id]) and (f.type ~= "vendors" or vendors[id]) then
+          if f.near then
+            local d = DistTo(n[5], n[6], n[7], pc, pe, pn)
+            if d then dist[-id] = d; npcs[#npcs + 1] = id end
+          else
+            npcs[#npcs + 1] = id
+          end
+        end
+      end
+      table.sort(npcs, function(a, b)
+        if f.near and dist[-a] ~= dist[-b] then return dist[-a] < dist[-b] end
+        return db.N[a][1] < db.N[b][1]
+      end)
     end
+
     if #items > 0 then
-      add(0, nil, L["Items"], C.GREY .. #items .. "|r", nil, nil, { header = true })
+      add(0, nil, L["Items"], C.GREY .. #items .. (#items > CAP and (" " .. string.format(L["(showing %d)"], CAP)) or "") .. "|r", nil, nil, { header = true })
       for i = 1, math.min(CAP, #items) do
         local id = items[i]
         local it = db.I[id]
-        local srcs = {}
-        local right
-        if it[6] then right = C.GREEN .. L["vendor"] .. "|r"
-        elseif it[10] then right = C.BLUE .. L["quest"] .. "|r"
-        elseif it[8] > 0 then right = it[8] > #(it[7] or {}) and (C.GREY .. L["world drop"] .. "|r") or (C.WHITE .. L["drop"] .. "|r")
-        else right = C.GREY .. L["container"] .. "|r" end
-        add(0, ItemIcon(id), QualityColor(id) .. it[1] .. "|r", right, ItemClick(id), ItemTooltip(id),
-          { mid = it[3] > 0 and (C.GREY .. L["lvl "] .. it[3] .. "|r") or "" })
+        local tooHigh = it[3] > level
+        add(0, ItemIcon(id), QualityColor(id) .. it[1] .. "|r", ns.SourceSummary(id), ItemClick(id), ItemTooltip(id),
+          { mid = it[3] > 0 and ((tooHigh and C.RED or C.GREY) .. L["lvl "] .. it[3] .. "|r") or "" })
       end
     end
     if #npcs > 0 then
-      add(0, nil, L["NPCs"], C.GREY .. #npcs .. "|r", nil, nil, { header = true })
-      local playerLevel = UnitLevel("player")
+      add(0, nil, f.type == "beasts" and L["Tameable beasts"] or (f.type == "vendors" and L["Vendors"] or L["NPCs"]),
+        C.GREY .. #npcs .. "|r", nil, nil, { header = true })
       for i = 1, math.min(CAP, #npcs) do
         local id = npcs[i]
         local n = db.N[id]
@@ -222,12 +432,13 @@ do
         end
         local tip = beast and ns.BeastTooltip(id) or { n[1] .. (n[4] ~= "" and (" <" .. n[4] .. ">") or ""), L["Level "] .. lvl,
           NpcLine(n) .. (n[5] ~= 0 and string.format("  %.0f, %.0f", n[6], n[7]) or ""), C.GREY .. L["Click for an arrow."] .. "|r" }
+        local right = NpcLine(n) .. (dist[-id] and (C.GREY .. ", " .. ns.FormatDistance(dist[-id]) .. "|r") or "")
         add(0, ns.Icon(beast and (ns.FamilyIcons[beast[4]] or "Ability_Hunter_BeastTaming") or (n[4] ~= "" and "INV_Misc_Coin_01" or "Ability_Hunter_Pathfinding")),
-          (beast and C.HUNTER or C.WHITE) .. n[1] .. "|r" .. title, NpcLine(n), click, tip,
-          { mid = ((n[3] > playerLevel + 2) and C.RED or C.GREY) .. lvl .. "|r" })
+          (beast and C.HUNTER or C.WHITE) .. n[1] .. "|r" .. title, right, click, tip,
+          { mid = ((n[3] > level + 2) and C.RED or C.GREY) .. lvl .. "|r" })
       end
     end
-    if #items == 0 and #npcs == 0 then add(0, nil, C.GREY .. L["Nothing found."] .. "|r") end
+    if #items == 0 and #npcs == 0 then add(0, nil, C.GREY .. L["Nothing found. Try fewer filters."] .. "|r") end
     list:Set(rows)
   end
 
@@ -237,6 +448,7 @@ do
     if box then box:SetText(text or "") end
     ns.UI_Refresh()
   end
+  function ns.SearchFilters() return f end
 
   ns.RegisterTab("search", L["Search"], Build, Refresh)
 end

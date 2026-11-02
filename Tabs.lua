@@ -152,6 +152,7 @@ local function BuildSettings(panel, top)
 
   heading(L["Character"])
   check(L["Gear upgrade line on item tooltips"], "gearTooltip")
+  check(L["Tell me about new gear upgrades"], "gearAlerts", L["When you level up, and when you arrive in a zone where a vendor sells an upgrade."])
   check(L["Glow on the next talent in the talent window"], "talentGlow")
 
   heading(L["General"])

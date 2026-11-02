@@ -108,6 +108,23 @@ ns.SearchFor("hogor")
 SlashCmdList.UNTAMED("s heavy shot")
 local tip = ns.ItemTooltip(11285)()
 check(tip.itemID == 11285 and #tip > 2, "item tooltip with sources")
+-- Search filters and new sources
+local f = ns.SearchFilters()
+f.kind = "ranged"; f.source = "vendor"; f.usable = true; f.near = true
+ns.SearchFor("")
+f.kind = "any"; f.source = "any"; f.usable = false; f.near = false; f.type = "beasts"
+ns.SearchFor("")
+f.type = "vendors"; ns.SearchFor("")
+f.type = "all"
+local w = ns.ItemWays(3021)
+check(w.chest, "ranger bow comes from chests")
+local summ = ns.SourceSummary(3021)
+print("  ranger bow:", summ)
+check(summ:find("Chest") ~= nil, "chest source shows a place")
+local clam = ns.ItemWays(5503)
+check(clam.inside, "clam meat found inside clams")
+for _, k in ipairs({ "all", "items" }) do f.type = k; ns.SearchFor("clam") end
+
 -- Character planning
 for _, k in ipairs({ "spells", "talents", "gear", "quests" }) do ns.UI_Show(k) end
 local T = ns.CharacterTest
@@ -120,6 +137,11 @@ if ns.FLAVOR ~= "forever" then
   local best, bestId = 0
   for id, g in pairs(ns.GearItems) do if g[1] == "RANGED" and g[2] <= 30 and g[3] > best then best, bestId = g[3], id end end
   T.OnItemTooltip(tt, bestId)
+  ns.GearAlertTest.AlertNewLevel(20)
+  ns.GearAlertTest.AlertZone()
+  local id = ns.GearBestFor("RANGED", 1, 20, 0, "easy", false)
+  print("  best easy ranged by 20:", id, id and ns.SearchDB().I[id][1])
+  check(id ~= nil, "easy ranged upgrade found")
   check(#lines == 1, "gear tooltip line for item " .. tostring(bestId) .. ": " .. tostring(lines[1]))
 end
 print("DONE")

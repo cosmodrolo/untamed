@@ -48,7 +48,7 @@ do
   local list
   local showAll = false
   local function Build(panel)
-    local b = ns.MakeButton(panel, L["Show every level"], 140, function(self)
+    local b = ns.MakeButton(panel, L["Show every level"], 160, function(self)
       showAll = not showAll
       self:SetText(showAll and L["Show what's next"] or L["Show every level"])
       ns.UI_Refresh()
@@ -82,31 +82,60 @@ do
       { L["Ready to train now"], L["Spells and ranks you can learn at your level that you don't have yet."],
         optionalCost > 0 and (C.GREY .. L["Optional spells not counted: "] .. Money(optionalCost) .. "|r") or "",
         C.GREY .. L["Click for an arrow to the nearest hunter trainer."] .. "|r" }, { header = true })
-    for _, lvl in ipairs(levels) do
-      local show = showAll or (lvl <= playerLevel + 6 and lvl >= playerLevel - 20)
-      local group = byLevel[lvl]
-      local anyMissing = false
-      for _, e in ipairs(group) do if lvl <= playerLevel and not Known(e[2]) then anyMissing = true end end
-      if show or anyMissing then
+    local function SpellRow(e, lvl, indent)
+      local id, cost, name, rank = e[2], e[3], e[4], e[5]
+      local label = ns.SpellName(id) or name
+      local known = Known(id)
+      local status
+      if known then status = C.GREEN .. L["known"] .. "|r"
+      elseif lvl > playerLevel then status = C.GREY .. L["later"] .. "|r"
+      elseif OPTIONAL[name] then status = C.GREY .. L["optional"] .. "|r"
+      else status = C.ORANGE .. L["train now"] .. "|r" end
+      local icon = (C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(id)) or (GetSpellTexture and GetSpellTexture(id)) or nil
+      add(indent or 14, icon, (known and C.GREY or C.WHITE) .. label .. "|r" .. (rank > 0 and (C.GREY .. "  " .. L["Rank "] .. rank .. "|r") or ""),
+        status .. "   " .. Money(cost), nil,
+        { label .. (rank > 0 and (" " .. L["Rank "] .. rank) or ""), L["Trainer level "] .. lvl .. ", " .. Money(cost),
+          OPTIONAL[name] and (C.GREY .. L["Many hunters skip this while leveling to save gold and buy it later if they need it."] .. "|r") or "" },
+        { mid = C.GREY .. L["lvl "] .. lvl .. "|r" })
+    end
+
+    if showAll then
+      -- Every trainer level, everything, known or not.
+      for _, lvl in ipairs(levels) do
         local total = 0
-        for _, e in ipairs(group) do total = total + e[3] end
-        local lvlColor = lvl <= playerLevel and C.GOLD or C.GREY
-        add(0, nil, lvlColor .. L["Level "] .. lvl .. "|r", Money(total), nil, nil, { header = lvl == playerLevel + 1 or lvl == playerLevel })
-        for _, e in ipairs(group) do
-          local id, cost, name, rank = e[2], e[3], e[4], e[5]
-          local label = ns.SpellName(id) or name
-          local known = Known(id)
-          local status
-          if known then status = C.GREEN .. L["known"] .. "|r"
-          elseif lvl > playerLevel then status = C.GREY .. L["later"] .. "|r"
-          elseif OPTIONAL[name] then status = C.GREY .. L["optional"] .. "|r"
-          else status = C.ORANGE .. L["train now"] .. "|r" end
-          local icon = (C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(id)) or (GetSpellTexture and GetSpellTexture(id)) or nil
-          add(14, icon, (known and C.GREY or C.WHITE) .. label .. "|r" .. (rank > 0 and (C.GREY .. "  " .. L["Rank "] .. rank .. "|r") or ""),
-            status .. "   " .. Money(cost), nil,
-            { label .. (rank > 0 and (" " .. L["Rank "] .. rank) or ""), L["Trainer level "] .. lvl .. ", " .. Money(cost),
-              OPTIONAL[name] and (C.GREY .. L["Many hunters skip this while leveling to save gold and buy it later if they need it."] .. "|r") or "" })
+        for _, e in ipairs(byLevel[lvl]) do total = total + e[3] end
+        add(0, nil, (lvl <= playerLevel and C.GOLD or C.GREY) .. L["Level "] .. lvl .. "|r", Money(total), nil, nil, { header = true })
+        for _, e in ipairs(byLevel[lvl]) do SpellRow(e, lvl) end
+      end
+    else
+      -- What's next: what you can train now, then your next two trainer visits.
+      for _, lvl in ipairs(levels) do
+        if lvl <= playerLevel then
+          for _, e in ipairs(byLevel[lvl]) do
+            if not Known(e[2]) and not OPTIONAL[e[4]] then SpellRow(e, lvl) end
+          end
         end
+      end
+      local shown = 0
+      for _, lvl in ipairs(levels) do
+        if lvl > playerLevel and shown < 2 then
+          shown = shown + 1
+          local total = 0
+          for _, e in ipairs(byLevel[lvl]) do total = total + e[3] end
+          add(0, nil, string.format(L["At level %d"], lvl), Money(total), nil, nil, { header = true })
+          for _, e in ipairs(byLevel[lvl]) do SpellRow(e, lvl) end
+        end
+      end
+      local skipped = {}
+      for _, lvl in ipairs(levels) do
+        if lvl <= playerLevel then
+          for _, e in ipairs(byLevel[lvl]) do if not Known(e[2]) and OPTIONAL[e[4]] then skipped[#skipped + 1] = { e, lvl } end end
+        end
+      end
+      if #skipped > 0 then
+        add(0, nil, L["Optional, not trained"], Money(optionalCost), nil,
+          { L["Optional spells"], L["Many hunters skip these while leveling to save gold. Buy them any time you need them."] }, { header = true })
+        for _, x in ipairs(skipped) do SpellRow(x[1], x[2]) end
       end
     end
     list:Set(rows)
@@ -352,54 +381,162 @@ local function CanWear(g, level)
   return true
 end
 
+-- How to get an item, as a short line: "Buy 1g 20s from X, Zone", "Quest: Y", "Dungeon: Z", ...
+local function HowText(id)
+  local db = ns.SearchDB and ns.SearchDB()
+  local it = db and db.I[id]
+  if not it then return C.GREY .. L["crafted or unknown"] .. "|r" end
+  local summary, s = ns.SourceSummary(id)
+  if s and s.kind == "vendor" and it[16] and it[16] > 0 then
+    summary = C.GREEN .. L["Buy"] .. "|r " .. Money(it[16]) .. C.GREY .. ", " .. s.name .. (s.map and s.map ~= 0 and (", " .. ns.ZoneName(s.map)) or "")
+      .. (s.dist and (", " .. ns.FormatDistance(s.dist)) or "") .. "|r"
+  elseif s and s.kind == "quest" then
+    summary = C.BLUE .. L["Quest"] .. "|r" .. C.GREY .. ": " .. s.name .. "|r"
+  end
+  local w = ns.ItemWays(id)
+  if w.ah and not w.vendor and not w.quest then summary = summary .. C.GREY .. "  (" .. L["or Auction House"] .. ")|r" end
+  return summary
+end
+
+local WAYS = { { "any", L["Any way"] }, { "easy", L["Buy or quest only"] }, { "nodungeon", L["No dungeons"] }, { "ah", L["Buy, quest or Auction House"] } }
+local function WayOK(id, way)
+  if way == "any" then return true end
+  local w = ns.ItemWays(id)
+  if way == "easy" then return (w.vendor or w.quest) and not w.rep end
+  if way == "ah" then return ((w.vendor or w.quest) and not w.rep) or w.ah end
+  if way == "nodungeon" then return w.vendor or w.quest or w.drop or w.chest or w.crafted or w.ah or w.fishing or w.inside or false end
+  return true
+end
+
+-- Best upgrade per slot for a level window. Returns { [slot] = id }.
+local function BestFor(slot, minLvl, maxLvl, beat, way, near)
+  local db = ns.SearchDB and ns.SearchDB()
+  local best, bestScore
+  for id, g in pairs(ns.GearItems) do
+    if g[1] == slot and g[2] >= minLvl and g[2] <= maxLvl and g[3] > beat and (g[4] == 0 or maxLvl >= 40)
+      and (not db or db.I[id]) and WayOK(id, way) then
+      if (not bestScore or g[3] > bestScore) and (not near or (ns.ItemSources(id)[1] or {}).dist) then
+        best, bestScore = id, g[3]
+      end
+    end
+  end
+  return best, bestScore
+end
+ns.GearBestFor = BestFor
+
 do
   local list
-  local function Build(panel) list = ns.NewList(panel, 0) end
+  local opt = { slot = "all", way = "any", near = false }
+  local function SlotOptions()
+    local o = { { "all", L["All slots"] } }
+    for _, s in ipairs(SLOTS) do o[#o + 1] = { s[1], SLOT_LABEL[s[1]] } end
+    return o
+  end
+  local function Build(panel)
+    local sd = ns.MakeDropdown(panel, 140, SlotOptions, function() return opt.slot end, function(v) opt.slot = v end)
+    sd:SetPoint("TOPLEFT", 4, -2)
+    local wd = ns.MakeDropdown(panel, 190, WAYS, function() return opt.way end, function(v) opt.way = v end,
+      { L["How you get it"], L["Buy or quest only skips dungeons, drops and the Auction House."] })
+    wd:SetPoint("LEFT", sd, "RIGHT", 4, 0)
+    ns.MakeCheck(panel, L["Near me"], 344, -2, function() return opt.near end, function(v) opt.near = v end,
+      L["Only upgrades you can get on your continent."])
+    list = ns.NewList(panel, 30)
+  end
+
   local function Refresh()
     local rows = {}
     local function add(...) rows[#rows + 1] = { ... } end
     if not ERA or not ns.GearItems then NotForever(add, L["The gear guide"]); list:Set(rows) return end
     local level = UnitLevel("player")
     local db = ns.SearchDB and ns.SearchDB()
-    add(0, nil, C.GREY .. L["Best items for your level by a simple hunter score: agility and attack power first, then hit, crit and ranged weapon damage."] .. "|r", "", nil,
-      { L["How the score works"], L["Agility x2.4, attack power x1, 1% crit x20, 1% hit x18, stamina x0.5, intellect x0.3, ranged weapon DPS x14."],
-        L["It's a quick guide, not a full simulation. Set bonuses and procs aren't counted."] })
-    -- Bucket items by slot once.
-    local bySlot = {}
-    for id, g in pairs(ns.GearItems) do
-      if CanWear(g, level + 3) and (not db or db.I[id]) then
-        bySlot[g[1]] = bySlot[g[1]] or {}
-        table.insert(bySlot[g[1]], id)
-      end
-    end
-    for _, s in ipairs(SLOTS) do
-      local slot = s[1]
-      local worn = WornScore(slot)
-      local wornID = GetInventoryItemID("player", s[2])
-      local wornName = wornID and (ns.QualityColor(wornID) .. (ns.SearchDB() and ns.SearchDB().I[wornID] and ns.SearchDB().I[wornID][1] or (GetItemInfo(wornID) or "?")) .. "|r") or (C.GREY .. L["empty"] .. "|r")
-      add(0, nil, SLOT_LABEL[slot], wornName .. C.GREY .. "  (" .. worn .. ")|r", nil, nil, { header = true })
-      local ids = bySlot[slot] or {}
-      table.sort(ids, function(a, b) return ns.GearItems[a][3] > ns.GearItems[b][3] end)
-      local shown = 0
-      for _, id in ipairs(ids) do
-        if shown >= 3 then break end
-        local g = ns.GearItems[id]
-        if g[3] > worn then
-          local soon = g[2] > level
-          local srcs = ns.ItemSources(id)
-          local s1 = srcs[1]
-          local where = s1 and ((s1.kind == "vendor" and C.GREEN or C.GREY) .. (s1.inst or (s1.map and s1.map ~= 0 and ns.ZoneName(s1.map)) or "") .. "|r") or (C.GREY .. L["crafted"] .. "|r")
-          add(14, ns.ItemIcon(id), ns.QualityColor(id) .. (db and db.I[id] and db.I[id][1] or "?") .. "|r" .. C.GREEN .. "  +" .. (g[3] - worn) .. "|r" .. (soon and (C.GREY .. "  " .. L["soon"] .. "|r") or ""),
-            where, ns.ItemClick(id), ns.ItemTooltip(id), { mid = ((soon and C.RED) or C.GREY) .. L["lvl "] .. g[2] .. "|r" })
-          shown = shown + 1
+    local buckets = {
+      { L["Now"], 1, level, L["You can use these today."] },
+      { L["Soon"], level + 1, math.min(60, level + 5), L["Within the next 5 levels."] },
+      { L["Later"], level + 6, math.min(60, level + 10), L["6 to 10 levels from now."] },
+    }
+    local slots = {}
+    for _, s in ipairs(SLOTS) do if opt.slot == "all" or opt.slot == s[1] then slots[#slots + 1] = s[1] end end
+    local beatBy = {}
+    for _, slot in ipairs(slots) do beatBy[slot] = WornScore(slot) end
+    local any = false
+    for bi, b in ipairs(buckets) do
+      if b[2] <= b[3] then
+        local bucketRows = {}
+        for _, slot in ipairs(slots) do
+          local id, score = BestFor(slot, b[2], b[3], beatBy[slot], opt.way, opt.near)
+          if id then
+            local worn = WornScore(slot)
+            local it = db and db.I[id]
+            bucketRows[#bucketRows + 1] = { 14, ns.ItemIcon(id),
+              string.format("%s%s|r  %s%s|r  %s+%d|r", C.GREY, SLOT_LABEL[slot], ns.QualityColor(id), it and it[1] or "?", C.GREEN, score - worn),
+              HowText(id), ns.ItemClick(id), ns.ItemTooltip(id),
+              { mid = ((bi > 1) and C.ORANGE or C.GREY) .. L["lvl "] .. ns.GearItems[id][2] .. "|r" } }
+            beatBy[slot] = score   -- later buckets only show something better still
+          end
+        end
+        add(0, nil, b[1], C.GREY .. b[4] .. "|r", nil, nil, { header = true })
+        if #bucketRows == 0 then
+          add(14, nil, C.GREY .. L["No upgrades found with these filters."] .. "|r")
+        else
+          any = true
+          for _, r in ipairs(bucketRows) do rows[#rows + 1] = r end
         end
       end
-      if shown == 0 then add(14, nil, C.GREY .. L["Nothing better found for your level."] .. "|r") end
     end
+    add(0, nil, C.GREY .. L["Score: agility x2.4, attack power x1, 1% crit x20, 1% hit x18, stamina x0.5, ranged DPS x14. Set bonuses and procs aren't counted."] .. "|r")
     list:Set(rows)
   end
   ns.RegisterTab("gear", L["Gear"], Build, Refresh)
 end
+
+-- Upgrade alerts: when you level up, and when you arrive in a zone with a vendor selling an upgrade.
+local alerted = {}
+local function SlotOf(id) local g = ns.GearItems and ns.GearItems[id]; return g and g[1] end
+local function AlertNewLevel(level)
+  if not ERA or not ns.db.gearAlerts or not ns.GearItems then return end
+  local n = 0
+  for _, s in ipairs(SLOTS) do
+    local id, score = BestFor(s[1], level, level, WornScore(s[1]), "easy", false)
+    if id and n < 3 and not alerted[id] then
+      alerted[id] = true
+      n = n + 1
+      local db = ns.SearchDB()
+      ns.Print(string.format(L["New upgrade at level %d for your %s: %s. %s"], level, SLOT_LABEL[s[1]], db.I[id][1], HowText(id)))
+    end
+  end
+end
+local function AlertZone()
+  if not ERA or not ns.db.gearAlerts or not ns.GearItems then return end
+  local map = ns.PlayerMap and ns.PlayerMap()
+  if not map then return end
+  local db = ns.SearchDB()
+  if not db then return end
+  local level = UnitLevel("player")
+  for _, s in ipairs(SLOTS) do
+    local id = BestFor(s[1], 1, level, WornScore(s[1]), "easy", true)
+    if id and not alerted[id] then
+      local src = ns.ItemSources(id)[1]
+      if src and src.kind == "vendor" and src.map == map then
+        alerted[id] = true
+        ns.Print(string.format(L["Upgrade for your %s sold nearby: %s. %s"], SLOT_LABEL[s[1]], db.I[id][1], HowText(id)))
+      end
+    end
+  end
+end
+do
+  local ev = CreateFrame("Frame")
+  pcall(ev.RegisterEvent, ev, "PLAYER_LEVEL_UP")
+  pcall(ev.RegisterEvent, ev, "ZONE_CHANGED_NEW_AREA")
+  ev:SetScript("OnEvent", function(_, event, arg)
+    if event == "PLAYER_LEVEL_UP" then
+      local lvl = tonumber(arg)
+      if C_Timer and C_Timer.After then C_Timer.After(3, function() AlertNewLevel(lvl or UnitLevel("player")) end) else AlertNewLevel(lvl) end
+    else
+      if C_Timer and C_Timer.After then C_Timer.After(4, AlertZone) else AlertZone() end
+    end
+  end)
+end
+ns.GearAlertTest = { AlertNewLevel = AlertNewLevel, AlertZone = AlertZone }
 
 -- Upgrade line on item tooltips.
 local function OnItemTooltip(tt, id)

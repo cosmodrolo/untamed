@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build Untamed's search index (items, NPCs, objects, quests) from QuestieDB.
 
-usage: build_search.py QUESTIEDB_DIR FLAVOR OUT_PATH
+usage: build_search.py QUESTIEDB_DIR FLAVOR OUT_PATH [CMANGOS_SQL]
   FLAVOR: era | forever
 
 The index is stored as a Lua source string (ns.SearchSource) and only turned into
@@ -12,6 +12,7 @@ import os, re, sys
 from lupa import LuaRuntime
 
 Q, FLAVOR, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
+SQL = sys.argv[4] if len(sys.argv) > 4 else None
 pre = "Classic/classic" if FLAVOR == "era" else "Forever/forever"
 ZDIR = os.path.join(Q, "support/Zones" if FLAVOR == "era" else "support/Forever/Zones")
 lua = LuaRuntime(unpack_returned_tuples=True)
@@ -67,23 +68,79 @@ def place(spawns, mainZone):
             return 0, 0, 0, name
     return None
 
+# ------------------------------------------------------------------ cmangos extras: quality, slot, price, binding, crafting, fishing
+EXTRA, CRAFT, FISH = {}, {}, {}
+if SQL:
+    def rows(line):
+        i = line.index("VALUES") + 6; n = len(line)
+        while i < n:
+            while i < n and line[i] != "(": i += 1
+            if i >= n: break
+            i += 1; vals = []; cur = []; inq = False
+            while True:
+                c = line[i]
+                if inq:
+                    if c == "\\": cur.append(line[i + 1]); i += 2; continue
+                    if c == "'": inq = False
+                    else: cur.append(c)
+                else:
+                    if c == "'": inq = True
+                    elif c == ",": vals.append("".join(cur)); cur = []
+                    elif c == ")": vals.append("".join(cur)); i += 1; break
+                    else: cur.append(c)
+                i += 1
+            yield vals
+    T = {"item_template": [], "spell_template": [], "fishing_loot_template": []}
+    for line in open(SQL, encoding="utf-8", errors="replace"):
+        m = re.match(r"INSERT INTO `(\w+)`", line)
+        if m and m.group(1) in T: T[m.group(1)].extend(rows(line))
+    SP = {int(v[0]): v for v in T["spell_template"]}
+    creates = {}
+    for v in T["spell_template"]:
+        for k in range(3):
+            if v[61 + k] == "24" and v[103 + k] not in ("", "0"):
+                creates[int(v[0])] = int(v[103 + k])
+    PROF = {1: "Leatherworking", 2: "Tailoring", 3: "Engineering", 4: "Blacksmithing", 5: "Cooking", 6: "Alchemy",
+            7: "First Aid", 8: "Enchanting", 9: "Fishing"}
+    for v in T["item_template"]:
+        EXTRA[int(v[0])] = (int(v[5]), int(v[10]), int(v[105] or 0), int(v[8] or 0), int(v[20] or 0), int(v[21] or 0))
+        if v[1] == "9":                                   # recipe: which profession makes the item
+            prof = PROF.get(int(v[2]))
+            for k in range(5):
+                sid = int(v[70 + 7 * k] or 0)
+                sp = SP.get(sid)
+                if sp and sp[61] == "36" and sp[109] not in ("", "0"): sid = int(sp[109])
+                if sid in creates and prof: CRAFT[creates[sid]] = prof
+    for sid, iid in creates.items():
+        CRAFT.setdefault(iid, "Crafted")
+    for v in T["fishing_loot_template"]:
+        area, iid = int(v[0]), int(v[1])
+        if iid > 0: FISH.setdefault(iid, set()).add(area)
+    log("cmangos extras", len(EXTRA), "crafted", len(CRAFT), "fishing items", len(FISH))
+
 # ------------------------------------------------------------------ data
 items, npcs, objects, quests = load("Item"), load("Npc"), load("Object"), load("Quest")
 log("items", len(items), "npcs", len(npcs), "objects", len(objects), "quests", len(quests))
 
 DROP_CAP, VEND_CAP = 10, 8
-I, needN, needO, needQ = {}, set(), set(), set()
+I, needN, needO, needQ, needI = {}, set(), set(), set(), set()
 for iid in items.keys():
     r = items[iid]
     name = r[1]
     if not name or "test" in name.lower() or name.startswith("Monster -") or name.startswith("Deprecated"): continue
-    drops = pylist(r[2]); objs = pylist(r[3]); rew = pylist(r[6]); vend = pylist(r[14])
-    if not (drops or objs or rew or vend): continue
+    drops = pylist(r[2]); objs = pylist(r[3]); inside = pylist(r[4]); rew = pylist(r[6]); vend = pylist(r[14])
+    craft = CRAFT.get(int(iid), "")
+    fish = sorted({zmap[a] for a in FISH.get(int(iid), ()) if a in zmap})[:4]
+    if not (drops or objs or rew or vend or inside or craft or fish): continue
     nd = len(drops)
     drops = drops[:DROP_CAP] if nd <= DROP_CAP else []
-    vend = vend[:VEND_CAP]; objs = objs[:4]; rew = rew[:4]
-    needN.update(drops); needN.update(vend); needO.update(objs); needQ.update(rew)
-    I[int(iid)] = (name, r[9] or 0, r[10] or 0, r[12] or 0, r[13] or 0, vend, drops, nd, objs, rew, r[8] or 0, r[11] or 0)
+    # Prefer chests and nodes that have a known position.
+    objs.sort(key=lambda o: 0 if (objects[o] is not None and objects[o][4] is not None) else 1)
+    vend = vend[:VEND_CAP]; objs = objs[:4]; rew = rew[:4]; inside = inside[:4]
+    needN.update(drops); needN.update(vend); needO.update(objs); needQ.update(rew); needI.update(inside)
+    q, inv, bond, price, repF, repR = EXTRA.get(int(iid), (1, 0, 0, 0, 0, 0))
+    I[int(iid)] = (name, r[9] or 0, r[10] or 0, r[12] or 0, r[13] or 0, vend, drops, nd, objs, rew, r[8] or 0, r[11] or 0,
+                   q, inv, bond, price, inside, craft, fish, repF, repR)
 
 N = {}
 for nid in npcs.keys():
@@ -100,8 +157,15 @@ for oid in needO:
     r = objects[oid]
     if r is None: continue
     pl = place(r[4], r[5] or 0)
-    m, x, y, inst = pl or (0, 0, 0, None)
-    O[int(oid)] = (r[1], m, x, y, inst or "")
+    if pl:
+        m, x, y, inst = pl
+    else:
+        # No exact spot (random chests, fishing pools): keep the zone if known.
+        m, x, y, inst = zmap.get(r[5] or 0, 0), 0, 0, (dungeons[r[5]][0] if (r[5] or 0) in dungeons else None)
+    spots = 0
+    if r[4] is not None:
+        for area in r[4].keys(): spots += len(pylist(r[4][area]))
+    O[int(oid)] = (r[1], m, x, y, inst or "", spots)
 
 Qd = {}
 for qid in needQ:
@@ -112,7 +176,7 @@ for qid in needQ:
     if sb is not None and sb[1] is not None:
         c = pylist(sb[1])
         if c: starter = int(c[0]); needN.add(starter)
-    Qd[int(qid)] = (r[1], r[5] or 0, starter)
+    Qd[int(qid)] = (r[1], r[5] or 0, starter, r[6] or 0)
 
 # ------------------------------------------------------------------ emit
 def s(v): return '"' + str(v).replace("\\", "\\\\").replace('"', '\\"') + '"'
@@ -125,7 +189,11 @@ out = []
 out.append("I={")
 for k in sorted(I):
     v = I[k]
-    out.append("[%d]={%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s}," % (k, s(v[0]), n(v[1]), n(v[2]), n(v[3]), n(v[4]), arr(v[5]), arr(v[6]), n(v[7]), arr(v[8]), arr(v[9]), n(v[10]), n(v[11])))
+    out.append("[%d]={%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s}," % (k, s(v[0]), n(v[1]), n(v[2]), n(v[3]), n(v[4]), arr(v[5]), arr(v[6]), n(v[7]), arr(v[8]), arr(v[9]), n(v[10]), n(v[11]),
+        n(v[12]), n(v[13]), n(v[14]), n(v[15]), arr(v[16]), s(v[17]), arr(v[18]), n(v[19]), n(v[20])))
+out.append("},C={")
+for k in sorted(needI):
+    if k not in I and items[k] is not None: out.append("[%d]=%s," % (k, s(items[k][1])))
 out.append("},N={")
 for k in sorted(N):
     v = N[k]
@@ -133,17 +201,20 @@ for k in sorted(N):
 out.append("},O={")
 for k in sorted(O):
     v = O[k]
-    out.append("[%d]={%s,%s,%s,%s,%s}," % (k, s(v[0]), n(v[1]), n(v[2]), n(v[3]), s(v[4])))
+    out.append("[%d]={%s,%s,%s,%s,%s,%s}," % (k, s(v[0]), n(v[1]), n(v[2]), n(v[3]), s(v[4]), n(v[5])))
 out.append("},Q={")
 for k in sorted(Qd):
     v = Qd[k]
-    out.append("[%d]={%s,%s,%s}," % (k, s(v[0]), n(v[1]), n(v[2])))
+    out.append("[%d]={%s,%s,%s,%s}," % (k, s(v[0]), n(v[1]), n(v[2]), n(v[3])))
 out.append("}")
 body = "\n".join(out)
 assert "]==]" not in body
 with open(OUT, "w", encoding="utf-8") as f:
     f.write("-- Generated by tools/build_search.py from QuestieDB (GPL-3.0). Do not edit.\n")
-    f.write("-- Items: {name, itemLevel, reqLevel, class, subclass, vendors, drops, dropCount, objects, questRewards, foodType, ammoType}\n")
+    f.write("-- Items: {name, itemLevel, reqLevel, class, subclass, vendors, drops, dropCount, objects, questRewards, foodType, ammoType,\n")
+    f.write("--         quality, inventoryType, binding, buyPrice, foundInsideItems, craftedBy, fishingZones, repFaction, repRank}\n")
+    f.write("-- C: names of container items that aren't otherwise in I\n")
+    f.write("-- Objects: {name, uiMapID, x, y, instance, spawnPoints}\n")
     f.write("-- NPCs: {name, minLevel, maxLevel, title, uiMapID, x, y, friendlyTo, rank, instance}\n")
     f.write("local _, ns = ...\nns.SearchSource = [==[return {\n" + body + "\n}]==]\n")
 log("wrote", OUT, "items", len(I), "npcs", len(N), "objects", len(O), "quests", len(Qd), "bytes", os.path.getsize(OUT))

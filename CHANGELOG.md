@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.6.0
+- Spells: "What's next" shows only what you can train now plus your next two trainer visits; "Every level" shows the whole list. Optional spells you skipped are listed on their own.
+- Search: new filters for type (items, NPCs, tameable beasts, vendors), item kind (armor slot, ranged, melee, ammo, quivers, pet food, bags, potions, recipes), source (vendor, quest, open-world drop, dungeon, chest, world drop, inside another item, crafted, fishing, Auction House), quality, Usable by me and Near me. Filters work with an empty search box.
+- Search results show where the nearest source is right in the row, including chests and nodes.
+- New item sources: found inside other items (clams, lockboxes), crafted (with the profession when known) and fishing zones. Chests that spawn in many spots say so.
+- Quest rewards only count when the quest is available to your race and faction. Items only sold by quartermasters are marked as needing reputation.
+- Gear: an upgrade path with Now, Soon (next 5 levels) and Later sections, the best upgrade per slot in each, and how to get it (price and vendor, quest, dungeon, Auction House). Filter by slot, by how you get it (buy or quest only, no dungeons) and Near me.
+- Gear alerts: a chat note when you level up into a new easy upgrade, and when you enter a zone where a vendor sells one.
+
 ## v2.5.0
 - Auto Shot timer: a bar that shows the reload (move freely) and the aim window (stand still). Shift-drag to move it.
 - Growl warning when Growl is on autocast in a group, and a note when it's off while solo.

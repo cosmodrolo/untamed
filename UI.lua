@@ -211,6 +211,70 @@ function ns.MakeFlatButton(parent, h)
   return b
 end
 
+-- A dropdown button: shows the chosen option and opens a menu of options.
+-- options: { { key, label }, ... } (a label of false makes a heading-less divider)
+local ddMenu, ddButtons = nil, {}
+function ns.MakeDropdown(parent, width, options, get, set, tip)
+  local b = ns.MakeButton(parent, "", width, nil)
+  local arrow = b:CreateTexture(nil, "OVERLAY")
+  arrow:SetTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+  arrow:SetSize(16, 16)
+  arrow:SetPoint("RIGHT", -3, 0)
+  local fs = b.GetFontString and b:GetFontString()
+  if fs then fs:ClearAllPoints(); fs:SetPoint("LEFT", 8, 0); fs:SetPoint("RIGHT", -18, 0); fs:SetJustifyH("LEFT") end
+  function b:Update()
+    local cur = get()
+    for _, o in ipairs(type(options) == "function" and options() or options) do
+      if o[1] == cur then self:SetText(o[2]) return end
+    end
+    self:SetText("?")
+  end
+  b:SetScript("OnClick", function(self)
+    if not ddMenu then
+      ddMenu = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+      ddMenu:SetFrameStrata("FULLSCREEN_DIALOG")
+      if ddMenu.SetBackdrop then
+        ddMenu:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+          tile = true, tileSize = 16, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
+      end
+      ddMenu:EnableMouse(true)
+      ddMenu:Hide()
+    end
+    if ddMenu:IsShown() and ddMenu.owner == self then ddMenu:Hide() return end
+    ddMenu.owner = self
+    for _, x in ipairs(ddButtons) do x:Hide() end
+    local opts = type(options) == "function" and options() or options
+    local cols = #opts > 16 and 2 or 1
+    local colW = math.max(width, 150)
+    local perCol = math.ceil(#opts / cols)
+    for i, o in ipairs(opts) do
+      local mb = ddButtons[i]
+      if not mb then mb = ns.MakeFlatButton(ddMenu, 18); ddButtons[i] = mb end
+      mb:ClearAllPoints()
+      local col, rowi = math.floor((i - 1) / perCol), (i - 1) % perCol
+      mb:SetPoint("TOPLEFT", 6 + col * colW, -8 - rowi * 18)
+      mb:SetWidth(colW - 4)
+      mb.icon:SetTexture(nil)
+      mb.icon:SetWidth(1)
+      mb.text:SetText(o[2])
+      mb:SetSelected(o[1] == get())
+      mb:SetScript("OnClick", function() ddMenu:Hide(); set(o[1]); self:Update(); ns.UI_Refresh() end)
+      mb:Show()
+    end
+    ddMenu:SetSize(cols * colW + 12, perCol * 18 + 16)
+    ddMenu:ClearAllPoints()
+    ddMenu:SetPoint("TOPLEFT", self, "BOTTOMLEFT", 0, -2)
+    ddMenu:Show()
+  end)
+  if tip then
+    b:SetScript("OnEnter", function(self) ShowTooltip(self, tip) end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  end
+  b:Update()
+  return b
+end
+function ns.CloseDropdown() if ddMenu then ddMenu:Hide() end end
+
 ---------------------------------------------------------------------------
 -- Shared helpers for beast rows
 ---------------------------------------------------------------------------
@@ -602,7 +666,7 @@ local function CreateMainFrame()
   grip:SetScript("OnMouseUp", function() frame:StopMovingOrSizing(); SaveGeometry() end)
 
   frame:SetScript("OnShow", function() ns.UI_Refresh() end)
-  frame:SetScript("OnHide", function() if menu then menu:Hide() end end)
+  frame:SetScript("OnHide", function() if menu then menu:Hide() end; ns.CloseDropdown() end)
 end
 
 function ns.UI_Refresh()
