@@ -389,7 +389,7 @@ local function HowText(id)
   local summary, s = ns.SourceSummary(id)
   if s and s.kind == "vendor" and it[16] and it[16] > 0 then
     summary = C.GREEN .. L["Buy"] .. "|r " .. Money(it[16]) .. C.GREY .. ", " .. s.name .. (s.map and s.map ~= 0 and (", " .. ns.ZoneName(s.map)) or "")
-      .. (s.dist and (", " .. ns.FormatDistance(s.dist)) or "") .. "|r"
+      .. (s.dist and (", " .. ns.FormatDistance(s.dist)) or "") .. "|r" .. (s.repF and ("  " .. ns.RepText(s.repF, s.repR, true)) or "")
   elseif s and s.kind == "quest" then
     summary = C.BLUE .. L["Quest"] .. "|r" .. C.GREY .. ": " .. s.name .. "|r"
   end
@@ -398,12 +398,15 @@ local function HowText(id)
   return summary
 end
 
-local WAYS = { { "any", L["Any way"] }, { "easy", L["Buy or quest only"] }, { "nodungeon", L["No dungeons"] }, { "ah", L["Buy, quest or Auction House"] } }
+local WAYS = { { "any", L["Any way"] }, { "easy", L["Buy or quest only"] }, { "nodungeon", L["No dungeons"] }, { "dungeon", L["Dungeons only"] },
+  { "rep", L["Reputation rewards"] }, { "ah", L["Buy, quest or Auction House"] } }
 local function WayOK(id, way)
   if way == "any" then return true end
   local w = ns.ItemWays(id)
   if way == "easy" then return (w.vendor or w.quest) and not w.rep end
   if way == "ah" then return ((w.vendor or w.quest) and not w.rep) or w.ah end
+  if way == "dungeon" then return w.dungeon or false end
+  if way == "rep" then return w.rep or false end
   if way == "nodungeon" then return w.vendor or w.quest or w.drop or w.chest or w.crafted or w.ah or w.fishing or w.inside or false end
   return true
 end
@@ -412,7 +415,7 @@ end
 local function BestFor(slot, minLvl, maxLvl, beat, way, near)
   local db = ns.SearchDB and ns.SearchDB()
   local best, bestScore
-  for id, g in pairs(ns.GearItems) do
+  for id, g in pairs(ns.GearItems or {}) do
     if g[1] == slot and g[2] >= minLvl and g[2] <= maxLvl and g[3] > beat and (g[4] == 0 or maxLvl >= 40)
       and (not db or db.I[id]) and WayOK(id, way) then
       if (not bestScore or g[3] > bestScore) and (not near or (ns.ItemSources(id)[1] or {}).dist) then

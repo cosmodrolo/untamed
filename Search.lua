@@ -38,6 +38,56 @@ local function QuestForMe(mask)
 end
 ns.QuestForMe = QuestForMe
 
+-- Reputation: faction names (the game gives localized names; these are fallbacks) and which side each belongs to.
+local FACTION_NAME = { [889] = "Warsong Outriders", [890] = "Silverwing Sentinels", [729] = "Frostwolf Clan", [730] = "Stormpike Guard",
+  [509] = "The League of Arathor", [510] = "The Defilers", [529] = "Argent Dawn", [609] = "Cenarion Circle", [59] = "Thorium Brotherhood",
+  [270] = "Zandalar Tribe", [576] = "Timbermaw Hold", [749] = "Hydraxian Waterlords", [910] = "Brood of Nozdormu", [87] = "Bloodsail Buccaneers",
+  [21] = "Booty Bay", [369] = "Gadgetzan", [470] = "Ratchet", [577] = "Everlook", [349] = "Ravenholdt", [809] = "Shen'dralar",
+  [72] = "Stormwind", [47] = "Ironforge", [69] = "Darnassus", [54] = "Gnomeregan Exiles", [76] = "Orgrimmar", [81] = "Thunder Bluff",
+  [530] = "Darkspear Trolls", [68] = "Undercity", [92] = "Gelkis Clan Centaur", [93] = "Magram Clan Centaur" }
+local FACTION_SIDE = { [889] = "H", [729] = "H", [510] = "H", [76] = "H", [81] = "H", [530] = "H", [68] = "H",
+  [890] = "A", [730] = "A", [509] = "A", [72] = "A", [47] = "A", [69] = "A", [54] = "A" }
+local RANK_NAME = { [0] = "Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted" }
+
+local function FactionName(fac)
+  local name = GetFactionInfoByID and GetFactionInfoByID(fac)
+  if type(name) ~= "string" or name == "" then name = FACTION_NAME[fac] or (L["faction "] .. fac) end
+  return name
+end
+local function RankName(rank) return _G["FACTION_STANDING_LABEL" .. (rank + 1)] or RANK_NAME[rank] or tostring(rank) end
+-- Your standing with a faction (0-7), or nil if unknown.
+local function MyRank(fac)
+  if not GetFactionInfoByID then return nil end
+  local ok, _, _, standingID = pcall(GetFactionInfoByID, fac)
+  if ok and type(standingID) == "number" then return standingID - 1 end
+end
+
+-- Reputation needed for an item from a vendor: faction, rank (or nil). Picks your side's faction when there's a choice.
+local function VendorRep(it, npcId)
+  local side = (UnitFactionGroup and UnitFactionGroup("player") == "Horde") and "H" or "A"
+  for _, e in ipairs(it[22] or {}) do
+    if e[1] == npcId then
+      local pickF, pickR = e[2], e[3]
+      for k = 2, #e - 1, 2 do
+        if FACTION_SIDE[e[k]] == side then pickF, pickR = e[k], e[k + 1] end
+      end
+      return pickF, pickR
+    end
+  end
+  if (it[20] or 0) > 0 then return it[20], it[21] end
+end
+
+-- "Needs Honored with Warsong Outriders (you: Friendly)", green when you already have it.
+function ns.RepText(fac, rank, short)
+  if not fac then return nil end
+  local mine = MyRank(fac)
+  local met = mine and mine >= rank
+  local color = met and C.GREEN or C.ORANGE
+  if short then return color .. RankName(rank) .. ", " .. FactionName(fac) .. "|r" end
+  return color .. string.format(L["Needs %s with %s"], RankName(rank), FactionName(fac))
+    .. (mine and (C.GREY .. "  (" .. L["you: "] .. RankName(mine) .. ")") or "") .. "|r", met
+end
+
 local function ItemIcon(id)
   if C_Item and C_Item.GetItemIconByID then return C_Item.GetItemIconByID(id) end
   return GetItemIcon and GetItemIcon(id) or "Interface\\Icons\\INV_Misc_QuestionMark"
@@ -86,7 +136,9 @@ function ns.ItemSources(id)
     if not n then return end
     if kind == "vendor" and n[8] ~= "" and not n[8]:find(fac, 1, true) then return end
     if kind == "drop" and n[10] ~= "" then kind = "dungeon" end
-    out[#out + 1] = { kind = kind, name = n[1], map = n[5], x = n[6], y = n[7],
+    local repF, repR
+    if kind == "vendor" then repF, repR = VendorRep(it, npcId) end
+    out[#out + 1] = { kind = kind, name = n[1], map = n[5], x = n[6], y = n[7], repF = repF, repR = repR,
       inst = n[10] ~= "" and n[10] or nil, dist = DistTo(n[5], n[6], n[7], pc, pe, pn), npcId = npcId }
   end
   for _, v in ipairs(it[6] or {}) do addNpc("vendor", v) end
@@ -135,7 +187,8 @@ function ns.ItemWays(id)
       if not (t:find("Quartermaster", 1, true) or t:find("Supply Officer", 1, true)) then plainVendor = true end
     end
   end
-  if w.vendor and not plainVendor then w.repVendor = true; w.rep = true end
+  if it[22] or (it[20] or 0) > 0 then w.rep = true
+  elseif w.vendor and not plainVendor then w.repVendor = true; w.rep = true end
   for _, q in ipairs(it[10] or {}) do
     local qq = db.Q[q]
     if qq and QuestForMe(qq[4]) then w.quest = true break end
@@ -176,7 +229,9 @@ local function SourceLine(s)
   if s.kind == "chest" and s.spots > 5 then who = who .. C.GREY .. " (" .. string.format(L["spawns in %d spots"], s.spots) .. ")|r" end
   if s.kind == "crafted" then who = s.name == "Crafted" and L["a profession"] or s.name end
   local extra = where and (where .. (s.dist and (", " .. ns.FormatDistance(s.dist)) or "")) or (s.kind == "chest" and L["random spawns"] or nil)
-  return string.format("%s%s:|r %s%s", C.GOLD, KIND[s.kind], who, extra and (C.GREY .. "  (" .. extra .. ")|r") or "")
+  local line = string.format("%s%s:|r %s%s", C.GOLD, KIND[s.kind], who, extra and (C.GREY .. "  (" .. extra .. ")|r") or "")
+  if s.repF then line = line .. "  " .. ns.RepText(s.repF, s.repR, true) end
+  return line
 end
 
 -- Short "how and where" for one row: nearest source.
@@ -192,7 +247,8 @@ function ns.SourceSummary(id)
   if s.kind == "inside" then where = s.name end
   if s.kind == "crafted" then where = s.name == "Crafted" and "" or s.name end
   return (KIND_COLOR[s.kind] or C.WHITE) .. SHORT[s.kind] .. "|r" .. (where and where ~= "" and (C.GREY .. ", " .. where .. "|r") or "")
-    .. (s.dist and (C.GREY .. ", " .. ns.FormatDistance(s.dist) .. "|r") or ""), s
+    .. (s.dist and (C.GREY .. ", " .. ns.FormatDistance(s.dist) .. "|r") or "")
+    .. (s.repF and ("  " .. ns.RepText(s.repF, s.repR, true)) or ""), s
 end
 
 local function GoTo(s)
@@ -214,12 +270,15 @@ local function ItemTooltip(id)
     local w = ns.ItemWays(id)
     if w.world then lines[#lines + 1] = C.GREY .. string.format(L["World drop: drops from %d different creatures."], it[8]) .. "|r" end
     if w.ah then lines[#lines + 1] = C.GREY .. L["Not bound when picked up, so you can often buy it on the Auction House."] .. "|r" end
-    if w.repVendor and not ((it[20] or 0) > 0) then
+    local shownRep = {}
+    for _, s in ipairs(srcs) do
+      if s.repF and not shownRep[s.repF .. ":" .. s.repR] then
+        shownRep[s.repF .. ":" .. s.repR] = true
+        lines[#lines + 1] = (ns.RepText(s.repF, s.repR))
+      end
+    end
+    if w.repVendor and not next(shownRep) then
       lines[#lines + 1] = C.ORANGE .. L["Sold by a quartermaster: usually needs reputation."] .. "|r"
-    elseif w.rep then
-      local fname = GetFactionInfoByID and GetFactionInfoByID(it[20]) or (L["faction "] .. it[20])
-      local rname = _G["FACTION_STANDING_LABEL" .. (it[21] + 1)] or ("rank " .. it[21])
-      lines[#lines + 1] = C.ORANGE .. string.format(L["Needs %s reputation with %s."], rname, fname) .. "|r"
     end
     if it and it[16] and it[16] > 0 and w.vendor and ns.Money then lines[#lines + 1] = C.GREY .. L["Vendor price: "] .. "|r" .. ns.Money(it[16]) end
     for i = 1, math.min(8, #srcs) do lines[#lines + 1] = SourceLine(srcs[i]) end
@@ -284,7 +343,7 @@ do
   }
   local SOURCES = { { "any", L["Any source"] }, { "vendor", L["Vendor"] }, { "quest", L["Quest"] }, { "drop", L["Open-world drop"] },
     { "dungeon", L["Dungeon"] }, { "chest", L["Chest or node"] }, { "world", L["World drop"] }, { "inside", L["Inside another item"] },
-    { "crafted", L["Crafted"] }, { "fishing", L["Fishing"] }, { "ah", L["Auction House"] } }
+    { "crafted", L["Crafted"] }, { "fishing", L["Fishing"] }, { "rep", L["Reputation vendor"] }, { "ah", L["Auction House"] } }
   local QUALS = { { 0, L["Any quality"] }, { 2, L["Uncommon or better"] }, { 3, L["Rare or better"] }, { 4, L["Epic"] } }
 
   local function KindMatch(it)

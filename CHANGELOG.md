@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.6.2
+- Reputation: vendor items show the exact reputation they need (for example "Revered, Silverwing Sentinels"), in green when you already have it and orange when you don't, with your current standing in the tooltip. When a vendor accepts either faction's reputation, your side's is shown.
+- Gear: new "Dungeons only" and "Reputation rewards" filters.
+- Search: new "Reputation vendor" source filter.
+
 ## v2.6.1
 - Every vendor is now kept for each item. Before, only the first 8 were, which could leave out your faction's vendors entirely (for example Jin'sora's quivers in Orgrimmar for Horde).
 - Supplies shows the quiver or ammo pouch you have on, and only lists better ones, with the price and nearest vendor.

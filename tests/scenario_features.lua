@@ -139,6 +139,14 @@ local v, d, n = ns.RecordedCounts()
 check(v == 1 and d == 1 and n == 2, "recorded counts")
 SlashCmdList.UNTAMED("recorded")
 
+-- Reputation
+local rtip = ns.ItemTooltip(20438)()
+local found
+for _, l in ipairs(rtip) do if type(l) == "string" and l:find("Revered") and l:find("Silverwing") then found = l end end
+print("  rep line:", found)
+check(found ~= nil, "outrunner's bow needs Revered with Silverwing Sentinels (Alliance)")
+if ns.GearItems then check(ns.GearBestFor("RANGED", 1, 60, 0, "dungeon", false) ~= nil, "dungeon-only gear filter") end
+
 -- Character planning
 for _, k in ipairs({ "spells", "talents", "gear", "quests" }) do ns.UI_Show(k) end
 local T = ns.CharacterTest
