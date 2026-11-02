@@ -51,5 +51,6 @@ Stable.lua
 Builds.lua
 Browser.lua
 Search.lua
+Recorder.lua
 Character.lua
 Tabs.lua

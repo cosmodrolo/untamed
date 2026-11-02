@@ -160,6 +160,8 @@ local function BuildSettings(panel, top)
   check(L["Show minimap button"], "showMinimap")
 
   heading(L["Share data"])
+  check(L["Record vendors and loot as I play"], "recordData",
+    L["Notes who sells what, where and for how much, and what drops from what. Untamed uses it right away to fill gaps in its data, and you can share it to improve Untamed for everyone. Type /ut recorded to see how much has been recorded."])
   local exp = ns.MakeButton(host, L["Export my tame data"], 160, function()
     local text, n = ns.ExportObserved()
     ns.TextPopup(L["Export tame data ("] .. n .. " beasts)", text)

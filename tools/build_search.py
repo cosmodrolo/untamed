@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Build Untamed's search index (items, NPCs, objects, quests) from QuestieDB.
 
-usage: build_search.py QUESTIEDB_DIR FLAVOR OUT_PATH [CMANGOS_SQL]
+usage: build_search.py QUESTIEDB_DIR FLAVOR OUT_PATH [CMANGOS_SQL] [RECORDED_SAVEDVARIABLES ...]
+  RECORDED: players' WTF/Account/<name>/SavedVariables/Untamed.lua files. Vendors and loot they
+  recorded in game are merged in (only for items and NPCs QuestieDB knows, so names stay correct).
   FLAVOR: era | forever
 
 The index is stored as a Lua source string (ns.SearchSource) and only turned into
@@ -12,7 +14,8 @@ import os, re, sys
 from lupa import LuaRuntime
 
 Q, FLAVOR, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
-SQL = sys.argv[4] if len(sys.argv) > 4 else None
+SQL = sys.argv[4] if len(sys.argv) > 4 and sys.argv[4] != "-" else None
+RECORDED = sys.argv[5:]
 pre = "Classic/classic" if FLAVOR == "era" else "Forever/forever"
 ZDIR = os.path.join(Q, "support/Zones" if FLAVOR == "era" else "support/Forever/Zones")
 lua = LuaRuntime(unpack_returned_tuples=True)
@@ -122,7 +125,7 @@ if SQL:
 items, npcs, objects, quests = load("Item"), load("Npc"), load("Object"), load("Quest")
 log("items", len(items), "npcs", len(npcs), "objects", len(objects), "quests", len(quests))
 
-DROP_CAP, VEND_CAP = 10, 8
+DROP_CAP, VEND_CAP = 10, 200   # keep every vendor: a short list can miss your faction entirely
 I, needN, needO, needQ, needI = {}, set(), set(), set(), set()
 for iid in items.keys():
     r = items[iid]
@@ -141,6 +144,36 @@ for iid in items.keys():
     q, inv, bond, price, repF, repR = EXTRA.get(int(iid), (1, 0, 0, 0, 0, 0))
     I[int(iid)] = (name, r[9] or 0, r[10] or 0, r[12] or 0, r[13] or 0, vend, drops, nd, objs, rew, r[8] or 0, r[11] or 0,
                    q, inv, bond, price, inside, craft, fish, repF, repR)
+
+# ------------------------------------------------------------------ player recordings
+rec_v = rec_d = 0
+for path in RECORDED:
+    rl = LuaRuntime(unpack_returned_tuples=True)
+    rl.execute(open(path, encoding="utf-8").read())
+    udb = rl.globals().UntamedDB
+    rec = udb["recorded"] if udb is not None else None
+    r = rec[FLAVOR] if rec is not None else None
+    if r is None: continue
+    vendors, drops_ = r["vendors"], r["drops"]
+    for npc in (list(vendors.keys()) if vendors is not None else []):
+        v = vendors[npc]
+        if npcs[npc] is None: continue
+        its = v["items"]
+        for iid in (list(its.keys()) if its is not None else []):
+            it = I.get(int(iid))
+            if it and int(npc) not in it[5]:
+                it[5].append(int(npc)); needN.add(int(npc)); rec_v += 1
+    for key in (list(drops_.keys()) if drops_ is not None else []):
+        m = re.match(r"^c(\d+)$", str(key))
+        if not m: continue
+        nid = int(m.group(1))
+        if npcs[nid] is None: continue
+        its = drops_[key]["items"]
+        for iid in (list(its.keys()) if its is not None else []):
+            it = I.get(int(iid))
+            if it and nid not in it[6] and it[7] <= DROP_CAP:
+                it[6].append(nid); needN.add(nid); rec_d += 1
+if RECORDED: log("merged player recordings: vendor links", rec_v, "drop links", rec_d)
 
 N = {}
 for nid in npcs.keys():

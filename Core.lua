@@ -63,7 +63,7 @@ local defaultsDB = {
   zoneAlerts = true, autoPins = true, hideTooHigh = false, minimapAngle = 200, showMinimap = true,
   tooltipInfo = true, targetAlert = true, targetSound = true, minimapPins = true, feedReminder = true,
   arrowScale = 1, autoShotBar = true, growlWarning = true, aspectReminder = true, markReminder = true, resistAlerts = true,
-  gearTooltip = true, talentGlow = true, gearAlerts = true,
+  gearTooltip = true, talentGlow = true, gearAlerts = true, recordData = true,
 }
 local function InitDB()
   UntamedDB = UntamedDB or {}
@@ -465,6 +465,9 @@ SlashCmdList.UNTAMED = function(msg)
   local searchText = msg:match("^search%s+(.+)$") or msg:match("^s%s+(.+)$")
   if searchText then
     ns.SearchFor(searchText)
+  elseif msg == "recorded" then
+    local v, d, n = ns.RecordedCounts()
+    ns.Print(string.format(L["Recorded so far: %d vendors (%d items) and %d loot sources. Thanks for helping fix the data!"], v, n, d))
   elseif msg == "zone" then
     ns.ZoneAlert(true)
   elseif msg == "alerts" then

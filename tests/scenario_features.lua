@@ -125,6 +125,20 @@ local clam = ns.ItemWays(5503)
 check(clam.inside, "clam meat found inside clams")
 for _, k in ipairs({ "all", "items" }) do f.type = k; ns.SearchFor("clam") end
 
+-- Recorder: vendor and loot recordings merge into the index
+ns.RecorderTest.RecordVendor()
+ns.RecorderTest.RecordLoot()
+local db2 = ns.SearchDB()
+local vend = db2.I[11362][6]
+local hasJin = false
+for _, v in ipairs(vend) do if v == 3410 then hasJin = true end end
+check(hasJin, "Jin'sora sells Medium Quiver")
+check(db2.I[99001] and db2.I[99001][6][1] == 3410, "recorded vendor item merged")
+check(db2.I[99002] and db2.I[99002][7][1] == 3018, "recorded loot merged")
+local v, d, n = ns.RecordedCounts()
+check(v == 1 and d == 1 and n == 2, "recorded counts")
+SlashCmdList.UNTAMED("recorded")
+
 -- Character planning
 for _, k in ipairs({ "spells", "talents", "gear", "quests" }) do ns.UI_Show(k) end
 local T = ns.CharacterTest

@@ -180,3 +180,17 @@ IsPlayerSpell = function(id) return id == 1494 or id == 1978 end
 UnitRace = function() return "Dwarf", "Dwarf", 3 end
 C_QuestLog = { IsQuestFlaggedCompleted = function(id) return id == 3108 end, GetLogIndexForQuestID = function(id) if id == 6064 then return 3 end end }
 hooksecurefunc = function() end
+
+-- Recorder
+NPC_GUID = "Creature-0-4372-1-11-3410-00004A1F2B"
+UnitGUID = UnitGUID or function() return nil end
+local _UnitGUID = UnitGUID
+UnitGUID = function(u) if u == "npc" then return NPC_GUID end return _UnitGUID(u) end
+GetMerchantNumItems = function() return 2 end
+GetMerchantItemID = function(i) return ({ 11362, 99001 })[i] end
+GetMerchantItemInfo = function(i) return "x", nil, ({ 1000, 250 })[i] end
+GetNumLootItems = function() return 1 end
+GetLootSlotLink = function() return "|cffffffff|Hitem:99002::::|h[Thing]|h|r" end
+GetLootSourceInfo = function() return "Creature-0-4372-1-11-3018-00004A1F2B", 1 end
+C_Container = C_Container or {}
+C_Container.ContainerIDToInventoryID = function(bag) return 19 + bag end

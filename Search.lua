@@ -11,9 +11,12 @@ function ns.SearchDB()
   if not ns.SearchSource then return nil end
   local fn = (loadstring or load)(ns.SearchSource)
   DB = fn and fn() or nil
+  if DB and ns.MergeRecorded then ns.MergeRecorded(DB) end
   ns.SearchSource = nil
   return DB
 end
+
+function ns.SearchDBLoaded() return DB end
 
 local FOOD = { "Meat", "Fish", "Cheese", "Bread", "Fungus", "Fruit", "Meat", "Fish" }  -- foodType 7 raw meat, 8 raw fish
 
@@ -543,19 +546,41 @@ do
       local sub = kind == "arrows" and 2 or 3
       add(0, ns.Icon(kind == "arrows" and "INV_Misc_Quiver_07" or "INV_Misc_Ammo_Bullet_01"),
         kind == "arrows" and L["Quivers"] or L["Ammo pouches"], C.GREY .. L["faster attacks and more ammo space"] .. "|r", nil, nil, { header = true })
+      -- The quiver or pouch you have on: it sits in one of your bag slots.
+      local worn, wornLevel = nil, 0
+      local toInv = (C_Container and C_Container.ContainerIDToInventoryID) or ContainerIDToInventoryID
+      for bag = 1, (NUM_BAG_SLOTS or 4) do
+        local inv = toInv and toInv(bag)
+        local bid = inv and GetInventoryItemID("player", inv)
+        local bit = bid and db.I[bid]
+        if bit and bit[4] == 11 and bit[2] > wornLevel then worn, wornLevel = bid, bit[2] end
+      end
+      if worn then
+        add(14, ItemIcon(worn), QualityColor(worn) .. db.I[worn][1] .. "|r" .. C.GREEN .. "  " .. L["equipped"] .. "|r", "",
+          ItemClick(worn), ItemTooltip(worn), { mid = C.GREY .. L["lvl "] .. db.I[worn][3] .. "|r" })
+      end
       local bags = {}
       for id, it in pairs(db.I) do
-        if it[4] == 11 and it[5] == sub and it[3] <= playerLevel + 10 then bags[#bags + 1] = id end
+        if it[4] == 11 and it[5] == sub and it[3] <= playerLevel + 10 and it[2] > wornLevel then bags[#bags + 1] = id end
       end
       table.sort(bags, function(a, b) return db.I[a][2] > db.I[b][2] end)
+      local pc, pe, pn = ns.PlayerWorld()
       for i = 1, math.min(5, #bags) do
         local id = bags[i]
         local it = db.I[id]
-        local srcs = ns.ItemSources(id)
-        local s = srcs[1]
-        add(14, ItemIcon(id), QualityColor(id) .. it[1] .. "|r", s and (C.GREY .. KIND[s.kind] .. " " .. (s.kind == "quest" and s.name or s.name) .. "|r") or (C.GREY .. L["crafted or unknown"] .. "|r"),
-          ItemClick(id), ItemTooltip(id), { mid = ((it[3] > playerLevel) and C.RED or C.GREY) .. L["lvl "] .. it[3] .. "|r" })
+        local v, d = NearestVendor(id, pc, pe, pn)
+        local right
+        if v then
+          right = C.GREEN .. L["Buy"] .. "|r " .. (ns.Money and it[16] and it[16] > 0 and ns.Money(it[16]) or "") .. C.GREY .. ", " .. v[1] .. ", "
+            .. (v[10] ~= "" and v[10] or ns.ZoneName(v[5])) .. (d and (", " .. ns.FormatDistance(d)) or "") .. "|r"
+        else
+          right = ns.SourceSummary(id)
+        end
+        add(14, ItemIcon(id), QualityColor(id) .. it[1] .. "|r", right,
+          function() if v and not IsShiftKeyDown() then ns.Arrow_Set(v[5], v[6], v[7], v[1]) else ItemClick(id)() end end,
+          ItemTooltip(id), { mid = ((it[3] > playerLevel) and C.RED or C.GREY) .. L["lvl "] .. it[3] .. "|r" })
       end
+      if #bags == 0 then add(14, nil, C.GREY .. L["Nothing better than what you have for your level yet."] .. "|r") end
     end
 
     -- Pet food
