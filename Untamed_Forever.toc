@@ -19,6 +19,7 @@ Init.lua
 Data\Forever.lua
 Data\Names_Forever.lua
 Data\Search_Forever.lua
+Data\Hunter_Forever.lua
 Abilities.lua
 Foods.lua
 Core.lua
@@ -50,4 +51,5 @@ Stable.lua
 Builds.lua
 Browser.lua
 Search.lua
+Character.lua
 Tabs.lua

@@ -166,3 +166,17 @@ GetUnitSpeed = function() return 0 end
 UnitCanAttack = function() return true end
 UnitIsDead = function() return false end
 AuraUtil = { FindAuraByName = function(name, unit) if unit == "player" and name == "Aspect of the Cheetah" and CHEETAH_ON then return name end end }
+
+-- Character planning
+TALENTS = {
+  [1] = { {"Improved Aspect of the Hawk",1,2,5,5}, {"Endurance Training",1,3,0,5}, {"Improved Eyes of the Beast",2,1,0,2},
+          {"Improved Aspect of the Monkey",2,2,0,5}, {"Thick Hide",2,3,0,3}, {"Improved Revive Pet",2,4,1,2} },
+  [2] = { {"Improved Concussive Shot",1,2,0,5}, {"Efficiency",1,3,0,5} },
+}
+GetNumTalents = function(tab) return TALENTS[tab] and #TALENTS[tab] or 0 end
+GetTalentInfo = function(tab, i) local t = TALENTS[tab] and TALENTS[tab][i]; if t then return t[1], 0, t[2], t[3], t[4], t[5] end end
+UnitCharacterPoints = function() return 1 end
+IsPlayerSpell = function(id) return id == 1494 or id == 1978 end
+UnitRace = function() return "Dwarf", "Dwarf", 3 end
+C_QuestLog = { IsQuestFlaggedCompleted = function(id) return id == 3108 end, GetLogIndexForQuestID = function(id) if id == 6064 then return 3 end end }
+hooksecurefunc = function() end

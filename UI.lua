@@ -276,6 +276,10 @@ local TAB_META = {
   browse    = { group = 2, order = 3, icon = "INV_Misc_Spyglass_03", sub = L["Every tameable beast"] },
   search    = { group = 3, order = 1, icon = "INV_Misc_Spyglass_02", sub = L["Find any item, NPC or beast and where to get it"] },
   supplies  = { group = 3, order = 2, icon = "INV_Ammo_Arrow_02", sub = L["Ammo, quivers and food for your pet"] },
+  spells    = { group = 3, order = 3, icon = "INV_Misc_Book_11", sub = L["What to train at each level and what it costs"] },
+  talents   = { group = 3, order = 4, icon = "Ability_Hunter_SniperShot", sub = L["Talent builds, with the next point highlighted"] },
+  gear      = { group = 3, order = 5, icon = "INV_Weapon_Bow_07", sub = L["Upgrades you can get at your level"] },
+  quests    = { group = 3, order = 6, icon = "INV_Misc_Note_02", sub = L["Class quests only hunters can do"] },
   settings  = { group = 9, order = 1, icon = "INV_Misc_Gear_01", sub = L["Alerts, pins and data sharing"] },
 }
 local GROUPS = { L["My Pet"], L["Taming"], L["Hunter"] }

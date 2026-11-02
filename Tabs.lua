@@ -150,6 +150,10 @@ local function BuildSettings(panel, top)
   check(L["Low ammo warning"], "ammoWarning", L["Warns below 200 arrows or bullets and points you to the nearest ammo vendor."])
   check(L["New spell ranks reminder on level up"], "trainerReminder")
 
+  heading(L["Character"])
+  check(L["Gear upgrade line on item tooltips"], "gearTooltip")
+  check(L["Glow on the next talent in the talent window"], "talentGlow")
+
   heading(L["General"])
   check(L["Play a sound with alerts"], "targetSound")
   check(L["Show minimap button"], "showMinimap")

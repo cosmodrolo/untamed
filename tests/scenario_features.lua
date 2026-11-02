@@ -108,4 +108,18 @@ ns.SearchFor("hogor")
 SlashCmdList.UNTAMED("s heavy shot")
 local tip = ns.ItemTooltip(11285)()
 check(tip.itemID == 11285 and #tip > 2, "item tooltip with sources")
+-- Character planning
+for _, k in ipairs({ "spells", "talents", "gear", "quests" }) do ns.UI_Show(k) end
+local T = ns.CharacterTest
+if ns.FLAVOR ~= "forever" then
+  local steps, nxt = T.BuildProgress(T.SelectedBuild())
+  check(steps[1].done == 5 and nxt and nxt.name == "Improved Revive Pet" and nxt.done == 1, "talent build progress, next is Improved Revive Pet")
+  check(T.Money(12345):find("1g") ~= nil, "money format")
+  local lines = {}
+  local tt = { AddLine = function(_, l) lines[#lines + 1] = l end }
+  local best, bestId = 0
+  for id, g in pairs(ns.GearItems) do if g[1] == "RANGED" and g[2] <= 30 and g[3] > best then best, bestId = g[3], id end end
+  T.OnItemTooltip(tt, bestId)
+  check(#lines == 1, "gear tooltip line for item " .. tostring(bestId) .. ": " .. tostring(lines[1]))
+end
 print("DONE")
