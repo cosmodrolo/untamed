@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.5.0
+- Auto Shot timer: a bar that shows the reload (move freely) and the aim window (stand still). Shift-drag to move it.
+- Growl warning when Growl is on autocast in a group, and a note when it's off while solo.
+- Combat reminders: Aspect of the Cheetah or Pack on in combat, no aspect at all, and no Hunter's Mark on a boss.
+- Resist alerts for Feign Death, traps, Scatter Shot, Scare Beast, Wyvern Sting and Tranquilizing Shot.
+- New Search page: any item, NPC or beast, with every place to get an item (vendors for your faction, drops, quests, containers) and an arrow to the nearest. Also /ut s <text>.
+- New Supplies page: the best ammo for your weapon and who sells it, quivers or ammo pouches near your level, and food your pet eats with the nearest vendor.
+- Settings are grouped into sections and scroll.
+
 ## v2.4.0
 - Redesigned window: tabs moved to a sidebar grouped into My Pet and Taming, with Settings at the bottom.
 - New header with your pet's portrait, happiness, experience and training point bars, and one "Viewing" menu to switch between your pet, any stabled pet, or a family.

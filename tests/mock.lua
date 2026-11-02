@@ -141,7 +141,9 @@ GetLocale = function() return "enUS" end
 UnitClass = function() return "Hunter", "HUNTER" end
 strtrim = function(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
 AMMO = 150
-GetInventoryItemID = function(u, slot) if slot == 0 then return 2512 end end
+GetInventoryItemID = function(u, slot) if slot == 0 then return 2512 end if slot == 18 then return 2504 end end
+GetItemInfoInstant = function(id) if id == 2504 then return id, "Weapon", "Bows", "INVTYPE_RANGED", 0, 2, 2 end end
+INVSLOT_RANGED = 18
 GetInventoryItemCount = function() return AMMO end
 UnitHealth = function() return 30 end
 UnitHealthMax = function() return 100 end

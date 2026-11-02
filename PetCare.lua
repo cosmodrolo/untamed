@@ -22,6 +22,7 @@ local function Diet()
   for i, d in ipairs(list or {}) do out[i] = ns.ToEnglish(d) end
   return out
 end
+ns.PetDiet = Diet
 
 local function ItemLevel(itemID)
   local _, _, _, ilvl

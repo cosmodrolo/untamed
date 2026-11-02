@@ -95,4 +95,17 @@ FIRE("PLAYER_REGEN_DISABLED")
 check(ALERTS >= 2, "cheetah in combat warning")
 ns.Alert = oldAlert
 GROUPED = false; CHEETAH_ON = false
+-- Search and supplies
+local db = ns.SearchDB()
+check(db and db.I[11285] and db.N[3018], "search index loads")
+local srcs = ns.ItemSources(11285)
+check(#srcs > 0, "jagged arrow has sources (" .. #srcs .. ")")
+print("  nearest:", srcs[1].kind, srcs[1].name, srcs[1].map and ns.ZoneName(srcs[1].map))
+ns.UI_Show("search")
+ns.UI_Show("supplies")
+ns.SearchFor("arrow")
+ns.SearchFor("hogor")
+SlashCmdList.UNTAMED("s heavy shot")
+local tip = ns.ItemTooltip(11285)()
+check(tip.itemID == 11285 and #tip > 2, "item tooltip with sources")
 print("DONE")

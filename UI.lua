@@ -12,7 +12,15 @@ local function ShowTooltip(owner, tip)
   if type(tip) == "function" then tip = tip() end
   if not tip then return end
   GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+  local first = 1
+  if tip.itemID and GameTooltip.SetItemByID then
+    -- Real item tooltip first, then our lines (skipping the name).
+    GameTooltip:SetItemByID(tip.itemID)
+    GameTooltip:AddLine(" ")
+    first = 2
+  end
   for idx, line in ipairs(tip) do
+    if idx < first then line = "" end
     if line ~= "" then
       if idx == 1 then GameTooltip:AddLine(line, 1, 0.82, 0) else GameTooltip:AddLine(line, 1, 1, 1, true) end
     end
@@ -266,9 +274,11 @@ local TAB_META = {
   recommend = { group = 2, order = 1, icon = "Ability_Hunter_BeastTaming", sub = L["The best pet for the job"] },
   plan      = { group = 2, order = 2, icon = "INV_Misc_Map_01", sub = L["A taming route for your pet's next abilities"] },
   browse    = { group = 2, order = 3, icon = "INV_Misc_Spyglass_03", sub = L["Every tameable beast"] },
-  settings  = { group = 3, order = 1, icon = "INV_Misc_Gear_01", sub = L["Alerts, pins and data sharing"] },
+  search    = { group = 3, order = 1, icon = "INV_Misc_Spyglass_02", sub = L["Find any item, NPC or beast and where to get it"] },
+  supplies  = { group = 3, order = 2, icon = "INV_Ammo_Arrow_02", sub = L["Ammo, quivers and food for your pet"] },
+  settings  = { group = 9, order = 1, icon = "INV_Misc_Gear_01", sub = L["Alerts, pins and data sharing"] },
 }
-local GROUPS = { L["My Pet"], L["Taming"] }
+local GROUPS = { L["My Pet"], L["Taming"], L["Hunter"] }
 
 function ns.RegisterTab(key, title, build, refresh)
   tabs[key] = { key = key, title = title, build = build, refresh = refresh, meta = TAB_META[key] or { group = 2, order = 99, icon = "INV_Misc_QuestionMark" } }
@@ -492,8 +502,8 @@ local function BuildSidebar()
   local y, lastGroup = -8, nil
   for _, t in ipairs(list) do
     local g = t.meta.group
-    local b = ns.MakeFlatButton(side, 26)
-    if g == 3 then
+    local b = ns.MakeFlatButton(side, 24)
+    if g == 9 then
       b:SetPoint("BOTTOMLEFT", 4, 6)
       b:SetPoint("BOTTOMRIGHT", -4, 6)
     else
@@ -507,7 +517,7 @@ local function BuildSidebar()
       end
       b:SetPoint("TOPLEFT", 4, y)
       b:SetPoint("RIGHT", -4, 0)
-      y = y - 27
+      y = y - 25
     end
     b.icon:SetTexture(ns.Icon(t.meta.icon))
     b.text:SetText(t.title)
@@ -528,13 +538,13 @@ end
 local function CreateMainFrame()
   frame = CreateFrame("Frame", "UntamedFrame", UIParent, "BasicFrameTemplate")
   local win = ns.db.win or {}
-  frame:SetSize(win.w or 780, win.h or 600)
+  frame:SetSize(win.w or 780, math.max(win.h or 640, 600))
   if win.p then frame:SetPoint(win.p, UIParent, win.rp, win.x, win.y) else frame:SetPoint("CENTER", 120, 40) end
   frame:SetFrameStrata("HIGH")
   frame:SetMovable(true)
   frame:SetResizable(true)
-  if frame.SetResizeBounds then frame:SetResizeBounds(720, 480, 1400, 1100)
-  elseif frame.SetMinResize then frame:SetMinResize(720, 480); frame:SetMaxResize(1400, 1100) end
+  if frame.SetResizeBounds then frame:SetResizeBounds(720, 600, 1400, 1100)
+  elseif frame.SetMinResize then frame:SetMinResize(720, 600); frame:SetMaxResize(1400, 1100) end
   frame:SetClampedToScreen(true)
   frame:EnableMouse(true)
   frame:RegisterForDrag("LeftButton")

@@ -461,7 +461,10 @@ SLASH_UNTAMED2 = "/ut"
 SLASH_UNTAMED3 = "/psf"
 SlashCmdList.UNTAMED = function(msg)
   msg = (msg or ""):lower():match("^%s*(.-)%s*$")
-  if msg == "zone" then
+  local searchText = msg:match("^search%s+(.+)$") or msg:match("^s%s+(.+)$")
+  if searchText then
+    ns.SearchFor(searchText)
+  elseif msg == "zone" then
     ns.ZoneAlert(true)
   elseif msg == "alerts" then
     ns.db.zoneAlerts = not ns.db.zoneAlerts
@@ -485,10 +488,12 @@ SlashCmdList.UNTAMED = function(msg)
     ns.NavigateLastRare()
   elseif msg == "next" then
     ns.Route_Next()
-  elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" or msg == "builds" then
+  elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" or msg == "builds" or msg == "search"
+    or msg == "supplies" or msg == "spells" or msg == "talents" or msg == "gear" or msg == "quests" then
     if ns.UI_Show then ns.UI_Show(msg) end
   elseif msg == "help" then
     ns.Print("/untamed  open the window   |  /untamed plan, browse, care, settings  open a tab")
+    ns.Print("/untamed search <text>  (or /ut s <text>)  find any item, NPC or beast and where to get it")
     ns.Print("/untamed zone  what your pet can learn in this zone   |  /untamed next  skip to the next route stop")
     ns.Print("/untamed ammo, trainer, pettrainer, stable  arrow to the nearest one   |  /untamed rare  arrow to the last rare seen")
     ns.Print("/untamed clear  clear map focus and the navigation arrow")

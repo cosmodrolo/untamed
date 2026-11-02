@@ -18,6 +18,7 @@ embeds.xml
 Init.lua
 Data\Era.lua
 Data\Names_Era.lua
+Data\Search_Era.lua
 Abilities.lua
 Foods.lua
 Core.lua
@@ -48,4 +49,5 @@ Recommend.lua
 Stable.lua
 Builds.lua
 Browser.lua
+Search.lua
 Tabs.lua
