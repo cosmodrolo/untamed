@@ -2,12 +2,6 @@ local _, ns = ...
 local L = ns.L
 
 local ROW_H = 20
--- One meaning per color everywhere: GREEN = you can do it now, ORANGE = elite or dungeon,
--- GREY = information, RED = not possible yet, GOLD = headings.
-ns.C = {
-  GOLD = "|cffffd100", GREEN = "|cff40ff40", GREY = "|cff909090", RED = "|cffff5050",
-  WHITE = "|cffffffff", ORANGE = "|cffff9933", BLUE = "|cff66aaff", HUNTER = "|cffabd473",
-}
 local C = ns.C
 function ns.Icon(path) return "Interface\\Icons\\" .. path end
 

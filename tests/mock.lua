@@ -128,7 +128,9 @@ UnitGUID = function(u) return "Creature-0-1-0-1-" .. TARGET_ID .. "-0000" end
 HasPetSpells = function() return #PET.spells, "PET" end
 GetSpellBookItemName = function(i) local s = PET.spells[i]; return s[1], s[2] end
 GetPetTrainingPoints = function() return 60, 40 end
-GetSpellInfo = function(id) if id == 5149 then return "Beast Training" end if id == 6991 then return "Feed Pet" end end
+SPELLS = { [5149] = "Beast Training", [6991] = "Feed Pet", [75] = "Auto Shot", [2649] = "Growl", [5118] = "Aspect of the Cheetah",
+  [13165] = "Aspect of the Hawk", [1130] = "Hunter's Mark", [5384] = "Feign Death" }
+GetSpellInfo = function(id) return SPELLS[id] end
 CRAFTS = { { "Bite", "Rank 1", "available", 0, nil, 1, 1 }, { "Bite", "Rank 2", "available", 0, nil, 4, 8 }, { "Bite", "Rank 4", "available", 0, nil, 10, 24 }, { "Dash", "Rank 1", "available", 0, nil, 15, 30 } }
 GetCraftDisplaySkillLine = function() return "Beast Training" end
 GetNumCrafts = function() return #CRAFTS end
@@ -149,3 +151,16 @@ NUM_PET_STABLE_SLOTS = 2
 STABLE = { [0] = { nil, "Ruff", 24, "Wolf" }, [2] = { nil, "Slasher", 30, "Cat" } }
 GetStablePetInfo = function(i) local s = STABLE[i]; if s then return s[1], s[2], s[3], s[4] end end
 GetPetExperience = function() return PETXP or 300, 1000 end
+
+-- Combat helpers
+UnitAffectingCombat = function() return true end
+GROUPED = false
+IsInGroup = function() return GROUPED end
+GROWL_AUTO = true
+GetPetActionInfo = function(i) if i == 4 then return "Growl", 132270, false, false, true, GROWL_AUTO, 2649 end return nil end
+UnitClassification = function() return "worldboss" end
+UnitRangedDamage = function() return 2.9, 50, 80, 0, 0, 1 end
+GetUnitSpeed = function() return 0 end
+UnitCanAttack = function() return true end
+UnitIsDead = function() return false end
+AuraUtil = { FindAuraByName = function(name, unit) if unit == "player" and name == "Aspect of the Cheetah" and CHEETAH_ON then return name end end }

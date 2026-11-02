@@ -1,7 +1,7 @@
 -- Forever (modern client) differences
 GetSpellInfo = nil; GetCraftDisplaySkillLine = nil; GetNumCrafts = nil; GetCraftInfo = nil
 GetPetHappiness = nil; GetPetFoodTypes = nil; GetPetTrainingPoints = nil; GetSpellBookItemName = nil
-C_Spell = { GetSpellInfo = function(id) if id == 6991 then return { name = "Feed Pet" } end end }
+C_Spell = { GetSpellInfo = function(id) local n = SPELLS and SPELLS[id] if n then return { name = n } end end }
 Enum = { SpellBookSpellBank = { Pet = 1 }, TrainerType = { Pet = 3 }, TooltipDataType = { Unit = 2 } }
 C_SpellBook = { GetSpellBookItemName = function(i) local s = PET.spells[i]; return s[1], s[2] end }
 C_PetInfo = {

@@ -12,6 +12,8 @@ local function Alert(msg, sound)
   if sound then PlaySound(SOUNDKIT and SOUNDKIT.RAID_WARNING or 8959) end
 end
 
+ns.Alert = Alert
+
 local function IsHunter()
   local _, class = UnitClass("player")
   return class == "HUNTER"

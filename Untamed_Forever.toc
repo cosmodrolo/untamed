@@ -41,6 +41,7 @@ Alerts.lua
 PetCare.lua
 Leveling.lua
 Hunter.lua
+Combat.lua
 UI.lua
 Planner.lua
 Recommend.lua

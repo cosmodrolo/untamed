@@ -101,43 +101,78 @@ end
 -- Settings (in the Untamed window and in the game's Options > AddOns)
 ---------------------------------------------------------------------------
 local function BuildSettings(panel, top)
-  local y = top or -4
-  local col, x = 0, 8
+  -- Everything sits in a scroll area so the list can grow.
+  local scroll = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+  scroll:SetPoint("TOPLEFT", 0, top or -2)
+  scroll:SetPoint("BOTTOMRIGHT", -26, 4)
+  local host = CreateFrame("Frame", nil, scroll)
+  host:SetSize(480, 1)
+  scroll:SetScrollChild(host)
+  scroll:SetScript("OnSizeChanged", function(_, w) host:SetWidth(w) end)
+
+  local y = -4
+  local function heading(text)
+    if y < -10 then y = y - 8 end
+    local h = host:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    h:SetPoint("TOPLEFT", 8, y)
+    h:SetText(text)
+    local line = host:CreateTexture(nil, "ARTWORK")
+    line:SetPoint("TOPLEFT", 8, y - 16)
+    line:SetPoint("RIGHT", host, "RIGHT", -8, 0)
+    line:SetHeight(1)
+    line:SetColorTexture(1, 0.82, 0, 0.25)
+    y = y - 22
+  end
   local function check(label, key, tip)
-    ns.MakeCheck(panel, label, x, y, function() return ns.db[key] end, function(v) ns.db[key] = v end, tip)
+    ns.MakeCheck(host, label, 12, y, function() return ns.db[key] end, function(v) ns.db[key] = v end, tip)
     y = y - 24
   end
+
+  heading(L["Taming and maps"])
   check(L["Zone alerts in chat"], "zoneAlerts", L["Print a message when you enter a zone with beasts that teach your pet something new."])
   check(L["World map: pins for every beast my pet needs"], "autoPins")
   check(L["Minimap: pins for nearby beasts my pet needs"], "minimapPins")
   check(L["Tooltips: show what a beast teaches"], "tooltipInfo")
   check(L["Alert when I target a beast my pet needs"], "targetAlert")
   check(L["Alert when a rare tameable beast is nearby"], "rareAlert", L["Watches nameplates, your target and mouseover. Turn on enemy nameplates to spot rares from further away."])
-  check(L["Play a sound with alerts"], "targetSound")
+  check(L["Hide ranks above my pet's level"], "hideTooHigh")
+
+  heading(L["Combat"])
+  check(L["Auto Shot timer bar"], "autoShotBar", L["Shows while Auto Shot is on. Red means stand still. Shift-drag the bar to move it."])
+  check(L["Warn when Growl is on in a group"], "growlWarning")
+  check(L["Aspect reminders in combat"], "aspectReminder", L["Warns when Cheetah or Pack is on in combat, or no aspect is on."])
+  check(L["Hunter's Mark reminder on bosses"], "markReminder")
+  check(L["Alert when traps, Feign Death or Tranquilizing Shot are resisted"], "resistAlerts")
+
+  heading(L["Pet and supplies"])
   check(L["Feed reminder and pop-up Feed button"], "feedReminder")
+  check(L["Mend Pet and Revive Pet alerts"], "petHealthAlerts")
   check(L["Low ammo warning"], "ammoWarning", L["Warns below 200 arrows or bullets and points you to the nearest ammo vendor."])
   check(L["New spell ranks reminder on level up"], "trainerReminder")
-  check(L["Mend Pet and Revive Pet alerts"], "petHealthAlerts")
-  check(L["Hide ranks above my pet's level"], "hideTooHigh")
+
+  heading(L["General"])
+  check(L["Play a sound with alerts"], "targetSound")
   check(L["Show minimap button"], "showMinimap")
-  y = y - 8
-  local exp = ns.MakeButton(panel, L["Export my tame data"], 160, function()
+
+  heading(L["Share data"])
+  local exp = ns.MakeButton(host, L["Export my tame data"], 160, function()
     local text, n = ns.ExportObserved()
     ns.TextPopup(L["Export tame data ("] .. n .. " beasts)", text)
   end)
   exp:SetPoint("TOPLEFT", 12, y)
-  local imp = ns.MakeButton(panel, L["Import tame data"], 160, function()
+  local imp = ns.MakeButton(host, L["Import tame data"], 160, function()
     ns.TextPopup(L["Import tame data"], "", ns.ImportObserved)
   end)
   imp:SetPoint("LEFT", exp, "RIGHT", 6, 0)
   y = y - 30
-  local note = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  local note = host:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
   note:SetPoint("TOPLEFT", 12, y)
-  note:SetPoint("RIGHT", panel, "RIGHT", -12, 0)
+  note:SetPoint("RIGHT", host, "RIGHT", -12, 0)
   note:SetJustifyH("LEFT")
   note:SetText(C.GREY .. L["When you tame a beast, Untamed records the abilities it really had. Export that data to share corrections."] ..
     (ns.FLAVOR == "forever" and " This matters most on Forever, where public data is still incomplete." or "") ..
     "\nKey bindings: Options > Keybindings > AddOns > Untamed.   Type /untamed help for slash commands.|r")
+  host:SetHeight(-y + 60)
 end
 ns.BuildSettings = BuildSettings
 

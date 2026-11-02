@@ -75,4 +75,24 @@ ns.UI_Show("settings")
 ns.UI_Show("recommend")
 ns.UI_ViewingMenu(); ns.UI_ViewingMenu()
 check(ns.ToEnglish("Bite") == "Bite", "locale passthrough")
+-- Combat helpers
+FIRE("START_AUTOREPEAT_SPELL")
+check(_G.UntamedAutoShotBar and _G.UntamedAutoShotBar:IsShown(), "auto shot bar shows")
+FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 75)
+TICK(3)
+FIRE("STOP_AUTOREPEAT_SPELL")
+check(not _G.UntamedAutoShotBar:IsShown(), "auto shot bar hides")
+GROUPED = true; GROWL_AUTO = true
+ALERTS = 0
+local oldAlert = ns.Alert
+ns.Alert = function(msg) ALERTS = ALERTS + 1; print("  alert:", msg) end
+FIRE("GROUP_ROSTER_UPDATE")
+check(ALERTS == 1, "growl warning in a group")
+FIRE("GROUP_ROSTER_UPDATE")
+check(ALERTS == 1, "growl warning not repeated")
+CHEETAH_ON = true
+FIRE("PLAYER_REGEN_DISABLED")
+check(ALERTS >= 2, "cheetah in combat warning")
+ns.Alert = oldAlert
+GROUPED = false; CHEETAH_ON = false
 print("DONE")
