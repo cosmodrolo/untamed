@@ -3,7 +3,9 @@
 These scripts regenerate the generated data files. They expect source checkouts in one folder (`SRC`):
 
 - `SRC/QuestieDB` (git clone https://github.com/Questie/QuestieDB)
-- `SRC/vanilla-hunter-pets` (git clone https://github.com/shagu/vanilla-hunter-pets)
+- `SRC/cdb/full.sql` (cmangos classic-db full dump)
+- `tools/blizzard/CreatureSpellData_<build>.txt`: Blizzard's CreatureSpellData client table. To refresh it for a new build,
+  open https://wago.tools/db2/CreatureSpellData/csv?build=<build> and convert each row to `ID:spell.spell.spell`.
 - `SRC/cdb/Full_DB/ClassicDB_*.sql.gz` (from https://github.com/cmangos/classic-db)
 
 ```

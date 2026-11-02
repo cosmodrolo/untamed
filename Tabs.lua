@@ -123,6 +123,14 @@ local function BuildSettings(panel, top)
     line:SetColorTexture(1, 0.82, 0, 0.25)
     y = y - 22
   end
+  local function choose(label, key, options, default)
+    local fs = host:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    fs:SetPoint("TOPLEFT", 16, y - 5)
+    fs:SetText(label)
+    local d = ns.MakeDropdown(host, 110, options, function() return ns.db[key] or default end, function(v) ns.db[key] = v end)
+    d:SetPoint("TOPLEFT", 230, y)
+    y = y - 26
+  end
   local function check(label, key, tip)
     ns.MakeCheck(host, label, 12, y, function() return ns.db[key] end, function(v) ns.db[key] = v end, tip)
     y = y - 24
@@ -134,7 +142,10 @@ local function BuildSettings(panel, top)
   check(L["Minimap: pins for nearby beasts my pet needs"], "minimapPins")
   check(L["Tooltips: show what a beast teaches"], "tooltipInfo")
   check(L["Alert when I target a beast my pet needs"], "targetAlert")
-  check(L["Alert when a rare tameable beast is nearby"], "rareAlert", L["Watches nameplates, your target and mouseover. Turn on enemy nameplates to spot rares from further away."])
+  check(L["Alert when a rare is nearby"], "rareAlert", L["Watches nameplates, your target and mouseover. Turn on enemy nameplates to spot rares from further away."])
+  check(L["Only tameable rares"], "rareTameableOnly")
+  check(L["Rare pop-up with a Target button"], "rareToast", L["Drag the pop-up to move it."])
+  check(L["Put a skull on rares"], "rareMark", L["Marks a rare with a skull when you first see it, if it isn't marked yet."])
   check(L["Hide ranks above my pet's level"], "hideTooHigh")
 
   heading(L["Combat"])
@@ -147,11 +158,15 @@ local function BuildSettings(panel, top)
   heading(L["Pet and supplies"])
   check(L["Feed reminder and pop-up Feed button"], "feedReminder")
   check(L["Mend Pet and Revive Pet alerts"], "petHealthAlerts")
+  check(L["Restock automatically when I open a vendor"], "autoRestock", L["Otherwise use the Restock button beside the vendor window."])
+  choose(L["Restock ammo up to"], "ammoTarget", { { 400, "400" }, { 800, "800" }, { 1000, "1000" }, { 1400, "1400" }, { 2000, "2000" } }, 1000)
+  choose(L["Restock pet food up to"], "foodTarget", { { 5, "5" }, { 10, "10" }, { 20, "20" }, { 40, "40" } }, 20)
   check(L["Low ammo warning"], "ammoWarning", L["Warns below 200 arrows or bullets and points you to the nearest ammo vendor."])
   check(L["New spell ranks reminder on level up"], "trainerReminder")
 
   heading(L["Character"])
   check(L["Gear upgrade line on item tooltips"], "gearTooltip")
+  check(L["Mark upgrades and wishlist items at the Auction House"], "ahHelper")
   check(L["Tell me about new gear upgrades"], "gearAlerts", L["When you level up, and when you arrive in a zone where a vendor sells an upgrade."])
   check(L["Glow on the next talent in the talent window"], "talentGlow")
 

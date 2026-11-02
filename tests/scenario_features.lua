@@ -53,6 +53,17 @@ TARGET_ID = 2850   -- Broken Tooth (Rare)
 FIRE("PLAYER_TARGET_CHANGED")
 check(ns.lastRare == 2850, "rare beast spotted")
 
+-- Any rare, not just tameable ones
+local oldCls = UnitClassification
+UnitClassification = function() return "rare" end
+TARGET_ID = 61   -- Thuros Lightfingers, a rare humanoid
+FIRE("PLAYER_TARGET_CHANGED")
+check(ns.lastRare == 61, "non-tameable rare spotted")
+check(_G.UntamedRareToast and _G.UntamedRareToast:IsShown(), "rare pop-up shown")
+ns.NavigateLastRare()
+UnitClassification = oldCls
+ns.UI_Show("rares")
+
 -- Ammo warning (150 < 200)
 FIRE("BAG_UPDATE_DELAYED")
 
@@ -146,6 +157,47 @@ for _, l in ipairs(rtip) do if type(l) == "string" and l:find("Revered") and l:f
 print("  rep line:", found)
 check(found ~= nil, "outrunner's bow needs Revered with Silverwing Sentinels (Alliance)")
 if ns.GearItems then check(ns.GearBestFor("RANGED", 1, 60, 0, "dungeon", false) ~= nil, "dungeon-only gear filter") end
+
+-- Restock: a vendor selling Jagged Arrow (11285) and a Medium Quiver
+GetMerchantNumItems = function() return 2 end
+GetMerchantItemID = function(i) return ({ 11285, 11362 })[i] end
+GetMerchantItemInfo = function(i) return ({ "Jagged Arrow", "Medium Quiver" })[i], nil, ({ 1000, 1000 })[i], ({ 200, 1 })[i] end
+UnitLevel = (function(old) return function(u) if u == "player" then return 45 end return old(u) end end)(UnitLevel)
+local plan = ns.RestockTest.Plan()
+check(#plan >= 1 and plan[1].id == 11285, "restock plans Jagged Arrow")
+BOUGHT = {}
+ns.Restock()
+check(#BOUGHT == 5, "restock buys 5 stacks of 200 for 1000 arrows (" .. #BOUGHT .. ")")
+
+-- Wishlist
+ALT = true
+IsAltKeyDown = function() return ALT end
+ns.ItemClick(3021)()
+ALT = false
+check(ns.OnWishlist(3021), "alt-click adds to wishlist")
+local pins = ns.PinSources[1]()
+check(pins and #pins > 0, "wishlist sources become map pins (" .. (pins and #pins or 0) .. ")")
+ns.UI_Show("wishlist")
+
+-- Dungeons
+ns.UI_Show("dungeons")
+local di = ns.DungeonInfo("The Deadmines")
+local nb = 0 for _ in pairs(di.bosses) do nb = nb + 1 end
+print("  deadmines: bosses", nb, "beasts", #di.beasts, "entrance", di.entrance and ns.ZoneName(di.entrance[1]))
+check(nb > 3 and di.entrance, "dungeon guide finds Deadmines bosses and entrance")
+
+-- Reputation and Auction House
+ns.UI_Show("reputation")
+local rw = ns.RepTest.Rewards()
+local nf = 0 for _ in pairs(rw) do nf = nf + 1 end
+check(nf > 5, "reputation rewards found for " .. nf .. " factions")
+check(rw[889] == nil and rw[890] ~= nil, "only your side's battleground faction (Alliance here)")
+NUM_BROWSE_TO_DISPLAY = 2
+BrowseScrollFrame = CreateFrame("Frame")
+FauxScrollFrame_GetOffset = function() return 0 end
+for i = 1, 2 do local b = CreateFrame("Button", "BrowseButton" .. i); b.GetName = function() return "BrowseButton" .. i end; b:Show() end
+GetAuctionItemInfo = function(_, i) local id = ({ 3021, 2504 })[i]; return "x", nil, 1, 2, true, 1, nil, 1, 1, 1, 0, nil, nil, nil, nil, 0, id, true end
+ns.AuctionTest.Update()
 
 -- Character planning
 for _, k in ipairs({ "spells", "talents", "gear", "quests" }) do ns.UI_Show(k) end

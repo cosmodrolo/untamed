@@ -194,3 +194,8 @@ GetLootSlotLink = function() return "|cffffffff|Hitem:99002::::|h[Thing]|h|r" en
 GetLootSourceInfo = function() return "Creature-0-4372-1-11-3018-00004A1F2B", 1 end
 C_Container = C_Container or {}
 C_Container.ContainerIDToInventoryID = function(bag) return 19 + bag end
+MerchantFrame = CreateFrame("Frame", "MerchantFrame")
+BOUGHT = {}
+BuyMerchantItem = function(i, q) BOUGHT[#BOUGHT + 1] = i end
+GetMoney = function() return 1000000 end
+GetItemCount = function() return 0 end

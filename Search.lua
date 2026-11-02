@@ -283,13 +283,15 @@ local function ItemTooltip(id)
     if it and it[16] and it[16] > 0 and w.vendor and ns.Money then lines[#lines + 1] = C.GREY .. L["Vendor price: "] .. "|r" .. ns.Money(it[16]) end
     for i = 1, math.min(8, #srcs) do lines[#lines + 1] = SourceLine(srcs[i]) end
     if #srcs > 8 then lines[#lines + 1] = C.GREY .. string.format(L["and %d more"], #srcs - 8) .. "|r" end
-    lines[#lines + 1] = C.GREY .. L["Click: arrow to the nearest source.  Shift-click: link in chat."] .. "|r"
+    if ns.OnWishlist and ns.OnWishlist(id) then lines[#lines + 1] = C.GOLD .. L["On your wishlist."] .. "|r" end
+    lines[#lines + 1] = C.GREY .. L["Click: arrow to the nearest source.  Shift-click: link in chat.  Alt-click: wishlist."] .. "|r"
     return lines
   end
 end
 
 local function ItemClick(id)
   return function()
+    if IsAltKeyDown and IsAltKeyDown() and ns.Wishlist_Toggle then ns.Wishlist_Toggle(id) return end
     if IsShiftKeyDown() then
       local _, link = ItemInfo(id)
       if link and ChatEdit_InsertLink then ChatEdit_InsertLink(link) end

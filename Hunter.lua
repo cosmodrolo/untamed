@@ -22,25 +22,8 @@ end
 ---------------------------------------------------------------------------
 -- Rare beast scanner (nameplates, target and mouseover)
 ---------------------------------------------------------------------------
-local rareSeen = {}
-local function CheckRare(unit)
-  if not ns.db or not ns.db.rareAlert or not unit then return end
-  local ok, guid = pcall(UnitGUID, unit)
-  if not ok then return end
-  local npcId = ns.NpcIdFromGUID(guid)
-  local b = npcId and ns.Beasts[npcId]
-  if not b or not b[5] or not b[5]:find("Rare") then return end
-  if UnitIsDead and UnitIsDead(unit) then return end
-  local now = GetTime()
-  if rareSeen[npcId] and now - rareSeen[npcId] < 600 then return end
-  rareSeen[npcId] = now
-  local teaches = #b[6] > 0 and (" Teaches " .. ns.TeachesText(b) .. ".") or ""
-  local speed = b[9] and (" Attack speed " .. b[9] .. ".") or ""
-  local msg = L["Rare tameable nearby: "] .. b[1] .. " (level " .. ns.LevelText(b) .. " " .. b[4] .. ")." .. speed .. teaches
-  Alert(msg, ns.db.targetSound)
-  ns.Print(msg .. " Type /untamed rare to point the arrow at it.")
-  ns.lastRare = npcId
-end
+-- The scanner itself lives in Rares.lua.
+local function CheckRare(unit) if ns.CheckRare then ns.CheckRare(unit) end end
 
 ---------------------------------------------------------------------------
 -- Ammo, trainer reminders, pet health
@@ -134,6 +117,3 @@ ns.On("LOGIN", function()
   end
 end)
 
-function ns.NavigateLastRare()
-  if ns.lastRare then ns.Navigate(ns.lastRare) else ns.Print(L["No rare beast spotted yet this session."]) end
-end

@@ -52,5 +52,11 @@ Builds.lua
 Browser.lua
 Search.lua
 Recorder.lua
+Rares.lua
+Restock.lua
+Wishlist.lua
 Character.lua
+Dungeons.lua
+Reputation.lua
+Auction.lua
 Tabs.lua

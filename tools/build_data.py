@@ -3,7 +3,8 @@
 
 usage: build2.py SRC_DIR FLAVOR OUT_PATH [forever_pets.json]
 Sources:
-  vanilla-hunter-pets/index.html  (VMaNGOS tameable beasts + abilities, via shagu)
+  cdb/full.sql                    (cmangos classic-db: tameable beasts, families, levels, attack speed, spell names)
+  tools/blizzard/CreatureSpellData (Blizzard Classic Era client table: which abilities each beast teaches)
   QuestieDB                       (NPC spawns, stable/flight masters, zone ids)
   forever_pets.json               (Forever beast abilities, compiled from public sites)
 """
@@ -27,40 +28,58 @@ else:
 
 def log(*a): print(*a, file=sys.stderr)
 
-# ---------------------------------------------------------------- shagu beasts
-html = open(os.path.join(SRC, "vanilla-hunter-pets/index.html"), encoding="utf-8").read()
+# ---------------------------------------------------------------- beasts: cmangos + Blizzard client data
+# Which beasts are tameable, their family, levels and attack speed: cmangos classic-db creature_template.
+# Which abilities each one teaches: Blizzard's own client table CreatureSpellData (tools/blizzard/),
+# linked through creature_template.PetSpellDataId. Spell names and ranks: cmangos spell_template.
+SQL = os.path.join(SRC, "cdb", "full.sql")
+CSD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blizzard", "CreatureSpellData_1.15.9.70576.txt")
+def sql_rows(line):
+    i = line.index("VALUES") + 6; n = len(line)
+    while i < n:
+        while i < n and line[i] != "(": i += 1
+        if i >= n: break
+        i += 1; vals = []; cur = []; inq = False
+        while True:
+            c = line[i]
+            if inq:
+                if c == "\\": cur.append(line[i + 1]); i += 2; continue
+                if c == "'": inq = False
+                else: cur.append(c)
+            else:
+                if c == "'": inq = True
+                elif c == ",": vals.append("".join(cur)); cur = []
+                elif c == ")": vals.append("".join(cur)); i += 1; break
+                else: cur.append(c)
+            i += 1
+        yield vals
+TBL = {"creature_template": [], "spell_template": []}
+for line in open(SQL, encoding="utf-8", errors="replace"):
+    m = re.match(r"INSERT INTO `(\w+)`", line)
+    if m and m.group(1) in TBL: TBL[m.group(1)].extend(sql_rows(line))
+SPELL = {int(v[0]): (v[119], v[127]) for v in TBL["spell_template"]}
+CSDATA = {}
+for tok in open(CSD, encoding="utf-8").read().split():
+    m = re.match(r"^(\d+):([\d.]+)$", tok)
+    if m: CSDATA[int(m.group(1))] = [int(x) for x in m.group(2).split(".")]
+FAMILY = {1: "Wolf", 2: "Cat", 3: "Spider", 4: "Bear", 5: "Boar", 6: "Crocolisk", 7: "Carrion Bird", 8: "Crab", 9: "Gorilla",
+          11: "Raptor", 12: "Tallstrider", 20: "Scorpid", 21: "Turtle", 24: "Bat", 25: "Hyena", 26: "Owl", 27: "Wind Serpent"}
+RANK = {1: "Elite", 2: "Rare Elite", 3: "Boss", 4: "Rare"}
 tame = {}
-family = None
-token_re = re.compile(r"<div class='family' id='\d+'>Pet Family: ([A-Za-z ]+)</div>|<div class='pet'>")
-for m in token_re.finditer(html):
-    if m.group(1):
-        family = m.group(1).strip(); continue
-    start = m.end()
-    end = html.find("<div class='pet'>", start)
-    fam_next = html.find("<div class='family'", start)
-    if end == -1: end = len(html)
-    if fam_next != -1 and fam_next < end: end = fam_next
-    block = html[start:end]
-    idm = re.search(r"\?npc=(\d+)'>([^<]+)</a>", block)
-    if not idm: continue
-    npc = int(idm.group(1)); name = idm.group(2).replace("&#39;", "'").replace("&amp;", "&")
-    lvl = re.search(r"Level: <b>([0-9]+)(?:-([0-9]+))?</b>", block)
-    lo = int(lvl.group(1)); hi = int(lvl.group(2) or lvl.group(1))
-    rk = re.search(r"Level: <b>[^<]*</b> \(<span[^>]*>([^<]+)</span>\)", block)
-    spd = re.search(r"Attack Speed: <b>([0-9.]+)</b>", block)
-    img = re.search(r"img/([a-z]+)\.jpg", block)
-    skin = None
-    if img:
-        s = re.sub(r"^[a-z]+?skin", "", img.group(1))
-        skin = s.capitalize() if s and s != img.group(1) else None
-    builds = re.findall(r"<div class='build'>(.*?)</div>", block, re.S)
+for v in TBL["creature_template"]:
+    if not (int(v[20] or 0) & 1): continue                   # CREATURE_TYPEFLAGS_TAMEABLE
+    fam = FAMILY.get(int(v[11] or 0))
+    name = v[1]
+    if not fam or not name or "test" in name.lower() or name.startswith("["): continue
     spells = []
-    if builds:
-        for s in re.findall(r"\[([A-Za-z' ]+?) Rank (\d+)\]", builds[-1]):
-            spells.append((s[0], int(s[1])))
-    tame[npc] = dict(name=name, lo=lo, hi=hi, fam=family, rank=rk.group(1) if rk else None,
-                     speed=float(spd.group(1)) if spd else None, skin=skin, spells=spells)
-log("shagu tameable:", len(tame))
+    for sid in CSDATA.get(int(v[69] or 0), []):
+        nm, rk = SPELL.get(sid, (None, None))
+        r = re.search(r"(\d+)", rk or "")
+        if nm and r: spells.append((nm, int(r.group(1))))
+    delay = int(v[51] or 0)
+    tame[int(v[0])] = dict(name=name, lo=int(v[3]), hi=int(v[4]), fam=fam, rank=RANK.get(int(v[33] or 0)),
+                           speed=round(delay / 1000.0, 1) if delay else None, skin=None, spells=sorted(set(spells)))
+log("tameable beasts:", len(tame), "teaching:", sum(1 for b in tame.values() if b["spells"]))
 
 # ---------------------------------------------------------------- forever overlay
 if FLAVOR == "forever":
@@ -225,7 +244,7 @@ for nid, rec, kind in services_raw:
 
 with open(OUT, "w", encoding="utf-8") as f:
     f.write("-- Untamed data (%s). Generated by build2.py; do not edit by hand.\n" % FLAVOR)
-    f.write("-- Beasts and abilities: VMaNGOS via shagu/vanilla-hunter-pets%s.\n" % ("; Forever abilities compiled from public Forever pet guides" if FLAVOR == "forever" else ""))
+    f.write("-- Beasts: cmangos classic-db (GPL-3.0). Abilities: Blizzard client CreatureSpellData%s.\n" % ("; Forever abilities compiled from public Forever pet guides" if FLAVOR == "forever" else ""))
     f.write("-- Spawns, stable masters, flight masters: QuestieDB (GPL-3.0).\n")
     f.write("-- Beasts: [npcId] = {name, minLvl, maxLvl, family, rankText, {ability, rank, ...}, {[uiMapID] = {x, y, ...}}, instance, attackSpeed, skin}\n")
     f.write("local _, ns = ...\n")

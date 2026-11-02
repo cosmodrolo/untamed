@@ -6,6 +6,7 @@ local L = ns.L
 --   auto:  every beast that teaches something your pet still needs (small pins)
 --   stable/flight masters for the focused beasts are shown too.
 local focus = nil   -- { npcs = { [npcId] = true }, label = "..." }
+ns.PinSources = ns.PinSources or {}
 local provider
 local AUTO_CAP = 12
 
@@ -22,6 +23,12 @@ end
 function UntamedPinMixin:OnAcquired(info)
   self.info = info
   self:SetPosition(info.x / 100, info.y / 100)
+  if info.point then
+    self:SetSize(info.size or 14, info.size or 14)
+    self.Icon:SetTexture(info.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+    self.Border:SetVertexColor(unpack(info.border or { 0.64, 0.21, 0.93, 1 }))
+    return
+  end
   if info.service then
     self:SetSize(14, 14)
     self.Icon:SetTexture(info.service == "S" and "Interface\\Icons\\Ability_Hunter_BeastCall" or "Interface\\Icons\\Ability_Mount_Gryphon_01")
@@ -38,6 +45,14 @@ function UntamedPinMixin:OnMouseEnter()
   local info = self.info
   if not info then return end
   GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+  if info.point then
+    for i, line in ipairs(info.lines or { info.name }) do
+      if i == 1 then GameTooltip:AddLine(line, 1, 0.82, 0) else GameTooltip:AddLine(line, 1, 1, 1, true) end
+    end
+    GameTooltip:AddLine(L["Click: navigate here"], 0.7, 0.7, 0.7)
+    GameTooltip:Show()
+    return
+  end
   if info.service then
     GameTooltip:AddLine(info.name, 1, 0.82, 0)
     GameTooltip:AddLine(info.service == "S" and L["Stable Master"] or L["Flight Master"], 1, 1, 1)
@@ -64,7 +79,7 @@ function UntamedPinMixin:OnClick(button)
   local info = self.info
   if not info or button ~= "LeftButton" then return end
   local mapID = self:GetMap():GetMapID()
-  if info.service then
+  if info.point or info.service then
     ns.Arrow_Set(mapID, info.x, info.y, info.name, nil)
   else
     ns.Arrow_Set(mapID, info.x, info.y, info.beast[1], info.npcId)
@@ -116,6 +131,18 @@ local function RefreshAll(self)
   if focus then
     for npcId in pairs(focus.npcs) do AddBeastPins(map, mapID, npcId, true, need[npcId], nil) end
     AddServicePins(map, mapID)
+  end
+  -- Other features add their own pins (wishlist sources, ...): each source returns
+  -- { {map, x, y, name, icon, lines, border}, ... }
+  for _, src in ipairs(ns.PinSources) do
+    local ok, pts = pcall(src)
+    if ok and pts then
+      for _, p in ipairs(pts) do
+        if p.map == mapID and p.x and p.x ~= 0 then
+          map:AcquirePin("UntamedPinTemplate", { point = true, x = p.x, y = p.y, name = p.name, icon = p.icon, lines = p.lines, border = p.border })
+        end
+      end
+    end
   end
   if ns.db.autoPins then
     for npcId, list in pairs(need) do

@@ -375,6 +375,9 @@ local function WornScore(slot)
   return 0
 end
 
+ns.GearWornScore = function(slot) return WornScore(slot) end
+ns.GearSlotLabel = function(slot) return SLOT_LABEL[slot] or slot end
+
 local function CanWear(g, level)
   if g[2] > level then return false end
   if g[4] == 1 and level < 40 then return false end

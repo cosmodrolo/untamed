@@ -63,7 +63,7 @@ local defaultsDB = {
   zoneAlerts = true, autoPins = true, hideTooHigh = false, minimapAngle = 200, showMinimap = true,
   tooltipInfo = true, targetAlert = true, targetSound = true, minimapPins = true, feedReminder = true,
   arrowScale = 1, autoShotBar = true, growlWarning = true, aspectReminder = true, markReminder = true, resistAlerts = true,
-  gearTooltip = true, talentGlow = true, gearAlerts = true, recordData = true,
+  gearTooltip = true, talentGlow = true, gearAlerts = true, recordData = true, ahHelper = true,
 }
 local function InitDB()
   UntamedDB = UntamedDB or {}

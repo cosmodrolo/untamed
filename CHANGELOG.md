@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.7.0
+- Beast abilities now come from Blizzard's own Classic Era client data (CreatureSpellData), linked to beasts through cmangos. The old data from shagu's pet list is gone. Every beast it listed matched Blizzard's data exactly.
+- Rare finder: alerts for every rare, not just tameable ones, with a pop-up that has a Target button and an Arrow button, an optional skull marker, and map vignettes where the game shows them. New Rares page lists every rare in your zone, near your level, or ones you've seen, with when you saw them.
+- Restock: a button beside the vendor window tops up ammo and pet food to amounts you choose (or automatically). It buys the best ammo for your weapon and the best food your pet eats from that vendor.
+- Wishlist: Alt-click any item in Untamed to add it. Its sources show on the world map, its tooltip says it's on your wishlist, and you get a note when you enter a zone where you can get it.
+- Dungeons page: each dungeon's level range and entrance, the best hunter loot for you with who drops it, the creatures that drop gear, and tameable beasts inside.
+- Reputation page: every faction with hunter rewards, your standing and progress, what each rank unlocks, and how to earn it.
+- Auction House: wishlist items glow gold and gear upgrades glow green with the score gain in Browse results.
+- The sidebar has four groups now: My Pet, Taming, Gear and Hunter.
+
 ## v2.6.2
 - Reputation: vendor items show the exact reputation they need (for example "Revered, Silverwing Sentinels"), in green when you already have it and orange when you don't, with your current standing in the tooltip. When a vendor accepts either faction's reputation, your side's is shown.
 - Gear: new "Dungeons only" and "Reputation rewards" filters.

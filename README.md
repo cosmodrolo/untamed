@@ -30,7 +30,8 @@ Forever reworked hunter pets (new families, new family abilities, Owl renamed Bi
 - Spawn locations, stable masters, flight masters and localized NPC names: [QuestieDB](https://github.com/Questie/QuestieDB) (GPL-3.0).
 - Classic family damage, armor and health modifiers: [Icy Veins Classic hunter pet guide](https://www.icy-veins.com/wow-classic/hunter-dps-pets-guide).
 - Item pet food types, ammo vendors, hunter and pet trainers: [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0).
-- Classic Era tameable beasts and the abilities they teach: originally extracted from the VMaNGOS database by [shagu/vanilla-hunter-pets](https://github.com/shagu/vanilla-hunter-pets).
+- Classic Era tameable beasts: [cmangos classic-db](https://github.com/cmangos/classic-db) (GPL-3.0).
+- Which abilities each beast teaches: Blizzard's Classic Era client table CreatureSpellData (build 1.15.9.70576), exported with [wago.tools](https://wago.tools).
 - WoW Forever beast abilities: compiled from public Forever pet guides (see `tools/forever_pets.json` for the list of sources) and corrected by in-game observation.
 - World of Warcraft and all game data are trademarks and copyrights of Blizzard Entertainment.
 
