@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.7.1
+- Layout pass: every page now has the same kind of toolbar along the top (dropdowns, checkboxes, buttons), and every control updates when the page does.
+- Abilities: show every rank, only ranks still to learn, only beasts you can tame now, or only ranks ready to teach your pet; hide ranks above your pet's level; collapse or expand all.
+- "Browser" is now "All Beasts", with dropdowns for family, the ability a beast teaches (for example every beast that teaches Bite 6), where it is (this zone, or your continent nearest first) and sort order.
+- Rares: a "Tameable only" filter.
+- Search: tidier two-row toolbar and a Reset button.
+- Dungeons: filter loot by slot and show only upgrades.
+- Spells: a dropdown for What's next or Every level, and an arrow to the nearest hunter trainer.
+- Reputation: pick a faction.
+- Hunter Quests: show not done, available now, or all.
+- Wishlist: sort by newest, nearest source or level.
+- The Taming group now flows Find a Pet, All Beasts, Planner, Rares. Clearer descriptions under every page title.
+
 ## v2.7.0
 - Beast abilities now come from Blizzard's own Classic Era client data (CreatureSpellData), linked to beasts through cmangos. The old data from shagu's pet list is gone. Every beast it listed matched Blizzard's data exactly.
 - Rare finder: alerts for every rare, not just tameable ones, with a pop-up that has a Target button and an Arrow button, an optional skull marker, and map vignettes where the game shows them. New Rares page lists every rare in your zone, near your level, or ones you've seen, with when you saw them.

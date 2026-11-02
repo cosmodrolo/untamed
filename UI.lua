@@ -141,6 +141,16 @@ function ns.NewList(parent, topOffset)
   return list
 end
 
+-- Controls redraw their state whenever the window refreshes (after a reset, a slash command, ...).
+local liveControls = {}
+function ns.RefreshControls()
+  for _, c in ipairs(liveControls) do
+    if c:IsVisible() then
+      if c.Update then c:Update() elseif c.getter then c:SetChecked(c.getter()) end
+    end
+  end
+end
+
 function ns.MakeCheck(parent, label, x, y, get, set, tip)
   local c = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
   c:SetSize(22, 22)
@@ -150,6 +160,7 @@ function ns.MakeCheck(parent, label, x, y, get, set, tip)
   fs:ClearAllPoints()
   fs:SetPoint("LEFT", c, "RIGHT", 0, 1)
   fs:SetText(label)
+  c.label = fs
   c:SetScript("OnShow", function(self) self:SetChecked(get()) end)
   c:SetScript("OnClick", function(self) set(self:GetChecked() and true or false); ns.Refresh() end)
   if tip then
@@ -157,6 +168,8 @@ function ns.MakeCheck(parent, label, x, y, get, set, tip)
     c:SetScript("OnLeave", function() GameTooltip:Hide() end)
   end
   c:SetChecked(get())
+  c.getter = get
+  liveControls[#liveControls + 1] = c
   return c
 end
 
@@ -271,9 +284,56 @@ function ns.MakeDropdown(parent, width, options, get, set, tip)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
   end
   b:Update()
+  liveControls[#liveControls + 1] = b
   return b
 end
 function ns.CloseDropdown() if ddMenu then ddMenu:Hide() end end
+
+-- Toolbar: every page lays out its controls the same way, left to right in rows of 26 px.
+--   local tb = ns.Toolbar(panel)
+--   tb:Search(hint, width, onChange)  tb:Dropdown(width, options, get, set, tip)  tb:Check(label, get, set, tip)
+--   tb:Button(text, width, onClick)   tb:Row()   local list = tb:List()
+function ns.Toolbar(panel)
+  local tb = { x = 4, row = 0 }
+  local function y() return -2 - tb.row * 26 end
+  local function place(w) local x = tb.x; tb.x = tb.x + w + 6; return x end
+  function tb:Row() self.row = self.row + 1; self.x = 4 end
+  function tb:Search(hint, width, onChange)
+    local box = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
+    box:SetSize(width, 20)
+    box:SetPoint("TOPLEFT", place(width + 6) + 6, y() - 1)
+    box:SetAutoFocus(false)
+    box:SetScript("OnTextChanged", function(self) onChange((self:GetText() or ""):lower()); ns.UI_Refresh() end)
+    box:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    box:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+    local h = box:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    h:SetPoint("LEFT", 4, 0)
+    h:SetText(hint)
+    box:HookScript("OnEditFocusGained", function() h:Hide() end)
+    box:HookScript("OnEditFocusLost", function(self) h:SetShown((self:GetText() or "") == "") end)
+    box.hint = h
+    return box
+  end
+  function tb:Dropdown(width, options, get, set, tip)
+    local d = ns.MakeDropdown(panel, width, options, get, set, tip)
+    d:SetPoint("TOPLEFT", place(width), y())
+    return d
+  end
+  function tb:Check(label, get, set, tip)
+    local c = ns.MakeCheck(panel, label, tb.x, y(), get, set, tip)
+    local fs = c.label
+    local w = 24 + ((fs and fs.GetStringWidth and fs:GetStringWidth()) or (#label * 6))
+    place(w + 4)
+    return c
+  end
+  function tb:Button(text, width, onClick)
+    local b = ns.MakeButton(panel, text, width, onClick)
+    b:SetPoint("TOPLEFT", place(width), y())
+    return b
+  end
+  function tb:List() return ns.NewList(panel, (self.row + 1) * 26 + 4) end
+  return tb
+end
 
 ---------------------------------------------------------------------------
 -- Shared helpers for beast rows
@@ -332,18 +392,18 @@ local tabs, activeTab = {}, nil
 -- Where each tab lives in the sidebar.
 local TAB_META = {
   abilities = { group = 1, order = 1, icon = "Ability_Hunter_BeastTraining", sub = L["What your pet can learn, and which beasts teach it"] },
-  builds    = { group = 1, order = 2, icon = "INV_Misc_Book_09", sub = L["Plan how to spend training points"] },
-  care      = { group = 1, order = 3, icon = "INV_Misc_Food_14", sub = L["Happiness, food and where to level"] },
-  stable    = { group = 1, order = 4, icon = "Ability_Hunter_BeastCall", sub = L["Every pet you own"] },
-  recommend = { group = 2, order = 1, icon = "Ability_Hunter_BeastTaming", sub = L["The best pet for the job"] },
-  plan      = { group = 2, order = 2, icon = "INV_Misc_Map_01", sub = L["A taming route for your pet's next abilities"] },
-  rares     = { group = 2, order = 4, icon = "Ability_Hunter_SniperShot", sub = L["Every rare in your zone, and the ones you've seen"] },
-  browse    = { group = 2, order = 3, icon = "INV_Misc_Spyglass_03", sub = L["Every tameable beast"] },
+  builds    = { group = 1, order = 2, icon = "INV_Misc_Book_09", sub = L["Plan how to spend your pet's training points"] },
+  care      = { group = 1, order = 3, icon = "INV_Misc_Food_14", sub = L["Happiness, food and where to level your pet"] },
+  stable    = { group = 1, order = 4, icon = "Ability_Hunter_BeastCall", sub = L["Every pet you own, and what you can teach each one"] },
+  recommend = { group = 2, order = 1, icon = "Ability_Hunter_BeastTaming", sub = L["Pick a role and get the best family and beasts for it"] },
+  plan      = { group = 2, order = 3, icon = "INV_Misc_Map_01", sub = L["A route to tame the beasts your pet still needs"] },
+  rares     = { group = 2, order = 4, icon = "Ability_Hunter_SniperShot", sub = L["Rares near you, and the ones you've seen"] },
+  browse    = { group = 2, order = 2, icon = "INV_Misc_Spyglass_03", sub = L["Every tameable beast: filter by family, ability and place"] },
   search    = { group = 3, order = 1, icon = "INV_Misc_Spyglass_02", sub = L["Find any item, NPC or beast and where to get it"] },
   supplies  = { group = 3, order = 5, icon = "INV_Ammo_Arrow_02", sub = L["Ammo, quivers and food for your pet"] },
   spells    = { group = 4, order = 1, icon = "INV_Misc_Book_11", sub = L["What to train at each level and what it costs"] },
   talents   = { group = 4, order = 2, icon = "Ability_Hunter_SniperShot", sub = L["Talent builds, with the next point highlighted"] },
-  gear      = { group = 3, order = 3, icon = "INV_Weapon_Bow_07", sub = L["Upgrades you can get at your level"] },
+  gear      = { group = 3, order = 3, icon = "INV_Weapon_Bow_07", sub = L["Your next upgrades, and how to get them"] },
   wishlist  = { group = 3, order = 2, icon = "INV_Misc_Note_01", sub = L["Items you want, with their sources on your map"] },
   dungeons  = { group = 3, order = 4, icon = "INV_Misc_Key_03", sub = L["Hunter loot, bosses and beasts in each dungeon"] },
   reputation = { group = 4, order = 3, icon = "INV_Misc_Token_ArgentDawn", sub = L["Reputation you need for rewards you want"] },
@@ -686,6 +746,7 @@ function ns.UI_Refresh()
   end
   local tab = activeTab and tabs[activeTab]
   if tab and tab.panel and tab.refresh then tab.refresh(tab.panel, t) end
+  ns.RefreshControls()
 end
 ns.On("REFRESH", ns.UI_Refresh)
 ns.On("PETCARE", function() if frame and frame:IsShown() then ns.UI_Refresh() end end)
@@ -724,17 +785,49 @@ do
     return C.WHITE .. L["Tame 1 of "] .. n .. " beast" .. (n > 1 and "s" or "") .. "|r"
   end
 
+  local view = "all"
+  local VIEWS = { { "all", L["Every ability and rank"] }, { "todo", L["Ranks still to learn"] },
+    { "now", L["Beasts I can tame now"] }, { "teach", L["Ready to teach my pet"] } }
+  local function Keep(r)
+    if view == "all" then return true end
+    if view == "teach" then return r.known and not r.tooHigh end
+    if r.known then return false end
+    if view == "now" then
+      local lvl = UnitLevel("player")
+      for _, id in ipairs(r.beasts) do if ns.Beasts[id][2] <= lvl then return true end end
+      return false
+    end
+    return true
+  end
+
   local function Build(panel)
-    list = ns.NewList(panel, 0)
+    local tb = ns.Toolbar(panel)
+    tb:Dropdown(200, VIEWS, function() return view end, function(v) view = v end,
+      { L["Show"], L["Ranks still to learn: hides what you or your pet already have."], L["Beasts I can tame now: only ranks taught by a beast at or below your level."],
+        L["Ready to teach my pet: ranks you know that your pet can use but doesn't have yet."] })
+    tb:Check(L["Hide ranks above my pet's level"], function() return ns.db.hideTooHigh end, function(v) ns.db.hideTooHigh = v end)
+    tb:Button(L["Collapse all"], 100, function()
+      local any = false
+      for _, v in pairs(collapsed) do if v then any = true end end
+      if any then wipe(collapsed) else for _, a in ipairs(ns.AbilityOrder) do collapsed[a] = true end end
+      ns.UI_Refresh()
+    end)
+    list = tb:List()
   end
 
   local function Refresh(panel, t)
     local rows = {}
     local function add(...) rows[#rows + 1] = { ... } end
     local playerLevel = UnitLevel("player")
+    if not t then
+      add(0, nil, C.GREY .. L["Summon your pet, or use Viewing at the top right to pick a family or a stabled pet."] .. "|r")
+    end
     if t then
       for _, e in ipairs(ns.Plan(t.family, t.level, t.known)) do
         local ab = e.ability
+        local shownRanks = {}
+        for _, r in ipairs(e.ranks) do if Keep(r) then shownRanks[#shownRanks + 1] = r end end
+        if view == "all" or #shownRanks > 0 then
         local maxR = ns.MaxRank[ab] or 0
         local rightTxt
         if #e.ranks == 0 then
@@ -746,7 +839,7 @@ do
           function() collapsed[ab] = not collapsed[ab]; ns.UI_Refresh() end, nil, { header = true, toggle = not collapsed[ab] })
         if not collapsed[ab] then
           local firstOpen = true
-          for _, r in ipairs(e.ranks) do
+          for _, r in ipairs(shownRanks) do
             local key = ab .. "#" .. r.rank
             local isOpen = expanded[key]
             if isOpen == nil then
@@ -780,6 +873,7 @@ do
               end
             end
           end
+        end
         end
       end
       add(0, ns.Icon("Ability_Hunter_BeastTraining"), L["From Hunter pet trainers"],

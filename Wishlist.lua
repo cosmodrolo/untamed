@@ -92,10 +92,14 @@ end
 -- Wishlist page
 do
   local list
+  local sort = "new"
+  local SORTS = { { "new", L["Newest first"] }, { "near", L["Nearest source first"] }, { "level", L["By level"] } }
   local function Build(panel)
-    ns.MakeCheck(panel, L["Show sources on the world map"], 4, -2, function() return ns.db.wishPins end,
+    local tb = ns.Toolbar(panel)
+    tb:Dropdown(170, SORTS, function() return sort end, function(v) sort = v end)
+    tb:Check(L["Show sources on the world map"], function() return ns.db.wishPins end,
       function(v) ns.db.wishPins = v; if ns.Pins_Refresh then ns.Pins_Refresh() end end)
-    list = ns.NewList(panel, 30)
+    list = tb:List()
   end
   local function Refresh()
     local rows = {}
@@ -107,7 +111,16 @@ do
       add(0, nil, C.GREY .. L["Your wishlist is empty. Alt-click an item anywhere in Untamed (Search, Gear, Supplies, Dungeons) to add it."] .. "|r")
       list:Set(rows) return
     end
-    table.sort(ids, function(a, b) return (List()[a] or 0) > (List()[b] or 0) end)
+    local dist = {}
+    if sort == "near" then for _, id in ipairs(ids) do local s = ns.ItemSources(id)[1]; dist[id] = s and s.dist or 1e9 end end
+    table.sort(ids, function(a, b)
+      if sort == "near" and dist[a] ~= dist[b] then return dist[a] < dist[b] end
+      if sort == "level" then
+        local x, y = db and db.I[a], db and db.I[b]
+        if x and y and x[3] ~= y[3] then return x[3] < y[3] end
+      end
+      return (List()[a] or 0) > (List()[b] or 0)
+    end)
     add(0, nil, string.format(L["%d items"], #ids), C.GREY .. L["click: arrow   right-click: remove"] .. "|r", nil, nil, { header = true })
     local level = UnitLevel("player")
     for _, id in ipairs(ids) do

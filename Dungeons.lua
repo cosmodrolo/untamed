@@ -52,7 +52,7 @@ end
 
 do
   local list
-  local opt = { name = nil }
+  local opt = { name = nil, slot = "all", upgrades = false }
   local function Options()
     local o = {}
     for _, d in ipairs(DUNGEONS) do o[#o + 1] = { d[1], d[1] .. (d[4] and (" " .. L["(raid)"]) or (" " .. d[2] .. "-" .. d[3])) } end
@@ -67,9 +67,17 @@ do
     return best or (level >= 58 and "Stratholme") or DUNGEONS[1][1]
   end
   local function Build(panel)
-    local d = ns.MakeDropdown(panel, 260, Options, function() return opt.name or Suggested() end, function(v) opt.name = v end)
-    d:SetPoint("TOPLEFT", 4, -2)
-    list = ns.NewList(panel, 30)
+    local tb = ns.Toolbar(panel)
+    tb:Dropdown(250, Options, function() return opt.name or Suggested() end, function(v) opt.name = v end)
+    tb:Dropdown(130, function()
+      local o = { { "all", L["All slots"] } }
+      for _, s in ipairs({ "HEAD", "NECK", "SHOULDER", "BACK", "CHEST", "WRIST", "HANDS", "WAIST", "LEGS", "FEET", "FINGER", "TRINKET", "RANGED", "WEAPON" }) do
+        o[#o + 1] = { s, ns.GearSlotLabel and ns.GearSlotLabel(s) or s }
+      end
+      return o
+    end, function() return opt.slot end, function(v) opt.slot = v end)
+    tb:Check(L["Only upgrades"], function() return opt.upgrades end, function(v) opt.upgrades = v end)
+    list = tb:List()
   end
 
   local function Refresh()
@@ -94,7 +102,9 @@ do
     for boss, items in pairs(info.bosses) do
       for _, id in ipairs(items) do
         local g = ns.GearItems and ns.GearItems[id]
-        if g then loot[#loot + 1] = { id = id, boss = boss, score = g[3], slot = g[1], gain = g[3] - Worn(g[1]) } end
+        if g and (opt.slot == "all" or g[1] == opt.slot) and (not opt.upgrades or g[3] > Worn(g[1])) then
+          loot[#loot + 1] = { id = id, boss = boss, score = g[3], slot = g[1], gain = g[3] - Worn(g[1]) }
+        end
       end
     end
     table.sort(loot, function(a, b) if a.gain ~= b.gain then return a.gain > b.gain end return a.score > b.score end)

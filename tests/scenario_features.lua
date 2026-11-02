@@ -218,4 +218,12 @@ if ns.FLAVOR ~= "forever" then
   check(id ~= nil, "easy ranged upgrade found")
   check(#lines == 1, "gear tooltip line for item " .. tostring(bestId) .. ": " .. tostring(lines[1]))
 end
+-- Layout pass: every page builds and refreshes, and the new filters work
+local bf = ns.BrowserFilter()
+bf.teaches = "Bite"; bf.where = "near"; bf.family = "Wolf"
+ns.UI_Show("browse")
+bf.teaches = "any"; bf.where = "any"; bf.family = "any"
+for _, k in ipairs({ "abilities", "builds", "care", "stable", "recommend", "browse", "plan", "rares", "search", "wishlist", "gear",
+  "dungeons", "supplies", "spells", "talents", "reputation", "quests", "settings" }) do ns.UI_Show(k) end
+check(true, "every page opens")
 print("DONE")

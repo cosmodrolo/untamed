@@ -198,12 +198,13 @@ end
 ---------------------------------------------------------------------------
 do
   local list
-  local opt = { where = "zone" }
+  local opt = { where = "zone", tameable = false }
   local WHERE = { { "zone", L["This zone"] }, { "level", L["Near my level, anywhere"] }, { "seen", L["Ones I've seen"] } }
   local function Build(panel)
-    local d = ns.MakeDropdown(panel, 190, WHERE, function() return opt.where end, function(v) opt.where = v end)
-    d:SetPoint("TOPLEFT", 4, -2)
-    list = ns.NewList(panel, 30)
+    local tb = ns.Toolbar(panel)
+    tb:Dropdown(190, WHERE, function() return opt.where end, function(v) opt.where = v end)
+    tb:Check(L["Tameable only"], function() return opt.tameable end, function(v) opt.tameable = v end)
+    list = tb:List()
   end
 
   local function Refresh()
@@ -231,7 +232,7 @@ do
         if opt.where == "zone" then keep = (n[5] == zone or n[5] == map)
         elseif opt.where == "level" then keep = n[3] >= level - 3 and n[2] <= level + 5
         else keep = seen[id] ~= nil end
-        if keep then ids[#ids + 1] = id end
+        if keep and (not opt.tameable or ns.Beasts[id]) then ids[#ids + 1] = id end
       end
     end
     local dist = {}

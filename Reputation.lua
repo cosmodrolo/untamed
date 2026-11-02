@@ -60,10 +60,23 @@ end
 
 do
   local list
-  local opt = { onlyGear = true }
+  local opt = { onlyGear = true, fac = "all" }
+  local function FactionOptions()
+    local o = { { "all", L["All factions"] } }
+    local names = {}
+    for fac in pairs(Rewards()) do
+      local name = GetFactionInfoByID and GetFactionInfoByID(fac)
+      names[#names + 1] = { fac, (type(name) == "string" and name ~= "") and name or ("Faction " .. fac) }
+    end
+    table.sort(names, function(a, b) return a[2] < b[2] end)
+    for _, n in ipairs(names) do o[#o + 1] = n end
+    return o
+  end
   local function Build(panel)
-    ns.MakeCheck(panel, L["Only gear I can use"], 4, -2, function() return opt.onlyGear end, function(v) opt.onlyGear = v end)
-    list = ns.NewList(panel, 30)
+    local tb = ns.Toolbar(panel)
+    tb:Dropdown(210, FactionOptions, function() return opt.fac end, function(v) opt.fac = v end)
+    tb:Check(L["Only gear I can use"], function() return opt.onlyGear end, function(v) opt.onlyGear = v end)
+    list = tb:List()
   end
 
   local function Refresh()
@@ -86,7 +99,7 @@ do
           end
         end
       end
-      if count > 0 then facs[#facs + 1] = { fac = fac, best = best, count = count } end
+      if count > 0 and (opt.fac == "all" or opt.fac == fac) then facs[#facs + 1] = { fac = fac, best = best, count = count } end
     end
     table.sort(facs, function(a, b) return a.best > b.best end)
     if #facs == 0 then add(0, nil, C.GREY .. L["No reputation rewards found."] .. "|r") end

@@ -371,32 +371,22 @@ do
   local function FiltersActive() return f.kind ~= "any" or f.source ~= "any" or f.quality > 0 or f.usable or f.type == "beasts" or f.type == "vendors" end
 
   local function Build(panel)
-    box = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
-    box:SetSize(200, 20)
-    box:SetPoint("TOPLEFT", 10, -3)
-    box:SetAutoFocus(false)
-    box:SetScript("OnTextChanged", function(self) query = (self:GetText() or ""):lower(); ns.UI_Refresh() end)
-    box:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-    box:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-    local hint = box:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    hint:SetPoint("LEFT", 4, 0)
-    hint:SetText(L["Item, NPC or beast name"])
-    box:HookScript("OnEditFocusGained", function() hint:Hide() end)
-    box:HookScript("OnEditFocusLost", function(self) hint:SetShown((self:GetText() or "") == "") end)
-
-    local t = ns.MakeDropdown(panel, 130, TYPES, function() return f.type end, function(v) f.type = v end)
-    t:SetPoint("LEFT", box, "RIGHT", 8, 0)
-    local k = ns.MakeDropdown(panel, 150, KINDS, function() return f.kind end, function(v) f.kind = v end)
-    k:SetPoint("LEFT", t, "RIGHT", 4, 0)
-    local s = ns.MakeDropdown(panel, 140, SOURCES, function() return f.source end, function(v) f.source = v end)
-    s:SetPoint("TOPLEFT", 4, -28)
-    local q = ns.MakeDropdown(panel, 140, QUALS, function() return f.quality end, function(v) f.quality = v end)
-    q:SetPoint("LEFT", s, "RIGHT", 4, 0)
-    ns.MakeCheck(panel, L["Usable by me"], 296, -28, function() return f.usable end, function(v) f.usable = v end,
+    local tb = ns.Toolbar(panel)
+    box = tb:Search(L["Item, NPC or beast name"], 190, function(t) query = t end)
+    tb:Dropdown(130, TYPES, function() return f.type end, function(v) f.type = v end)
+    tb:Dropdown(160, KINDS, function() return f.kind end, function(v) f.kind = v end)
+    tb:Row()
+    tb:Dropdown(150, SOURCES, function() return f.source end, function(v) f.source = v end)
+    tb:Dropdown(150, QUALS, function() return f.quality end, function(v) f.quality = v end)
+    tb:Check(L["Usable by me"], function() return f.usable end, function(v) f.usable = v end,
       L["Only gear you can wear at your level (leather, mail from 40, and weapons hunters can use)."])
-    ns.MakeCheck(panel, L["Near me"], 410, -28, function() return f.near end, function(v) f.near = v end,
-      L["Only things on your continent, nearest first."])
-    list = ns.NewList(panel, 56)
+    tb:Check(L["Near me"], function() return f.near end, function(v) f.near = v end, L["Only things on your continent, nearest first."])
+    tb:Button(L["Reset"], 60, function()
+      f.type, f.kind, f.source, f.quality, f.usable, f.near = "all", "any", "any", 0, false, false
+      box:SetText(""); query = ""
+      ns.UI_Show("search")
+    end)
+    list = tb:List()
   end
 
   local function Refresh()

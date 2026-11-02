@@ -48,13 +48,10 @@ do
   local list
   local showAll = false
   local function Build(panel)
-    local b = ns.MakeButton(panel, L["Show every level"], 160, function(self)
-      showAll = not showAll
-      self:SetText(showAll and L["Show what's next"] or L["Show every level"])
-      ns.UI_Refresh()
-    end)
-    b:SetPoint("TOPLEFT", 4, -2)
-    list = ns.NewList(panel, 30)
+    local tb = ns.Toolbar(panel)
+    tb:Dropdown(190, { { false, L["What's next"] }, { true, L["Every level, 1 to 60"] } }, function() return showAll end, function(v) showAll = v end)
+    tb:Button(L["Arrow to trainer"], 130, function() ns.NavigateService("T", L["Hunter trainer"]) end)
+    list = tb:List()
   end
 
   local function Refresh()
@@ -439,14 +436,12 @@ do
     return o
   end
   local function Build(panel)
-    local sd = ns.MakeDropdown(panel, 140, SlotOptions, function() return opt.slot end, function(v) opt.slot = v end)
-    sd:SetPoint("TOPLEFT", 4, -2)
-    local wd = ns.MakeDropdown(panel, 190, WAYS, function() return opt.way end, function(v) opt.way = v end,
+    local tb = ns.Toolbar(panel)
+    tb:Dropdown(140, SlotOptions, function() return opt.slot end, function(v) opt.slot = v end)
+    tb:Dropdown(200, WAYS, function() return opt.way end, function(v) opt.way = v end,
       { L["How you get it"], L["Buy or quest only skips dungeons, drops and the Auction House."] })
-    wd:SetPoint("LEFT", sd, "RIGHT", 4, 0)
-    ns.MakeCheck(panel, L["Near me"], 344, -2, function() return opt.near end, function(v) opt.near = v end,
-      L["Only upgrades you can get on your continent."])
-    list = ns.NewList(panel, 30)
+    tb:Check(L["Near me"], function() return opt.near end, function(v) opt.near = v end, L["Only upgrades you can get on your continent."])
+    list = tb:List()
   end
 
   local function Refresh()
@@ -594,7 +589,13 @@ end
 
 do
   local list
-  local function Build(panel) list = ns.NewList(panel, 0) end
+  local show = "open"
+  local SHOW = { { "open", L["Not done yet"] }, { "now", L["Available now or in my log"] }, { "all", L["All, including done"] } }
+  local function Build(panel)
+    local tb = ns.Toolbar(panel)
+    tb:Dropdown(210, SHOW, function() return show end, function(v) show = v end)
+    list = tb:List()
+  end
   local function NpcGo(npcId, label)
     local db = ns.SearchDB and ns.SearchDB()
     local n = db and db.N[npcId]
@@ -639,6 +640,12 @@ do
       local allDone = true
       for _, q in ipairs(chain) do if not QuestDone(q[1]) then allDone = false end end
       local head = chain[#chain]
+      local anyNow = false
+      for _, q in ipairs(chain) do
+        if not QuestDone(q[1]) and (QuestInLog(q[1]) or q[4] <= level) then anyNow = true end
+      end
+      local showChain = show == "all" or (show == "open" and not allDone) or (show == "now" and anyNow)
+      if showChain then
       add(0, nil, (allDone and C.GREEN or "") .. chain[1][2] .. (#chain > 1 and (C.GREY .. "  (" .. #chain .. " " .. L["steps"] .. ")|r") or "") .. "|r",
         allDone and (C.GREEN .. L["done"] .. "|r") or "", nil, nil, { header = true, mid = C.GREY .. L["lvl "] .. chain[1][4] .. "|r" })
       if not allDone then
@@ -663,6 +670,7 @@ do
               C.GREY .. L["Click for an arrow."] .. "|r" },
             { mid = C.GREY .. L["lvl "] .. q[4] .. "|r" })
         end
+      end
       end
     end
     list:Set(rows)
