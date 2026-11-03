@@ -44,6 +44,16 @@ local OPTIONAL = {
   ["Explosive Trap"] = true, ["Beast Lore"] = true,
 }
 
+-- For the Home page: spells you can train now (not counting optional ones).
+function ns.SpellsToTrain()
+  if not ERA or not ns.TrainerSpells then return 0, 0 end
+  local lvl, n, cost = UnitLevel("player"), 0, 0
+  for _, e in ipairs(ns.TrainerSpells) do
+    if e[1] <= lvl and not OPTIONAL[e[4]] and not Known(e[2]) then n = n + 1; cost = cost + e[3] end
+  end
+  return n, cost
+end
+
 do
   local list
   local showAll = false
@@ -74,7 +84,7 @@ do
     end
     table.sort(levels)
     add(0, ns.Icon("INV_Misc_Book_11"), L["Ready to train now"],
-      missingNow > 0 and (C.WHITE .. missingNow .. " " .. L["spells"] .. "|r  " .. Money(missingNowCost)) or (C.GREEN .. L["all caught up"] .. "|r"),
+      missingNow > 0 and (C.WHITE .. ns.Count(missingNow, L["spell"], L["spells"]) .. "|r  " .. Money(missingNowCost)) or (C.GREEN .. L["all caught up"] .. "|r"),
       function() ns.NavigateService("T", L["Hunter trainer"]) end,
       { L["Ready to train now"], L["Spells and ranks you can learn at your level that you don't have yet."],
         optionalCost > 0 and (C.GREY .. L["Optional spells not counted: "] .. Money(optionalCost) .. "|r") or "",
@@ -255,6 +265,13 @@ local function BuildProgress(build)
   return out, nextStep
 end
 
+function ns.NextTalent()
+  local b = ns.CharacterTest and ns.CharacterTest.SelectedBuild and ns.CharacterTest.SelectedBuild()
+  if not b then return nil end
+  local _, nxt = ns.CharacterTest.BuildProgress(b)
+  return nxt and nxt.label
+end
+
 local function SelectedBuild()
   local key = ns.cdb.talentBuild or "leveling"
   for _, b in ipairs(BUILDS) do if b.key == key then return b end end
@@ -324,7 +341,7 @@ do
     local steps, nextStep = BuildProgress(build)
     local free = UnitCharacterPoints and UnitCharacterPoints("player") or 0
     add(0, ns.Icon(build.key == "raid" and "Ability_TrueShot" or "Ability_Druid_FerociousBite"), build.label .. "  " .. C.GREY .. build.split .. "|r",
-      free and free > 0 and (C.GREEN .. free .. " " .. L["points to spend"] .. "|r") or "", nil,
+      free and free > 0 and (C.GREEN .. ns.Count(free, L["point to spend"], L["points to spend"]) .. "|r") or "", nil,
       { build.label, L["Source: "] .. build.source, L["Open your talent window: the next talent in this build glows green."] }, { header = true })
     if not MapTalents()[1]["Improved Aspect of the Hawk"] then
       add(0, nil, C.GREY .. L["Open your talent window once so Untamed can read your talents."] .. "|r")
@@ -388,8 +405,8 @@ local function HowText(id)
   if not it then return C.GREY .. L["crafted or unknown"] .. "|r" end
   local summary, s = ns.SourceSummary(id)
   if s and s.kind == "vendor" and it[16] and it[16] > 0 then
-    summary = C.GREEN .. L["Buy"] .. "|r " .. Money(it[16]) .. C.GREY .. ", " .. s.name .. (s.map and s.map ~= 0 and (", " .. ns.ZoneName(s.map)) or "")
-      .. (s.dist and (", " .. ns.FormatDistance(s.dist)) or "") .. "|r" .. (s.repF and ("  " .. ns.RepText(s.repF, s.repR, true)) or "")
+    summary = C.GREEN .. L["Buy"] .. "|r " .. Money(it[16]) .. C.GREY .. ", " .. s.name .. "|r"
+      .. (s.repF and ("  " .. ns.RepText(s.repF, s.repR, true)) or "")
   elseif s and s.kind == "quest" then
     summary = C.BLUE .. L["Quest"] .. "|r" .. C.GREY .. ": " .. s.name .. "|r"
   end
@@ -581,6 +598,7 @@ local function QuestDone(id)
   if IsQuestFlaggedCompleted then return IsQuestFlaggedCompleted(id) end
   return false
 end
+local QuestDoneAny
 local function QuestInLog(id)
   if C_QuestLog and C_QuestLog.GetLogIndexForQuestID then return C_QuestLog.GetLogIndexForQuestID(id) ~= nil end
   if GetQuestLogIndexByID then return (GetQuestLogIndexByID(id) or 0) > 0 end
@@ -617,16 +635,44 @@ do
     for _, q in ipairs(quests) do
       if q[5] == 0 or bit == 0 or math.floor(q[5] / bit) % 2 == 1 then mine[#mine + 1] = q end
     end
+    -- Several trainers give the same quest (one per town): show it once, from the nearest giver.
+    local pc, pe, pn = ns.PlayerWorld()
+    local function GiverDist(q)
+      local n = db and db.N[q[6]]
+      return n and ns.DistTo and ns.DistTo(n[5], n[6], n[7], pc, pe, pn) or 1e9
+    end
+    local variants, rep, altOf = {}, {}, {}
+    for _, q in ipairs(mine) do
+      local key = q[2] .. "#" .. q[11] .. "#" .. q[4]
+      variants[key] = variants[key] or {}
+      table.insert(variants[key], q)
+    end
+    local reps = {}
+    for _, list in pairs(variants) do
+      table.sort(list, function(a, b) return GiverDist(a) < GiverDist(b) end)
+      local r = list[1]
+      reps[#reps + 1] = r
+      rep[r[1]] = list
+      for _, q in ipairs(list) do altOf[q[1]] = r[1] end
+    end
+    table.sort(reps, function(a, b) return a[1] < b[1] end)
+    -- Done if any version is done, or the quest it leads to is.
+    QuestDoneAny = function(q)
+      for _, v in ipairs(rep[q[1]] or { q }) do if QuestDone(v[1]) then return true end end
+      return q[11] ~= 0 and QuestDone(q[11]) or false
+    end
+    mine = reps
+
     -- Chains: start from quests with no prerequisite in our list, then follow "next".
     local seen, groups = {}, {}
     for _, q in ipairs(mine) do
-      if not seen[q[1]] and not (q[10] ~= 0 and byId[q[10]]) then
+      if not seen[q[1]] and not (q[10] ~= 0 and altOf[q[10]] and byId[q[10]]) then
         local chain, cur = {}, q
         while cur and not seen[cur[1]] do
           seen[cur[1]] = true
           chain[#chain + 1] = cur
           local nxt
-          for _, c in ipairs(mine) do if c[10] == cur[1] and not seen[c[1]] then nxt = c break end end
+          for _, c in ipairs(mine) do if altOf[c[10]] == cur[1] and not seen[c[1]] then nxt = c break end end
           cur = nxt
         end
         groups[#groups + 1] = chain
@@ -638,11 +684,11 @@ do
     add(0, nil, C.GREY .. L["Quests only hunters can do. Click a quest for an arrow to who starts it (or who to turn it in to)."] .. "|r")
     for _, chain in ipairs(groups) do
       local allDone = true
-      for _, q in ipairs(chain) do if not QuestDone(q[1]) then allDone = false end end
+      for _, q in ipairs(chain) do if not QuestDoneAny(q) then allDone = false end end
       local head = chain[#chain]
       local anyNow = false
       for _, q in ipairs(chain) do
-        if not QuestDone(q[1]) and (QuestInLog(q[1]) or q[4] <= level) then anyNow = true end
+        if not QuestDoneAny(q) and (QuestInLog(q[1]) or q[4] <= level) then anyNow = true end
       end
       local showChain = show == "all" or (show == "open" and not allDone) or (show == "now" and anyNow)
       if showChain then
@@ -650,7 +696,7 @@ do
         allDone and (C.GREEN .. L["done"] .. "|r") or "", nil, nil, { header = true, mid = C.GREY .. L["lvl "] .. chain[1][4] .. "|r" })
       if not allDone then
         for _, q in ipairs(chain) do
-          local done, inLog = QuestDone(q[1]), QuestInLog(q[1])
+          local done, inLog = QuestDoneAny(q), QuestInLog(q[1])
           local status, color
           if done then status, color = C.GREEN .. L["done"] .. "|r", C.GREY
           elseif inLog then status, color = C.GOLD .. L["in your log"] .. "|r", C.WHITE
@@ -665,7 +711,8 @@ do
               elseif q[8] ~= 0 then ns.ItemClick(q[8])() end
             end,
             { q[2], L["Quest level "] .. q[3] .. ", " .. L["requires level "] .. q[4],
-              L["Starts: "] .. startText .. (starter and starter[5] ~= 0 and (", " .. ns.ZoneName(starter[5])) or ""),
+              L["Starts: "] .. startText .. (starter and starter[5] ~= 0 and (", " .. ns.ZoneName(starter[5])) or "")
+                .. ((rep[q[1]] and #rep[q[1]] > 1) and (C.GREY .. "  " .. string.format(L["(or %d other trainers)"], #rep[q[1]] - 1) .. "|r") or ""),
               ender and (L["Turn in: "] .. ender[1] .. (ender[5] ~= 0 and (", " .. ns.ZoneName(ender[5])) or "")) or "",
               C.GREY .. L["Click for an arrow."] .. "|r" },
             { mid = C.GREY .. L["lvl "] .. q[4] .. "|r" })

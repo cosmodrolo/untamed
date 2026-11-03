@@ -3,7 +3,10 @@ local L = ns.L
 
 local ROW_H = 20
 local C = ns.C
-function ns.Icon(path) return "Interface\\Icons\\" .. path end
+function ns.Icon(path)
+  if path:find("\\", 1, true) then return path end
+  return "Interface\\Icons\\" .. path
+end
 
 ---------------------------------------------------------------------------
 -- Generic scrolling list
@@ -408,6 +411,7 @@ local TAB_META = {
   dungeons  = { group = 3, order = 4, icon = "INV_Misc_Key_03", sub = L["Hunter loot, bosses and beasts in each dungeon"] },
   reputation = { group = 4, order = 3, icon = "INV_Misc_Token_ArgentDawn", sub = L["Reputation you need for rewards you want"] },
   quests    = { group = 4, order = 4, icon = "INV_Misc_Note_02", sub = L["Class quests only hunters can do"] },
+  home      = { group = 0, order = 1, icon = "Interface\\AddOns\\Untamed\\Media\\Icon", sub = L["What to do next, and how Untamed works"] },
   settings  = { group = 9, order = 1, icon = "INV_Misc_Gear_01", sub = L["Alerts, pins and data sharing"] },
 }
 local GROUPS = { L["My Pet"], L["Taming"], L["Gear"], L["Hunter"] }
@@ -641,10 +645,12 @@ local function BuildSidebar()
     else
       if g ~= lastGroup then
         if lastGroup then y = y - 6 end
-        local h = side:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        h:SetPoint("TOPLEFT", 10, y)
-        h:SetText(GROUPS[g] or "")
-        y = y - 16
+        if GROUPS[g] then
+          local h = side:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+          h:SetPoint("TOPLEFT", 10, y)
+          h:SetText(GROUPS[g])
+          y = y - 16
+        end
         lastGroup = g
       end
       b:SetPoint("TOPLEFT", 4, y)
@@ -733,11 +739,20 @@ local function CreateMainFrame()
   frame:SetScript("OnHide", function() if menu then menu:Hide() end; ns.CloseDropdown() end)
 end
 
+-- "1 item", "3 items"
+function ns.Count(n, one, many) return n .. " " .. (n == 1 and one or many) end
+
 function ns.UI_Refresh()
   if not frame or not frame:IsShown() then return end
+  -- Planning for the pet that is out is just "my pet".
+  local s = ns.state
+  if s.mode == "stable" and s.key and UnitExists("pet") and s.key == ns.PetKey(UnitName("pet"), ns.ToEnglish(UnitCreatureFamily("pet"))) then
+    s.mode, s.key = "pet", nil
+  end
   local t = ns.Target()
   RefreshHeader(t)
-  if not ns.cdb.scanned then
+  local petPage = activeTab and tabs[activeTab] and tabs[activeTab].meta.group == 1
+  if not ns.cdb.scanned and petPage and UnitExists("pet") then
     statusText:SetText(C.ORANGE .. L["Tip: open Beast Training once so Untamed knows which ranks you already have."] .. "|r")
   else
     local fl = ns.Pins_GetFocusLabel()
@@ -754,7 +769,7 @@ ns.On("PETCARE", function() if frame and frame:IsShown() then ns.UI_Refresh() en
 function ns.UI_Show(key)
   if not frame then CreateMainFrame() end
   frame:Show()
-  SelectTab((key and tabs[key]) and key or activeTab or "abilities")
+  SelectTab((key and tabs[key]) and key or activeTab or (ns.db.openHome ~= false and "home") or "abilities")
 end
 
 function ns.UI_ViewingMenu() if header.viewing then OpenMenu(header.viewing) end end

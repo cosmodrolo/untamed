@@ -106,7 +106,7 @@ if SQL:
     PROF = {1: "Leatherworking", 2: "Tailoring", 3: "Engineering", 4: "Blacksmithing", 5: "Cooking", 6: "Alchemy",
             7: "First Aid", 8: "Enchanting", 9: "Fishing"}
     for v in T["item_template"]:
-        EXTRA[int(v[0])] = (int(v[5]), int(v[10]), int(v[105] or 0), int(v[8] or 0), int(v[20] or 0), int(v[21] or 0))
+        EXTRA[int(v[0])] = (int(v[5]), int(v[10]), int(v[105] or 0), int(v[8] or 0), int(v[20] or 0), int(v[21] or 0), int(v[123] or 0))
         if v[1] == "9":                                   # recipe: which profession makes the item
             prof = PROF.get(int(v[2]))
             for k in range(5):
@@ -159,8 +159,8 @@ for iid in items.keys():
     objs.sort(key=lambda o: 0 if (objects[o] is not None and objects[o][4] is not None) else 1)
     vend = vend[:VEND_CAP]; objs = objs[:4]; rew = rew[:4]; inside = inside[:4]
     needN.update(drops); needN.update(vend); needO.update(objs); needQ.update(rew); needI.update(inside)
-    q, inv, bond, price, repF, repR = EXTRA.get(int(iid), (1, 0, 0, 0, 0, 0))
-    I[int(iid)] = (name, r[9] or 0, r[10] or 0, r[12] or 0, r[13] or 0, vend, drops, nd, objs, rew, r[8] or 0, r[11] or 0,
+    q, inv, bond, price, repF, repR, food = EXTRA.get(int(iid), (1, 0, 0, 0, 0, 0, 0))
+    I[int(iid)] = (name, r[9] or 0, r[10] or 0, r[12] or 0, r[13] or 0, vend, drops, nd, objs, rew, r[8] or food or 0, r[11] or 0,
                    q, inv, bond, price, inside, craft, fish, repF, repR,
                    [[npc] + [x for fr in VREP[int(iid)][npc] for x in fr] for npc in sorted(VREP.get(int(iid), {}))])
 

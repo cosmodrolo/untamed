@@ -192,6 +192,9 @@ local rw = ns.RepTest.Rewards()
 local nf = 0 for _ in pairs(rw) do nf = nf + 1 end
 check(nf > 5, "reputation rewards found for " .. nf .. " factions")
 check(rw[889] == nil and rw[890] ~= nil, "only your side's battleground faction (Alliance here)")
+local outrunnerHorde = false
+for _, ids in pairs(rw[890] or {}) do for _, id in ipairs(ids) do if ns.SearchDB().I[id][1] == "Outrider's Bow" then outrunnerHorde = true end end end
+print("  Alliance sees Outrider's Bow:", outrunnerHorde)
 NUM_BROWSE_TO_DISPLAY = 2
 BrowseScrollFrame = CreateFrame("Frame")
 FauxScrollFrame_GetOffset = function() return 0 end
@@ -223,7 +226,8 @@ local bf = ns.BrowserFilter()
 bf.teaches = "Bite"; bf.where = "near"; bf.family = "Wolf"
 ns.UI_Show("browse")
 bf.teaches = "any"; bf.where = "any"; bf.family = "any"
-for _, k in ipairs({ "abilities", "builds", "care", "stable", "recommend", "browse", "plan", "rares", "search", "wishlist", "gear",
+ns.UI_Show("home")
+for _, k in ipairs({ "home", "abilities", "builds", "care", "stable", "recommend", "browse", "plan", "rares", "search", "wishlist", "gear",
   "dungeons", "supplies", "spells", "talents", "reputation", "quests", "settings" }) do ns.UI_Show(k) end
 check(true, "every page opens")
 print("DONE")

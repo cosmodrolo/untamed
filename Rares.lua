@@ -244,7 +244,7 @@ do
       if dist[a] and dist[b] and dist[a] ~= dist[b] then return dist[a] < dist[b] end
       return x[2] < y[2]
     end)
-    add(0, nil, string.format(L["%d rares"], #ids), C.GREY .. L["click for an arrow"] .. "|r", nil,
+    add(0, nil, ns.Count(#ids, L["rare"], L["rares"]), C.GREY .. L["click for an arrow"] .. "|r", nil,
       { L["Rare finder"], L["Untamed watches nameplates, your target and your mouseover for rares. Turn on enemy nameplates (V) to spot them from further away."],
         L["Tameable rares are green. Right-click a tameable one to pin it on the map."] }, { header = true })
     for i = 1, math.min(150, #ids) do

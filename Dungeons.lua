@@ -134,7 +134,7 @@ do
       for i = 1, math.min(15, #bosses) do
         local n = db.N[bosses[i].id]
         if n then
-          add(14, ns.Icon("Ability_Hunter_SniperShot"), C.WHITE .. n[1] .. "|r", C.GREY .. string.format(L["%d items"], bosses[i].n) .. "|r",
+          add(14, ns.Icon("Ability_Hunter_SniperShot"), C.WHITE .. n[1] .. "|r", C.GREY .. ns.Count(bosses[i].n, L["item"], L["items"]) .. "|r",
             function() ns.SearchFor(n[1]) end, { n[1], L["Level "] .. (n[2] == n[3] and n[2] or (n[2] .. "-" .. n[3])), C.GREY .. L["Click to search for this name."] .. "|r" },
             { mid = C.GREY .. (n[2] == n[3] and n[2] or (n[2] .. "-" .. n[3])) .. "|r" })
         end

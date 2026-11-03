@@ -121,7 +121,7 @@ do
       end
       return (List()[a] or 0) > (List()[b] or 0)
     end)
-    add(0, nil, string.format(L["%d items"], #ids), C.GREY .. L["click: arrow   right-click: remove"] .. "|r", nil, nil, { header = true })
+    add(0, nil, ns.Count(#ids, L["item"], L["items"]), C.GREY .. L["click: arrow   right-click: remove"] .. "|r", nil, nil, { header = true })
     local level = UnitLevel("player")
     for _, id in ipairs(ids) do
       local it = db and db.I[id]

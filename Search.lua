@@ -83,7 +83,7 @@ function ns.RepText(fac, rank, short)
   local mine = MyRank(fac)
   local met = mine and mine >= rank
   local color = met and C.GREEN or C.ORANGE
-  if short then return color .. RankName(rank) .. ", " .. FactionName(fac) .. "|r" end
+  if short then return color .. RankName(rank) .. "|r" end
   return color .. string.format(L["Needs %s with %s"], RankName(rank), FactionName(fac))
     .. (mine and (C.GREY .. "  (" .. L["you: "] .. RankName(mine) .. ")") or "") .. "|r", met
 end
@@ -395,7 +395,7 @@ do
     if #query < 3 and not FiltersActive() then
       add(0, nil, L["Search everything"], "", nil, nil, { header = true })
       add(0, nil, C.GREY .. L["Type at least 3 letters: an item (Heavy Shot, Hawkeye's Tunic), an NPC (Hogor Thunderhoof) or a beast."] .. "|r")
-      add(0, nil, C.GREY .. L["Or leave the box empty and pick filters, for example Bows, guns, crossbows + Vendor + Usable by me + Near me."] .. "|r")
+      add(0, nil, C.GREY .. L["Or leave the box empty and just pick filters, like Bows + Vendor + Near me."] .. "|r")
       add(0, nil, C.GREY .. L["Click a result for an arrow to the nearest place to get it. Hover for every source."] .. "|r")
       list:Set(rows) return
     end
@@ -612,7 +612,8 @@ do
       end
       local bags = {}
       for id, it in pairs(db.I) do
-        if it[4] == 11 and it[5] == sub and it[3] <= playerLevel + 10 and it[2] > wornLevel then bags[#bags + 1] = id end
+        -- Skip ones with no known way to get them.
+        if it[4] == 11 and it[5] == sub and it[3] <= playerLevel + 10 and it[2] > wornLevel and next(ns.ItemWays(id)) then bags[#bags + 1] = id end
       end
       table.sort(bags, function(a, b) return db.I[a][2] > db.I[b][2] end)
       local pc, pe, pn = ns.PlayerWorld()

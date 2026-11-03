@@ -59,4 +59,5 @@ Character.lua
 Dungeons.lua
 Reputation.lua
 Auction.lua
+Home.lua
 Tabs.lua

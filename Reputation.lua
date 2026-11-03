@@ -43,7 +43,11 @@ local function Rewards()
     if (it[13] or 1) >= 2 or it[4] == 6 or it[4] == 11 then
       if (it[20] or 0) > 0 then add(it[20], it[21], id) end
       for _, e in ipairs(it[22] or {}) do
-        for k = 2, #e - 1, 2 do add(e[k], e[k + 1], id) end
+        -- Only vendors that will sell to you (the other side's quartermaster sells their own version).
+        local n = db.N[e[1]]
+        if n and (n[8] == "" or n[8]:find(side, 1, true)) then
+          for k = 2, #e - 1, 2 do add(e[k], e[k + 1], id) end
+        end
       end
     end
   end

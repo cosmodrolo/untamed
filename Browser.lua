@@ -13,7 +13,7 @@ local function FamilyOptions()
   return o
 end
 local function TeachOptions()
-  local o = { { "any", L["Teaches anything or nothing"] }, { "some", L["Teaches an ability"] } }
+  local o = { { "any", L["Any ability"] }, { "some", L["Teaches something"] } }
   for _, a in ipairs(ns.AbilityOrder) do
     if ns.AbilityFamilies[a] and a ~= "Cower" then o[#o + 1] = { a, ns.AbilityLabel(a) } end
   end
@@ -79,7 +79,7 @@ local function Refresh()
     return x[1] < y[1]
   end)
   local rows = {}
-  rows[1] = { 0, nil, #ids .. L[" beasts"], C.GREY .. L["click for arrow, right-click for map"] .. "|r", nil, nil, { header = true } }
+  rows[1] = { 0, nil, ns.Count(#ids, L["beast"], L["beasts"]), C.GREY .. L["click for arrow, right-click for map"] .. "|r", nil, nil, { header = true } }
   for i = 1, math.min(#ids, 400) do
     local id = ids[i]
     local b = B[id]

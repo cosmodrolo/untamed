@@ -1,5 +1,16 @@
 # Changelog
 
+## v2.8.0
+- New Home page, shown when you open Untamed (you can turn that off): a live "Right now" checklist (open Beast Training, feed your pet, spells to train and their cost, talent points to spend, ranks ready to teach, the next beast to tame, easy gear upgrades, low ammo), each a click away from the right page, plus a short guide to how Untamed is organized and handy tricks.
+- Fixed: pet food on Supplies found nothing, because most food items had no food type in the item data. Food types now come from the game database.
+- Fixed: choosing your own pet in the Stable showed "Viewing: Rake" and "Back to my pet". It's simply "My pet" now.
+- Fixed: the Reputation page listed the other faction's battleground rewards too.
+- Hunter Quests: quests given by several trainers (like The Hunter's Path) show once, from the nearest trainer, and disappear once you've done any version or moved past it.
+- Supplies: quivers and pouches with no known source are no longer listed.
+- Shorter text in the right-hand column on Gear and Wishlist, so it isn't cut off (full details stay in the tooltip).
+- The Beast Training tip only shows on the My Pet pages.
+- Proper singular and plural ("1 item", "1 spell", "1 point to spend").
+
 ## v2.7.1
 - Layout pass: every page now has the same kind of toolbar along the top (dropdowns, checkboxes, buttons), and every control updates when the page does.
 - Abilities: show every rank, only ranks still to learn, only beasts you can tame now, or only ranks ready to teach your pet; hide ranks above your pet's level; collapse or expand all.
