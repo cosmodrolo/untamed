@@ -56,10 +56,7 @@ local function Rewards()
 end
 
 local function Standing(fac)
-  if not GetFactionInfoByID then return nil end
-  local ok, name, _, standingID, barMin, barMax, barValue = pcall(GetFactionInfoByID, fac)
-  if not ok or not name then return nil end
-  return name, standingID and standingID - 1, barMin, barMax, barValue
+  return ns.FactionInfo(fac)
 end
 
 do
@@ -69,7 +66,7 @@ do
     local o = { { "all", L["All factions"] } }
     local names = {}
     for fac in pairs(Rewards()) do
-      local name = GetFactionInfoByID and GetFactionInfoByID(fac)
+      local name = ns.FactionInfo(fac)
       names[#names + 1] = { fac, (type(name) == "string" and name ~= "") and name or ("Faction " .. fac) }
     end
     table.sort(names, function(a, b) return a[2] < b[2] end)

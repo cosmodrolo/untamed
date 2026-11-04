@@ -49,17 +49,31 @@ local FACTION_SIDE = { [889] = "H", [729] = "H", [510] = "H", [76] = "H", [81] =
   [890] = "A", [730] = "A", [509] = "A", [72] = "A", [47] = "A", [69] = "A", [54] = "A" }
 local RANK_NAME = { [0] = "Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted" }
 
+-- name, standing (0 hated .. 7 exalted), barMin, barMax, barValue. Classic Era: GetFactionInfoByID;
+-- Forever: C_Reputation.GetFactionDataByID.
+function ns.FactionInfo(fac)
+  if GetFactionInfoByID then
+    local ok, name, _, standingID, barMin, barMax, barValue = pcall(GetFactionInfoByID, fac)
+    if ok and type(name) == "string" and name ~= "" then return name, standingID and standingID - 1, barMin, barMax, barValue end
+  end
+  if C_Reputation and C_Reputation.GetFactionDataByID then
+    local ok, d = pcall(C_Reputation.GetFactionDataByID, fac)
+    if ok and d and d.name and d.name ~= "" then
+      return d.name, d.reaction and d.reaction - 1, d.currentReactionThreshold, d.nextReactionThreshold, d.currentStanding
+    end
+  end
+end
+
 local function FactionName(fac)
-  local name = GetFactionInfoByID and GetFactionInfoByID(fac)
+  local name = ns.FactionInfo(fac)
   if type(name) ~= "string" or name == "" then name = FACTION_NAME[fac] or (L["faction "] .. fac) end
   return name
 end
 local function RankName(rank) return _G["FACTION_STANDING_LABEL" .. (rank + 1)] or RANK_NAME[rank] or tostring(rank) end
 -- Your standing with a faction (0-7), or nil if unknown.
 local function MyRank(fac)
-  if not GetFactionInfoByID then return nil end
-  local ok, _, _, standingID = pcall(GetFactionInfoByID, fac)
-  if ok and type(standingID) == "number" then return standingID - 1 end
+  local _, standing = ns.FactionInfo(fac)
+  if type(standing) == "number" then return standing end
 end
 
 -- Reputation needed for an item from a vendor: faction, rank (or nil). Picks your side's faction when there's a choice.
