@@ -15,4 +15,22 @@ print("tooltip", TOOLTIP_LINES[#TOOLTIP_LINES])
 print("food", ns.EdibleFood()[1] and ns.EdibleFood()[1][6])
 ns.UI_Show("talents"); print("tab ok talents")
 print("forever talents free", ns.FreeTalentPoints(), "next", ns.NextTalent())
+-- Combat on Forever: stats and target info come back as secret values.
+SECRET = setmetatable({}, { __lt = function() error("attempt to compare a secret number value") end,
+  __le = function() error("attempt to compare a secret number value") end })
+issecretvalue = function(v) return v == SECRET end
+local realType = type; type = function(v) if v == SECRET then return "number" end return realType(v) end
+local oldRD, oldSpeed, oldLevel, oldGUID = UnitRangedDamage, GetUnitSpeed, UnitLevel, UnitGUID
+UnitRangedDamage = function() return SECRET end
+GetUnitSpeed = function() return SECRET end
+IsPlayerMoving = function() return false end
+UnitLevel = function(u) if u == "target" then return SECRET end return 20 end
+UnitGUID = function(u) if u == "target" then return SECRET end return oldGUID(u) end
+ns.db.autoShotBar = true; ns.Combat.ShowBar(true)
+ns.Combat.ShotFired(); ns.Combat.ShotFired()
+FIRE("PLAYER_REGEN_DISABLED"); FIRE("PLAYER_TARGET_CHANGED")
+print("secret combat ok")
+UnitRangedDamage, GetUnitSpeed, UnitLevel, UnitGUID = oldRD, oldSpeed, oldLevel, oldGUID
+issecretvalue = function() return false end
+type = realType
 print("DONE")

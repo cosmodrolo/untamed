@@ -31,10 +31,25 @@ local AIM = 0.5
 local AIMED_SHOT = { 19434, 20900, 20901, 20902, 20903, 20904 }
 local bar, shooting, lastShot, swing, aimStart
 
+-- Forever hides stats like ranged speed during combat (secret values), so check before comparing
+-- and remember the last speed we could read.
+local knownSpeed
 local function RangedSpeed()
   local s = UnitRangedDamage and UnitRangedDamage("player")
-  if type(s) ~= "number" or s <= 0 or ns.IsSecret(s) then return nil end
+  if ns.IsSecret(s) or type(s) ~= "number" or s <= 0 then return nil end
+  knownSpeed = s
   return s
+end
+
+-- Moving? IsPlayerMoving is never secret; GetUnitSpeed can be.
+local function Moving()
+  if IsPlayerMoving then
+    local ok, m = pcall(IsPlayerMoving)
+    if ok and not ns.IsSecret(m) then return m and true or false end
+  end
+  local v = GetUnitSpeed and GetUnitSpeed("player")
+  if ns.IsSecret(v) or type(v) ~= "number" then return false end
+  return v > 0
 end
 
 local function CreateBar()
@@ -84,7 +99,7 @@ local function CreateBar()
     if not lastShot or not swing then return end
     local now = GetTime()
     local reload = swing - AIM
-    local moving = GetUnitSpeed and (GetUnitSpeed("player") or 0) > 0
+    local moving = Moving()
     local t = now - lastShot
     if t < reload then
       self:SetStatusBarColor(1, 0.82, 0)
@@ -109,8 +124,15 @@ local function MarkPosition()
 end
 
 local function ShotFired()
-  lastShot = GetTime()
-  swing = RangedSpeed() or swing or 2.8
+  local now = GetTime()
+  local speed = RangedSpeed()
+  if not speed and lastShot then
+    -- Speed is hidden: use the time since the last shot when it looks like a normal swing.
+    local gap = now - lastShot
+    if gap > 1 and gap < 4 then speed = gap end
+  end
+  lastShot = now
+  swing = speed or swing or knownSpeed or 2.8
   aimStart = nil
   MarkPosition()
 end
@@ -194,7 +216,7 @@ local function CheckAspect()
   local travel = HasAura("player", TRAVEL_ASPECTS, "HELPFUL")
   if travel then
     Alert(C.ORANGE .. string.format(L["%s is on in combat. Switch aspects!"], travel) .. "|r", true)
-  elseif UnitLevel("player") >= 10 and not HasAura("player", ALL_ASPECTS, "HELPFUL") then
+  elseif (function() local l = UnitLevel("player"); return not ns.IsSecret(l) and l >= 10 end)() and not HasAura("player", ALL_ASPECTS, "HELPFUL") then
     ns.Print(L["No aspect is active."])
   end
 end
@@ -204,9 +226,12 @@ local function CheckMark()
   if not ns.db.markReminder or not IsHunter() then return end
   if not UnitExists("target") or not UnitCanAttack("player", "target") or UnitIsDead("target") then return end
   local guid = UnitGUID("target")
-  if guid == markedFor then return end
+  if ns.IsSecret(guid) then guid = nil end
+  if guid and guid == markedFor then return end
   local cls = UnitClassification and UnitClassification("target")
-  local boss = cls == "worldboss" or UnitLevel("target") == -1
+  if ns.IsSecret(cls) then cls = nil end
+  local lvl = UnitLevel("target")
+  local boss = cls == "worldboss" or (not ns.IsSecret(lvl) and lvl == -1)
   if not boss then return end
   if not HasAura("target", HUNTERS_MARK, "HARMFUL") then
     markedFor = guid

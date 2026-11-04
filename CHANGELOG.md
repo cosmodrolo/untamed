@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.8.4
+- Fixed on Forever: the Auto Shot bar threw errors every shot in combat. Forever hides your ranged attack speed and movement speed during combat, so Untamed now remembers your speed from out of combat, measures the time between shots, and checks movement with a function Forever doesn't hide.
+- The Hunter's Mark boss check and aspect reminder no longer error when Forever hides your target's level or ID in combat.
+
 ## v2.8.3
 - Talents now work on WoW Forever. Untamed reads Forever's talent tree, shows your progress through the leveling or raid build with Forever's talent names (Deadly Aspects, Lethal Attacks), counts your unspent points, and the next talent glows green in Forever's talent window.
 - Home's "Spend talent points" reminder works on Forever too.
