@@ -212,9 +212,93 @@ local function TalentInfo(tab, i)
   end
 end
 
-local talentMap   -- [tab][englishName] = { index, maxRank }
+-- WoW Forever: talents live in a trait tree (C_Traits), with all three hunter trees in one config.
+-- Two talents were renamed; we keep the Classic names as keys. First-rank spell IDs come from
+-- Forever's Talent client table (1.60.1.70790), so matching works in any language.
+local ALIAS = { ["Deadly Aspects"] = "Improved Aspect of the Hawk", ["Lethal Attacks"] = "Lethal Shots" }
+local TALENT_SPELL = {
+  [19552] = "Improved Aspect of the Hawk", [19583] = "Endurance Training", [19557] = "Improved Eyes of the Beast",
+  [19549] = "Improved Aspect of the Monkey", [19609] = "Thick Hide", [24443] = "Improved Revive Pet", [19559] = "Pathfinding",
+  [19596] = "Bestial Swiftness", [19616] = "Unleashed Fury", [19572] = "Improved Mend Pet", [19598] = "Ferocity",
+  [19578] = "Spirit Bond", [19577] = "Intimidation", [19590] = "Bestial Discipline", [19621] = "Frenzy", [19574] = "Bestial Wrath",
+  [19407] = "Improved Concussive Shot", [19416] = "Efficiency", [19421] = "Improved Hunter's Mark", [19426] = "Lethal Shots",
+  [19434] = "Aimed Shot", [19454] = "Improved Arcane Shot", [19498] = "Hawk Eye", [19464] = "Improved Serpent Sting",
+  [19485] = "Mortal Shots", [19503] = "Scatter Shot", [19461] = "Barrage", [19491] = "Improved Scorpid Sting",
+  [19507] = "Ranged Weapon Specialization", [19506] = "Trueshot Aura",
+}
+
+local function TraitConfig()
+  if not C_Traits or not C_Traits.GetConfigInfo then return nil end
+  local cfg = C_ClassTalents and C_ClassTalents.GetActiveConfigID and C_ClassTalents.GetActiveConfigID()
+  if not cfg and C_SpecializationInfo and C_SpecializationInfo.GetCombatConfigIDForSpecGroup then
+    local group = C_SpecializationInfo.GetActiveSpecGroup and C_SpecializationInfo.GetActiveSpecGroup() or 1
+    cfg = C_SpecializationInfo.GetCombatConfigIDForSpecGroup(group)
+  end
+  if not cfg then return nil end
+  local info = C_Traits.GetConfigInfo(cfg)
+  return cfg, info and info.treeIDs and info.treeIDs[1]
+end
+
+local function TraitName(def)
+  if not def then return nil end
+  if def.spellID and TALENT_SPELL[def.spellID] then return TALENT_SPELL[def.spellID], def.spellID end
+  local name = def.overrideName
+  if (not name or name == "") and def.spellID then
+    name = (C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(def.spellID)) or (GetSpellInfo and GetSpellInfo(def.spellID))
+  end
+  if not name or ns.IsSecret(name) then return nil end
+  return ALIAS[name] or name, def.spellID
+end
+
+local function MapTraits()
+  local map, total = { {}, {} }, 0
+  local cfg, tree = TraitConfig()
+  if not cfg or not tree then return map, 0 end
+  local tabOf = {}
+  for tab = 1, 2 do for _, tier in ipairs(TREES[tab]) do for _, t in ipairs(tier) do tabOf[t[1]] = tab end end end
+  for _, nodeID in ipairs(C_Traits.GetTreeNodes(tree) or {}) do
+    local node = C_Traits.GetNodeInfo(cfg, nodeID)
+    local entry = node and node.entryIDs and node.entryIDs[1]
+    local e = entry and C_Traits.GetEntryInfo(cfg, entry)
+    local key, spellID = TraitName(e and e.definitionID and C_Traits.GetDefinitionInfo(e.definitionID))
+    local tab = key and tabOf[key]
+    if tab then
+      local label = spellID and ((C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(spellID)) or (GetSpellInfo and GetSpellInfo(spellID)))
+      if not label or ns.IsSecret(label) then label = key end
+      map[tab][key] = { node = nodeID, maxRank = node.maxRanks, name = label }
+      total = total + 1
+    end
+  end
+  return map, total
+end
+
+local function TraitRank(nodeID)
+  local cfg = TraitConfig()
+  local node = cfg and C_Traits.GetNodeInfo(cfg, nodeID)
+  return node and (node.activeRank or node.currentRank) or 0
+end
+
+-- Unspent talent points on either flavor.
+function ns.FreeTalentPoints()
+  if UnitCharacterPoints then return UnitCharacterPoints("player") or 0 end
+  local ok, n = pcall(function()
+    local cfg, tree = TraitConfig()
+    if not cfg or not tree then return 0 end
+    local c = C_Traits.GetTreeCurrencyInfo(cfg, tree, false)
+    return c and c[1] and c[1].quantity or 0
+  end)
+  return ok and n or 0
+end
+
+local talentMap   -- [tab][englishName] = { index or node, maxRank, name }
 local function MapTalents()
   if talentMap then return talentMap end
+  if not ERA then
+    local ok, map, total = pcall(MapTraits)
+    if not ok then return { {}, {} } end
+    if total > 0 then talentMap = map end
+    return map
+  end
   local map, total = {}, 0
   for tab = 1, 2 do
     map[tab] = {}
@@ -246,6 +330,10 @@ end
 local function CurrentRank(tab, english)
   local m = MapTalents()[tab][english]
   if not m then return nil end
+  if m.node then
+    local ok, rank = pcall(TraitRank, m.node)
+    return ok and rank or 0, m
+  end
   local _, _, _, rank = TalentInfo(tab, m.index)
   return rank or 0, m
 end
@@ -259,7 +347,7 @@ local function BuildProgress(build)
     local target = want[tab .. name]
     local rank, m = CurrentRank(tab, name)
     local done = rank and math.max(0, math.min(pts, rank - (target - pts))) or 0
-    out[i] = { tab = tab, name = name, pts = pts, done = done, label = m and m.name or name, index = m and m.index }
+    out[i] = { tab = tab, name = name, pts = pts, done = done, label = m and m.name or name, index = m and m.index, node = m and m.node }
     if not nextStep and done < pts then nextStep = out[i] end
   end
   return out, nextStep
@@ -303,6 +391,39 @@ local function UpdateGlow()
   end
 end
 
+-- Forever: the same glow in the trait-based talent window (all three trees on one page).
+local fglow
+local function UpdateForeverGlow()
+  local tf = PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame
+  if not tf or not tf.GetTalentButtonByNodeID then return end
+  if not fglow then
+    fglow = CreateFrame("Frame", nil, tf)
+    local tex = fglow:CreateTexture(nil, "OVERLAY")
+    tex:SetAllPoints()
+    tex:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
+    tex:SetBlendMode("ADD")
+    tex:SetVertexColor(0.67, 0.83, 0.45)
+    fglow:EnableMouse(false)
+  end
+  fglow:Hide()
+  if ns.db.talentGlow == false or not tf:IsShown() then return end
+  local _, nextStep = BuildProgress(SelectedBuild())
+  if not nextStep or not nextStep.node then return end
+  local btn = tf:GetTalentButtonByNodeID(nextStep.node)
+  if btn and btn:IsShown() then
+    local size = math.max(btn:GetWidth(), btn:GetHeight()) * 1.75
+    fglow:ClearAllPoints()
+    fglow:SetPoint("CENTER", btn, "CENTER", 0, 0)
+    fglow:SetSize(size, size)
+    fglow:SetFrameLevel(btn:GetFrameLevel() + 5)
+    fglow:Show()
+  end
+end
+
+local function RefreshGlow()
+  if ERA then UpdateGlow() else pcall(UpdateForeverGlow) end
+end
+
 local function HookTalentFrame()
   if not PlayerTalentFrame or PlayerTalentFrame.untamedHooked then return end
   PlayerTalentFrame.untamedHooked = true
@@ -310,12 +431,31 @@ local function HookTalentFrame()
   if PlayerTalentFrame_Update then hooksecurefunc("PlayerTalentFrame_Update", UpdateGlow) end
 end
 
+local function HookTraitFrame()
+  local tf = PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame
+  if not tf or tf.untamedHooked then return end
+  tf.untamedHooked = true
+  tf:HookScript("OnShow", function()
+    talentMap = nil
+    if C_Timer and C_Timer.After then C_Timer.After(0.1, RefreshGlow) else RefreshGlow() end
+  end)
+  tf:HookScript("OnHide", function() if fglow then fglow:Hide() end end)
+end
+
 do
   local ev = CreateFrame("Frame")
-  for _, e in ipairs({ "ADDON_LOADED", "CHARACTER_POINTS_CHANGED", "PLAYER_TALENT_UPDATE", "SPELLS_CHANGED" }) do pcall(ev.RegisterEvent, ev, e) end
+  for _, e in ipairs({ "ADDON_LOADED", "CHARACTER_POINTS_CHANGED", "PLAYER_TALENT_UPDATE", "SPELLS_CHANGED",
+                       "TRAIT_CONFIG_UPDATED", "TRAIT_NODE_CHANGED", "TRAIT_TREE_CURRENCY_INFO_UPDATED", "PLAYER_LEVEL_UP" }) do
+    pcall(ev.RegisterEvent, ev, e)
+  end
   ev:SetScript("OnEvent", function(_, event, arg)
-    if event == "ADDON_LOADED" then if arg == "Blizzard_TalentUI" then HookTalentFrame() end
-    elseif event ~= "ADDON_LOADED" then talentMap = nil; UpdateGlow() end
+    if event == "ADDON_LOADED" then
+      if arg == "Blizzard_TalentUI" then HookTalentFrame() end
+      if arg == "Blizzard_PlayerSpells" then HookTraitFrame() end
+    else
+      talentMap = nil
+      RefreshGlow()
+    end
   end)
 end
 
@@ -324,7 +464,7 @@ do
   local function Build(panel)
     local x = 4
     for _, b in ipairs(BUILDS) do
-      local btn = ns.MakeButton(panel, b.label, 170, function() ns.cdb.talentBuild = b.key; UpdateGlow(); ns.UI_Refresh() end)
+      local btn = ns.MakeButton(panel, b.label, 170, function() ns.cdb.talentBuild = b.key; RefreshGlow(); ns.UI_Refresh() end)
       btn:SetPoint("TOPLEFT", x, -2)
       buttons[b.key] = btn
       x = x + 174
@@ -335,16 +475,18 @@ do
   local function Refresh()
     local rows = {}
     local function add(...) rows[#rows + 1] = { ... } end
-    if not ERA then NotForever(add, L["The talent guide"]); list:Set(rows) return end
     local build = SelectedBuild()
     for k, btn in pairs(buttons) do if k == build.key then btn:LockHighlight() else btn:UnlockHighlight() end end
     local steps, nextStep = BuildProgress(build)
-    local free = UnitCharacterPoints and UnitCharacterPoints("player") or 0
+    local free = ns.FreeTalentPoints()
     add(0, ns.Icon(build.key == "raid" and "Ability_TrueShot" or "Ability_Druid_FerociousBite"), build.label .. "  " .. C.GREY .. build.split .. "|r",
       free and free > 0 and (C.GREEN .. ns.Count(free, L["point to spend"], L["points to spend"]) .. "|r") or "", nil,
       { build.label, L["Source: "] .. build.source, L["Open your talent window: the next talent in this build glows green."] }, { header = true })
     if not MapTalents()[1]["Improved Aspect of the Hawk"] then
       add(0, nil, C.GREY .. L["Open your talent window once so Untamed can read your talents."] .. "|r")
+    end
+    if not ERA then
+      add(0, nil, C.GREY .. L["WoW Forever renamed two talents: Improved Aspect of the Hawk is now Deadly Aspects, and Lethal Shots is now Lethal Attacks. These builds are Classic picks with Forever's names."] .. "|r")
     end
     local level = 9
     for i, st in ipairs(steps) do

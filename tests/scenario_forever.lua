@@ -13,4 +13,6 @@ TOOLTIP_LINES = {}; TARGET_ID = 1797
 for _, f in ipairs(POSTCALLS) do f(GameTooltip) end
 print("tooltip", TOOLTIP_LINES[#TOOLTIP_LINES])
 print("food", ns.EdibleFood()[1] and ns.EdibleFood()[1][6])
+ns.UI_Show("talents"); print("tab ok talents")
+print("forever talents free", ns.FreeTalentPoints(), "next", ns.NextTalent())
 print("DONE")

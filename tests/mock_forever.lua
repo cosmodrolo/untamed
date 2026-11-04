@@ -23,3 +23,17 @@ TooltipDataProcessor = { AddTooltipPostCall = function(t, f) POSTCALLS[#POSTCALL
 issecretvalue = function() return false end
 UnitExists = function(u) return (u == "pet" and PET.exists) or u == "target" or u == "mouseover" end
 PET.family = "Bear"; PET.spells = { { "Claw", "Rank 2" }, { "Growl", "Rank 2" } }; PET.level = 14
+-- Forever talents: a trait tree instead of GetTalentInfo / UnitCharacterPoints.
+UnitCharacterPoints = nil; GetNumTalents = nil; GetTalentInfo = nil
+SPELLS[19552] = "Deadly Aspects"; SPELLS[19583] = "Endurance Training"; SPELLS[19426] = "Lethal Attacks"
+C_Spell.GetSpellName = function(id) return SPELLS[id] end
+TRAIT_NODES = { [101] = { spell = 19552, rank = 2, max = 5 }, [102] = { spell = 19583, rank = 0, max = 5 }, [201] = { spell = 19426, rank = 0, max = 5 } }
+C_ClassTalents = { GetActiveConfigID = function() return 7 end }
+C_Traits = {
+  GetConfigInfo = function() return { treeIDs = { 9 } } end,
+  GetTreeNodes = function() return { 101, 102, 201 } end,
+  GetNodeInfo = function(_, n) local t = TRAIT_NODES[n]; return { entryIDs = { n }, activeRank = t.rank, maxRanks = t.max } end,
+  GetEntryInfo = function(_, e) return { definitionID = e } end,
+  GetDefinitionInfo = function(d) return { spellID = TRAIT_NODES[d].spell } end,
+  GetTreeCurrencyInfo = function() return { { quantity = 3 } } end,
+}

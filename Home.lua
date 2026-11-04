@@ -49,7 +49,7 @@ local function Refresh(panel, t)
     item("INV_Misc_Book_11", string.format(L["Train %s at your hunter trainer."], ns.Count(nSpells, L["new spell"], L["new spells"])),
       ns.Money and ns.Money(cost) or "", "spells")
   end
-  local points = UnitCharacterPoints and UnitCharacterPoints("player") or 0
+  local points = ns.FreeTalentPoints and ns.FreeTalentPoints() or 0
   if points and points > 0 then
     local nxt = ns.NextTalent and ns.NextTalent()
     item("Ability_Hunter_SniperShot", string.format(L["Spend %s."], ns.Count(points, L["talent point"], L["talent points"])),
