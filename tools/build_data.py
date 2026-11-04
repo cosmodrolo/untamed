@@ -101,10 +101,12 @@ if FLAVOR == "forever":
                 b = tame[nid]; matched += 1
                 if fb.get("family"): b["fam"] = fb["family"]
                 b["zone"] = fb.get("zone")
+                if fb.get("coords"): b["coords"] = fb["coords"]
                 b["spells"] = sorted(set(b["spells"]) | set(teaches))
             else:
                 tame[nid] = dict(name=fb.get("name"), lo=fb.get("minLevel") or 1, hi=fb.get("maxLevel") or fb.get("minLevel") or 1,
                                  fam=fb.get("family"), rank=None, speed=None, skin=None, spells=teaches, zone=fb.get("zone"))
+                if fb.get("coords"): tame[nid]["coords"] = fb["coords"]
                 added += 1
         log("forever json: matched", matched, "added", added)
 
@@ -224,6 +226,10 @@ for nid in sorted(tame, key=lambda n: (str(tame[n]["fam"]), tame[n]["lo"], n)):
                 inst = dnames[area][0]
                 for ui, x, y in dnames[area][1]:
                     spawns.append("[%d]={%.1f,%.1f}" % (ui, x, y))
+    if not spawns and b.get("coords"):   # field-recorded points (beastmaster.io) for beasts Questie doesn't place yet
+        for zn, pts in b["coords"].items():
+            if zn.lower() in zone_by_name:
+                spawns.append("[%d]={%s}" % (zone_by_name[zn.lower()], ",".join("%.1f,%.1f" % tuple(p) for p in pts)))
     if not spawns and b.get("zone") and b["zone"].lower() in zone_by_name and b["spells"]:
         spawns.append("[%d]={}" % zone_by_name[b["zone"].lower()])
     if not spawns:

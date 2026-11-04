@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.8.2
+- Forever pet data now includes beastmaster.io's field-confirmed "comes with" abilities: 61 more beasts that teach (first known sources for Sonic Blast, Tendon Rip, Pinch, Dismember, Mine!, Web 2, Swipe 2 and Dust Cloud 2), 13 corrections (Vuldren Alpha teaches Bite 2, Gray Fox teaches Trickster's Dance, Mystmane teaches Swipe), and three Zephras Isle beasts with empty spellbooks removed.
+- Forever beasts that Questie doesn't place yet get map spots from beastmaster.io, so the arrow and map pins work for them (29 beasts, including Gray Fox, Maddened Rotclaw and the Zephras Isle bears).
+- Checked against Blizzard's Forever client tables (build 1.60.1.70790): every pet ability rank, its level, and each family's diet match.
+
 ## v2.8.1
 - Checked against WoW Forever build 1.60.1 (70790), today's launch update: every game function and event Untamed uses exists, or Untamed already falls back safely.
 - Forever: reputation names and standings now come from C_Reputation.GetFactionDataByID (Forever doesn't have GetFactionInfoByID), so the Reputation page and vendor reputation tags show real names and your standing.

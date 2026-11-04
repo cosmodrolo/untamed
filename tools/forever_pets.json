@@ -922,7 +922,7 @@
    "note": "New. Rank 1 teachers per mmonster: Shriekling Matriarch (raptor), Shadowgale Shriekling (bird of prey), Mystmane (bear); cross-family teachers and level 9-13 beasts teaching a lvl-12 rank look odd (beta data)."
   },
   "Tendon Rip": {
-   "source": "innate",
+   "source": "beast",
    "sourceConfidence": "unknown",
    "ranks": [
     {
@@ -1018,7 +1018,7 @@
    "note": "New. mmonster: Galestrider/Ornery Galestrider teach rank 1. Petopia: 'No known training source'."
   },
   "Pinch": {
-   "source": "innate",
+   "source": "beast",
    "sourceConfidence": "unknown",
    "ranks": [
     {
@@ -1050,7 +1050,7 @@
    "note": "New. No teaching beast in any source; 0 TP."
   },
   "Dismember": {
-   "source": "innate",
+   "source": "beast",
    "sourceConfidence": "unknown",
    "ranks": [
     {
@@ -1082,7 +1082,7 @@
    "note": "New. Petopia: 'No known training source', 0 TP; mmonster says 1 TP per rank. No teachers found."
   },
   "Mine!": {
-   "source": "innate",
+   "source": "beast",
    "sourceConfidence": "unknown",
    "ranks": [
     {
@@ -1114,7 +1114,7 @@
    "note": "New. No teaching beast in any source; 0 TP."
   },
   "Sonic Blast": {
-   "source": "innate",
+   "source": "beast",
    "sourceConfidence": "unknown",
    "ranks": [
     {
@@ -1523,7 +1523,35 @@
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster"
+   "source": "mmonster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      37.5,
+      30.1
+     ],
+     [
+      38.0,
+      29.0
+     ],
+     [
+      38.8,
+      28.6
+     ],
+     [
+      39.8,
+      30.9
+     ],
+     [
+      40.8,
+      30.3
+     ],
+     [
+      41.0,
+      27.0
+     ]
+    ]
+   }
   },
   {
    "npcId": 250937,
@@ -1538,7 +1566,27 @@
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster"
+   "source": "mmonster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      37.1,
+      25.7
+     ],
+     [
+      37.9,
+      26.5
+     ],
+     [
+      36.6,
+      26.7
+     ],
+     [
+      37.7,
+      27.6
+     ]
+    ]
+   }
   },
   {
    "npcId": 251115,
@@ -1554,7 +1602,15 @@
    ],
    "zone": "Zephras Isle",
    "source": "mmonster",
-   "attackSpeedPassive": "Slower Attack II"
+   "attackSpeedPassive": "Slower Attack II",
+   "coords": {
+    "Zephras Isle": [
+     [
+      35.9,
+      27.7
+     ]
+    ]
+   }
   },
   {
    "npcId": 1196,
@@ -1596,11 +1652,27 @@
    "teaches": [
     [
      "Claw",
-     3
+     2
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster"
+   "source": "beastmaster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      60.2,
+      33.7
+     ],
+     [
+      61.0,
+      36.4
+     ],
+     [
+      55.4,
+      38.5
+     ]
+    ]
+   }
   },
   {
    "npcId": 1778,
@@ -1685,13 +1757,33 @@
    "maxLevel": 13,
    "teaches": [
     [
-     "Savage Rend",
+     "Swipe",
      1
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster",
-   "attackSpeedPassive": "Faster Attack II"
+   "source": "beastmaster",
+   "attackSpeedPassive": "Faster Attack II",
+   "coords": {
+    "Zephras Isle": [
+     [
+      56.7,
+      38.8
+     ],
+     [
+      58.8,
+      38.6
+     ],
+     [
+      60.8,
+      37.4
+     ],
+     [
+      61.3,
+      36.3
+     ]
+    ]
+   }
   },
   {
    "npcId": 1189,
@@ -2024,7 +2116,35 @@
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster"
+   "source": "mmonster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      42.4,
+      50.8
+     ],
+     [
+      42.4,
+      52.2
+     ],
+     [
+      42.4,
+      52.6
+     ],
+     [
+      42.6,
+      52.0
+     ],
+     [
+      42.6,
+      52.6
+     ],
+     [
+      43.0,
+      50.6
+     ]
+    ]
+   }
   },
   {
    "npcId": 2960,
@@ -2144,7 +2264,23 @@
    ],
    "zone": "Tirisfal Glades",
    "source": "mmonster",
-   "attackSpeedPassive": "Faster Attack III"
+   "attackSpeedPassive": "Faster Attack III",
+   "coords": {
+    "Tirisfal Glades": [
+     [
+      19.6,
+      63.5
+     ],
+     [
+      17.3,
+      66.0
+     ],
+     [
+      18.2,
+      70.5
+     ]
+    ]
+   }
   },
   {
    "npcId": 1923,
@@ -2668,7 +2804,35 @@
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster"
+   "source": "mmonster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      54.6,
+      61.5
+     ],
+     [
+      53.0,
+      65.4
+     ],
+     [
+      47.2,
+      67.1
+     ],
+     [
+      42.8,
+      39.3
+     ],
+     [
+      42.6,
+      49.2
+     ],
+     [
+      39.2,
+      53.0
+     ]
+    ]
+   }
   },
   {
    "npcId": 3121,
@@ -3699,22 +3863,27 @@
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster"
-  },
-  {
-   "npcId": 253283,
-   "name": "Shriekling Matriarch",
-   "family": "Raptor",
-   "minLevel": 9,
-   "maxLevel": 9,
-   "teaches": [
-    [
-     "Savage Rend",
-     1
+   "source": "mmonster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      53.0,
+      64.8
+     ],
+     [
+      53.9,
+      65.5
+     ],
+     [
+      52.8,
+      66.2
+     ],
+     [
+      53.7,
+      67.7
+     ]
     ]
-   ],
-   "zone": "Zephras Isle",
-   "source": "mmonster"
+   }
   },
   {
    "npcId": 4688,
@@ -3866,21 +4035,6 @@
     ]
    ],
    "zone": "Teldrassil",
-   "source": "mmonster"
-  },
-  {
-   "npcId": 256092,
-   "name": "Shadowgale Shriekling",
-   "family": "Bird of Prey",
-   "minLevel": 10,
-   "maxLevel": 11,
-   "teaches": [
-    [
-     "Savage Rend",
-     1
-    ]
-   ],
-   "zone": "Zephras Isle",
    "source": "mmonster"
   },
   {
@@ -4329,10 +4483,14 @@
     [
      "Bite",
      4
+    ],
+    [
+     "Web",
+     2
     ]
    ],
    "zone": "Hillsbrad Foothills",
-   "source": "mmonster"
+   "source": "beastmaster"
   },
   {
    "npcId": 1112,
@@ -4569,10 +4727,14 @@
     [
      "Bite",
      2
+    ],
+    [
+     "Dismember",
+     1
     ]
    ],
    "zone": "Loch Modan",
-   "source": "mmonster"
+   "source": "beastmaster"
   },
   {
    "npcId": 5053,
@@ -5480,10 +5642,14 @@
     [
      "Dive",
      3
+    ],
+    [
+     "Lightning Breath",
+     5
     ]
    ],
    "zone": "Sunken Temple",
-   "source": "petopia"
+   "source": "beastmaster"
   },
   {
    "npcId": 11357,
@@ -5645,10 +5811,14 @@
     [
      "Dive",
      3
+    ],
+    [
+     "Demoralizing Screech",
+     3
     ]
    ],
    "zone": "Western Plaguelands",
-   "source": "mmonster"
+   "source": "beastmaster"
   },
   {
    "npcId": 8299,
@@ -5848,22 +6018,6 @@
    "source": "mmonster"
   },
   {
-   "npcId": 251707,
-   "name": "Ornery Galestrider",
-   "family": "Tallstrider",
-   "minLevel": 8,
-   "maxLevel": 9,
-   "teaches": [
-    [
-     "Dust Cloud",
-     1
-    ]
-   ],
-   "zone": "Zephras Isle",
-   "source": "mmonster",
-   "attackSpeedPassive": "Faster Attack V"
-  },
-  {
    "npcId": 3068,
    "name": "Mazzranache",
    "family": "Tallstrider",
@@ -5903,10 +6057,14 @@
     [
      "Cower",
      1
+    ],
+    [
+     "Dust Cloud",
+     1
     ]
    ],
    "zone": "The Barrens",
-   "source": "mmonster"
+   "source": "beastmaster"
   },
   {
    "npcId": 3245,
@@ -5967,7 +6125,35 @@
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster"
+   "source": "mmonster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      43.9,
+      55.0
+     ],
+     [
+      47.8,
+      61.3
+     ],
+     [
+      53.4,
+      43.7
+     ],
+     [
+      55.7,
+      46.7
+     ],
+     [
+      57.4,
+      56.7
+     ],
+     [
+      52.0,
+      56.4
+     ]
+    ]
+   }
   },
   {
    "npcId": 3108,
@@ -5994,10 +6180,14 @@
     [
      "Claw",
      2
+    ],
+    [
+     "Pinch",
+     1
     ]
    ],
    "zone": "Darkshore",
-   "source": "mmonster"
+   "source": "beastmaster"
   },
   {
    "npcId": 1216,
@@ -6009,10 +6199,14 @@
     [
      "Claw",
      3
+    ],
+    [
+     "Pinch",
+     1
     ]
    ],
    "zone": "Westfall",
-   "source": "mmonster"
+   "source": "beastmaster"
   },
   {
    "npcId": 3812,
@@ -6069,10 +6263,14 @@
     [
      "Claw",
      4
+    ],
+    [
+     "Pinch",
+     2
     ]
    ],
    "zone": "Blackfathom Deeps",
-   "source": "mmonster"
+   "source": "beastmaster"
   },
   {
    "npcId": 922,
@@ -6117,7 +6315,35 @@
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster"
+   "source": "mmonster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      43.8,
+      27.7
+     ],
+     [
+      44.5,
+      30.5
+     ],
+     [
+      45.0,
+      27.8
+     ],
+     [
+      45.7,
+      28.6
+     ],
+     [
+      46.3,
+      26.7
+     ],
+     [
+      47.0,
+      25.7
+     ]
+    ]
+   }
   },
   {
    "npcId": 250868,
@@ -6132,7 +6358,27 @@
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster"
+   "source": "mmonster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      55.3,
+      61.7
+     ],
+     [
+      47.6,
+      65.5
+     ],
+     [
+      40.7,
+      45.3
+     ],
+     [
+      40.8,
+      54.1
+     ]
+    ]
+   }
   },
   {
    "npcId": 250874,
@@ -6142,12 +6388,40 @@
    "maxLevel": 10,
    "teaches": [
     [
-     "Trickster's Dance",
-     1
+     "Bite",
+     2
     ]
    ],
    "zone": "Zephras Isle",
-   "source": "mmonster"
+   "source": "beastmaster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      59.9,
+      67.6
+     ],
+     [
+      62.3,
+      68.6
+     ],
+     [
+      56.2,
+      69.7
+     ],
+     [
+      53.5,
+      70.9
+     ],
+     [
+      44.5,
+      72.1
+     ],
+     [
+      49.6,
+      73.8
+     ]
+    ]
+   }
   },
   {
    "npcId": 1108,
@@ -6279,10 +6553,14 @@
     [
      "Bite",
      3
+    ],
+    [
+     "Shell Shield",
+     1
     ]
    ],
    "zone": "Wailing Caverns",
-   "source": "petopia"
+   "source": "beastmaster"
   },
   {
    "npcId": 4824,
@@ -6313,10 +6591,14 @@
     [
      "Bite",
      4
+    ],
+    [
+     "Shell Shield",
+     1
     ]
    ],
    "zone": "Blackfathom Deeps",
-   "source": "petopia"
+   "source": "beastmaster"
   },
   {
    "npcId": 4825,
@@ -6464,6 +6746,1269 @@
    ],
    "zone": "The Hinterlands",
    "source": "mmonster"
+  },
+  {
+   "npcId": 199,
+   "name": "Young Fleshripper",
+   "family": "Carrion Bird",
+   "minLevel": 10,
+   "maxLevel": 11,
+   "teaches": [
+    [
+     "Demoralizing Screech",
+     1
+    ]
+   ],
+   "zone": "Westfall",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 217,
+   "name": "Venom Web Spider",
+   "family": "Spider",
+   "minLevel": 19,
+   "maxLevel": 20,
+   "teaches": [
+    [
+     "Web",
+     1
+    ]
+   ],
+   "zone": "Duskwood",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 539,
+   "name": "Pygmy Venom Web Spider",
+   "family": "Spider",
+   "minLevel": 18,
+   "maxLevel": 19,
+   "teaches": [
+    [
+     "Web",
+     1
+    ]
+   ],
+   "zone": "Duskwood",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 855,
+   "name": "Young Stranglethorn Raptor",
+   "family": "Raptor",
+   "minLevel": 30,
+   "maxLevel": 31,
+   "teaches": [
+    [
+     "Savage Rend",
+     2
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 930,
+   "name": "Black Widow Hatchling",
+   "family": "Spider",
+   "minLevel": 24,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Web",
+     2
+    ]
+   ],
+   "zone": "Duskwood",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 949,
+   "name": "Carrion Recluse",
+   "family": "Spider",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Web",
+     2
+    ]
+   ],
+   "zone": "Duskwood",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1015,
+   "name": "Highland Raptor",
+   "family": "Raptor",
+   "minLevel": 23,
+   "maxLevel": 24,
+   "teaches": [
+    [
+     "Savage Rend",
+     2
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1016,
+   "name": "Highland Lashtail",
+   "family": "Raptor",
+   "minLevel": 24,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Savage Rend",
+     2
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1017,
+   "name": "Highland Scytheclaw",
+   "family": "Raptor",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Savage Rend",
+     2
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1018,
+   "name": "Highland Razormaw",
+   "family": "Raptor",
+   "minLevel": 27,
+   "maxLevel": 28,
+   "teaches": [
+    [
+     "Savage Rend",
+     2
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1019,
+   "name": "Elder Razormaw",
+   "family": "Raptor",
+   "minLevel": 29,
+   "maxLevel": 29,
+   "teaches": [
+    [
+     "Savage Rend",
+     2
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1021,
+   "name": "Mottled Screecher",
+   "family": "Raptor",
+   "minLevel": 24,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Savage Rend",
+     2
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1022,
+   "name": "Mottled Scytheclaw",
+   "family": "Raptor",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Savage Rend",
+     2
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1023,
+   "name": "Mottled Razormaw",
+   "family": "Raptor",
+   "minLevel": 26,
+   "maxLevel": 27,
+   "teaches": [
+    [
+     "Savage Rend",
+     2
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1150,
+   "name": "River Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 30,
+   "maxLevel": 31,
+   "teaches": [
+    [
+     "Dismember",
+     2
+    ]
+   ],
+   "zone": "Stranglethorn Vale",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1184,
+   "name": "Cliff Lurker",
+   "family": "Spider",
+   "minLevel": 13,
+   "maxLevel": 14,
+   "teaches": [
+    [
+     "Web",
+     1
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1188,
+   "name": "Grizzled Black Bear",
+   "family": "Bear",
+   "minLevel": 13,
+   "maxLevel": 14,
+   "teaches": [
+    [
+     "Swipe",
+     1
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1400,
+   "name": "Wetlands Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 23,
+   "maxLevel": 24,
+   "teaches": [
+    [
+     "Dismember",
+     1
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1417,
+   "name": "Young Wetlands Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 21,
+   "maxLevel": 22,
+   "teaches": [
+    [
+     "Dismember",
+     1
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 1781,
+   "name": "Mist Creeper",
+   "family": "Spider",
+   "minLevel": 13,
+   "maxLevel": 14,
+   "teaches": [
+    [
+     "Web",
+     1
+    ]
+   ],
+   "zone": "Silverpine Forest",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 2235,
+   "name": "Reef Crawler",
+   "family": "Crab",
+   "minLevel": 15,
+   "maxLevel": 17,
+   "teaches": [
+    [
+     "Pinch",
+     1
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 2236,
+   "name": "Raging Reef Crawler",
+   "family": "Crab",
+   "minLevel": 20,
+   "maxLevel": 21,
+   "teaches": [
+    [
+     "Pinch",
+     1
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 2322,
+   "name": "Foreststrider",
+   "family": "Tallstrider",
+   "minLevel": 14,
+   "maxLevel": 16,
+   "teaches": [
+    [
+     "Dust Cloud",
+     1
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 2356,
+   "name": "Elder Gray Bear",
+   "family": "Bear",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Swipe",
+     2
+    ]
+   ],
+   "zone": "Hillsbrad Foothills",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 2970,
+   "name": "Swoop",
+   "family": "Carrion Bird",
+   "minLevel": 7,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Claw",
+     1
+    ]
+   ],
+   "zone": "Mulgore",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 2971,
+   "name": "Taloned Swoop",
+   "family": "Carrion Bird",
+   "minLevel": 8,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Demoralizing Screech",
+     1
+    ]
+   ],
+   "zone": "Mulgore",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 3255,
+   "name": "Sunscale Screecher",
+   "family": "Raptor",
+   "minLevel": 13,
+   "maxLevel": 15,
+   "teaches": [
+    [
+     "Savage Rend",
+     1
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 3819,
+   "name": "Wildthorn Stalker",
+   "family": "Spider",
+   "minLevel": 20,
+   "maxLevel": 21,
+   "teaches": [
+    [
+     "Web",
+     1
+    ]
+   ],
+   "zone": "Ashenvale",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 3820,
+   "name": "Wildthorn Venomspitter",
+   "family": "Spider",
+   "minLevel": 24,
+   "maxLevel": 25,
+   "teaches": [
+    [
+     "Web",
+     2
+    ]
+   ],
+   "zone": "Ashenvale",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 3866,
+   "name": "Vile Bat",
+   "family": "Bat",
+   "minLevel": 22,
+   "maxLevel": 23,
+   "teaches": [
+    [
+     "Sonic Blast",
+     1
+    ]
+   ],
+   "zone": "Shadowfang Keep",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 3868,
+   "name": "Blood Seeker",
+   "family": "Bat",
+   "minLevel": 23,
+   "maxLevel": 24,
+   "teaches": [
+    [
+     "Sonic Blast",
+     1
+    ]
+   ],
+   "zone": "Shadowfang Keep",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 4127,
+   "name": "Hecklefang Hyena",
+   "family": "Hyena",
+   "minLevel": 15,
+   "maxLevel": 16,
+   "teaches": [
+    [
+     "Tendon Rip",
+     1
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 4128,
+   "name": "Hecklefang Stalker",
+   "family": "Hyena",
+   "minLevel": 22,
+   "maxLevel": 23,
+   "teaches": [
+    [
+     "Tendon Rip",
+     1
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 4129,
+   "name": "Hecklefang Snarler",
+   "family": "Hyena",
+   "minLevel": 18,
+   "maxLevel": 19,
+   "teaches": [
+    [
+     "Tendon Rip",
+     1
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 4158,
+   "name": "Salt Flats Vulture",
+   "family": "Carrion Bird",
+   "minLevel": 32,
+   "maxLevel": 34,
+   "teaches": [
+    [
+     "Demoralizing Screech",
+     2
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 4248,
+   "name": "Pesterhide Hyena",
+   "family": "Hyena",
+   "minLevel": 26,
+   "maxLevel": 27,
+   "teaches": [
+    [
+     "Tendon Rip",
+     2
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 4249,
+   "name": "Pesterhide Snarler",
+   "family": "Hyena",
+   "minLevel": 28,
+   "maxLevel": 29,
+   "teaches": [
+    [
+     "Tendon Rip",
+     2
+    ]
+   ],
+   "zone": "Thousand Needles",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 4316,
+   "name": "Kolkar Packhound",
+   "family": "Hyena",
+   "minLevel": 13,
+   "maxLevel": 13,
+   "teaches": [
+    [
+     "Tendon Rip",
+     1
+    ]
+   ],
+   "zone": "The Barrens",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 4694,
+   "name": "Dread Ripper",
+   "family": "Carrion Bird",
+   "minLevel": 39,
+   "maxLevel": 40,
+   "teaches": [
+    [
+     "Demoralizing Screech",
+     2
+    ]
+   ],
+   "zone": "Desolace",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 4724,
+   "name": "Sandstrider",
+   "family": "Tallstrider",
+   "minLevel": 30,
+   "maxLevel": 31,
+   "teaches": [
+    [
+     "Dash",
+     1
+    ],
+    [
+     "Dust Cloud",
+     2
+    ]
+   ],
+   "zone": "Desolace",
+   "source": "beastmaster",
+   "coords": {
+    "Desolace": [
+     [
+      39.2,
+      24.9
+     ],
+     [
+      40.5,
+      27.2
+     ],
+     [
+      38.4,
+      31.6
+     ],
+     [
+      38.0,
+      35.7
+     ],
+     [
+      36.3,
+      38.3
+     ],
+     [
+      38.1,
+      39.2
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 12347,
+   "name": "Enraged Reef Crawler",
+   "family": "Crab",
+   "minLevel": 30,
+   "maxLevel": 32,
+   "teaches": [
+    [
+     "Pinch",
+     2
+    ]
+   ],
+   "zone": "Desolace",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 248299,
+   "name": "Elmpaw",
+   "family": "Bear",
+   "minLevel": 12,
+   "maxLevel": 12,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Elwynn Forest",
+   "source": "beastmaster",
+   "coords": {
+    "Elwynn Forest": [
+     [
+      73.6,
+      36.0
+     ],
+     [
+      76.8,
+      37.6
+     ],
+     [
+      77.6,
+      37.8
+     ],
+     [
+      82.0,
+      82.4
+     ],
+     [
+      86.0,
+      81.0
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 250484,
+   "name": "Spider",
+   "family": "Spider",
+   "minLevel": 15,
+   "maxLevel": 15,
+   "teaches": [
+    [
+     "Web",
+     1
+    ]
+   ],
+   "zone": "Ruins of Lordaeron",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 250928,
+   "name": "Highlands Ursera",
+   "family": "Bear",
+   "minLevel": 7,
+   "maxLevel": 7,
+   "teaches": [
+    [
+     "Claw",
+     2
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "beastmaster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      52.7,
+      61.5
+     ],
+     [
+      55.7,
+      62.2
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 256040,
+   "name": "Deep Widow",
+   "family": "Spider",
+   "minLevel": 15,
+   "maxLevel": 15,
+   "teaches": [
+    [
+     "Web",
+     1
+    ]
+   ],
+   "zone": "Ruins of Lordaeron",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 256492,
+   "name": "Fernfeather",
+   "family": "Tallstrider",
+   "minLevel": 10,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Zephras Isle",
+   "source": "beastmaster",
+   "coords": {
+    "Zephras Isle": [
+     [
+      48.0,
+      85.4
+     ],
+     [
+      51.4,
+      82.4
+     ],
+     [
+      51.8,
+      82.4
+     ],
+     [
+      53.4,
+      78.6
+     ],
+     [
+      53.8,
+      78.8
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 260796,
+   "name": "Marsh Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 26,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Dismember",
+     2
+    ]
+   ],
+   "zone": "Excavation Site: Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 260797,
+   "name": "Elder Crocolisk",
+   "family": "Crocolisk",
+   "minLevel": 27,
+   "maxLevel": 27,
+   "teaches": [
+    [
+     "Dismember",
+     2
+    ]
+   ],
+   "zone": "Excavation Site: Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 260800,
+   "name": "Thicket Lurker",
+   "family": "Raptor",
+   "minLevel": 27,
+   "maxLevel": 27,
+   "teaches": [
+    [
+     "Savage Rend",
+     2
+    ]
+   ],
+   "zone": "Excavation Site: Wetlands",
+   "source": "beastmaster"
+  },
+  {
+   "npcId": 260803,
+   "name": "Highland Spider",
+   "family": "Spider",
+   "minLevel": 27,
+   "maxLevel": 28,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster",
+   "coords": {
+    "Wetlands": [
+     [
+      49.4,
+      57.1
+     ],
+     [
+      50.1,
+      59.2
+     ],
+     [
+      50.7,
+      61.2
+     ],
+     [
+      51.3,
+      63.2
+     ],
+     [
+      51.9,
+      65.2
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 260809,
+   "name": "Highland Tortoise",
+   "family": "Turtle",
+   "minLevel": 26,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Bite",
+     4
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster",
+   "coords": {
+    "Wetlands": [
+     [
+      47.9,
+      56.3
+     ],
+     [
+      48.7,
+      56.4
+     ],
+     [
+      49.2,
+      57.8
+     ],
+     [
+      49.7,
+      58.5
+     ],
+     [
+      50.3,
+      59.1
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 266851,
+   "name": "Ukorsbane",
+   "family": "Spider",
+   "minLevel": 5,
+   "maxLevel": 5,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "beastmaster",
+   "coords": {
+    "Durotar": [
+     [
+      49.2,
+      56.6
+     ],
+     [
+      49.6,
+      56.4
+     ],
+     [
+      49.6,
+      56.6
+     ],
+     [
+      50.8,
+      54.4
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 270196,
+   "name": "Jai'vhanel",
+   "family": "Bird of Prey",
+   "minLevel": 12,
+   "maxLevel": 12,
+   "teaches": [
+    [
+     "Mine!",
+     1
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "beastmaster",
+   "coords": {
+    "Darkshore": [
+     [
+      44.4,
+      58.0
+     ],
+     [
+      44.8,
+      58.6
+     ],
+     [
+      45.0,
+      58.2
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 270298,
+   "name": "Child of Jai'vhanel",
+   "family": "Bird of Prey",
+   "minLevel": 10,
+   "maxLevel": 12,
+   "teaches": [
+    [
+     "Mine!",
+     1
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "beastmaster",
+   "coords": {
+    "Darkshore": [
+     [
+      44.0,
+      59.0
+     ],
+     [
+      44.6,
+      59.2
+     ],
+     [
+      45.2,
+      58.4
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 270693,
+   "name": "Daggerfang",
+   "family": "Crocolisk",
+   "minLevel": 15,
+   "maxLevel": 15,
+   "teaches": [
+    [
+     "Bite",
+     2
+    ],
+    [
+     "Dismember",
+     1
+    ]
+   ],
+   "zone": "Loch Modan",
+   "source": "beastmaster",
+   "coords": {
+    "Loch Modan": [
+     [
+      59.0,
+      29.9
+     ],
+     [
+      59.6,
+      35.3
+     ],
+     [
+      60.0,
+      39.9
+     ],
+     [
+      61.6,
+      43.4
+     ],
+     [
+      62.8,
+      46.6
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 271334,
+   "name": "Maddened Rotclaw",
+   "family": "Bear",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Swipe",
+     2
+    ]
+   ],
+   "zone": "Wetlands",
+   "source": "beastmaster",
+   "coords": {
+    "Wetlands": [
+     [
+      59.8,
+      24.0
+     ],
+     [
+      57.4,
+      28.7
+     ],
+     [
+      62.5,
+      31.7
+     ],
+     [
+      60.0,
+      37.9
+     ],
+     [
+      65.0,
+      40.9
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 276101,
+   "name": "Nightscreech",
+   "family": "Bird of Prey",
+   "minLevel": 10,
+   "maxLevel": 10,
+   "teaches": [
+    [
+     "Mine!",
+     1
+    ]
+   ],
+   "zone": "Teldrassil",
+   "source": "beastmaster",
+   "coords": {
+    "Teldrassil": [
+     [
+      37.5,
+      27.0
+     ],
+     [
+      38.1,
+      28.7
+     ],
+     [
+      40.1,
+      54.3
+     ],
+     [
+      41.3,
+      52.5
+     ],
+     [
+      46.2,
+      31.7
+     ],
+     [
+      46.8,
+      33.2
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 276198,
+   "name": "Shal'ma",
+   "family": "Cat",
+   "minLevel": 9,
+   "maxLevel": 9,
+   "teaches": [
+    [
+     "Cower",
+     1
+    ]
+   ],
+   "zone": "Durotar",
+   "source": "beastmaster",
+   "coords": {
+    "Durotar": [
+     [
+      69.0,
+      72.0
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 277645,
+   "name": "Gray Fox",
+   "family": "Fox",
+   "minLevel": 22,
+   "maxLevel": 23,
+   "teaches": [
+    [
+     "Trickster's Dance",
+     1
+    ]
+   ],
+   "zone": "Duskwood",
+   "source": "beastmaster",
+   "coords": {
+    "Duskwood": [
+     [
+      12.8,
+      31.2
+     ],
+     [
+      13.8,
+      31.9
+     ],
+     [
+      14.6,
+      32.5
+     ],
+     [
+      15.0,
+      30.9
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 277881,
+   "name": "Bloodwing Bat",
+   "family": "Bat",
+   "minLevel": 25,
+   "maxLevel": 26,
+   "teaches": [
+    [
+     "Sonic Blast",
+     2
+    ]
+   ],
+   "zone": "Hillsbrad Foothills",
+   "source": "beastmaster",
+   "coords": {
+    "Hillsbrad Foothills": [
+     [
+      14.0,
+      51.9
+     ],
+     [
+      15.4,
+      53.3
+     ],
+     [
+      17.2,
+      53.4
+     ],
+     [
+      18.2,
+      52.8
+     ],
+     [
+      20.0,
+      54.1
+     ]
+    ]
+   }
+  },
+  {
+   "npcId": 277882,
+   "name": "Foothills Duskbat",
+   "family": "Bat",
+   "minLevel": 12,
+   "maxLevel": 12,
+   "teaches": [
+    [
+     "Sonic Blast",
+     1
+    ]
+   ],
+   "zone": "Silverpine Forest",
+   "source": "beastmaster",
+   "coords": {
+    "Silverpine Forest": [
+     [
+      34.6,
+      14.6
+     ],
+     [
+      47.0,
+      16.7
+     ],
+     [
+      57.1,
+      17.1
+     ],
+     [
+      60.0,
+      15.5
+     ],
+     [
+      65.9,
+      6.0
+     ]
+    ]
+   }
   }
  ],
  "sources": [
@@ -6480,7 +8025,8 @@
   "https://www.warcrafttavern.com/forever/guides/hunter-pet-families/",
   "https://conquestcapped.com/guides/wow-forever/wow-forever-hunter-pets/",
   "https://wow4ever.quest/en/articles/habilidades-mascotas-cazador-wow-forever",
-  "https://wowforever.wclbox.com/en/lieren-chongwu (not used for data: says its teaching beasts are copied from Classic Era)"
+  "https://wowforever.wclbox.com/en/lieren-chongwu (not used for data: says its teaching beasts are copied from Classic Era)",
+  "https://beastmaster.io/forever (v1.39.444, field-confirmed 'comes with' abilities, merged 2026-11-04)"
  ],
- "confidence_notes": "HOW UNIQUE ABILITIES ARE LEARNED: NOT SETTLED. No source states it outright. wow4ever.quest says Blizzard has not said whether you learn them by taming or the family comes with them. conquestcapped.com says pets never learn abilities on their own and everything comes from beasts or the trainer, but that is a general statement. Evidence by group: (a) Changed Classic family abilities (Charge, Furious Howl, Lightning Breath, Prowl, Scorpid Poison, Shell Shield, Thunderstomp) keep Classic TP costs and Classic teaching beasts in mmonster and Petopia. Treated as beast-taught (high confidence). Exceptions: Thunderstomp rank 4 (lvl 60, 0 TP) has no teacher, Charge 4 has none, Lightning Breath 1 has none. (b) Demoralizing Screech: Classic-style TP 10/15/20/25. Petopia says 'No known training source'. wowforevertools gives Greater Fleshripper (154) as rank 1 teacher. Marked beast with low confidence. (c) The new 5-rank abilities (Swipe, Savage Rend, Tendon Rip, Web, Dust Cloud, Pinch, Dismember, Mine!, Sonic Blast) cost 0 TP in mmonster and Petopia (Dismember is 1 TP in mmonster, 0 in Petopia; Sonic Blast TP is unknown). Petopia lists 'No known training source' for Dismember and Dust Cloud. The only teaching beasts found are rank 1 entries from mmonster beta data (build 70450): Swipe 1 from Giant Grizzled Bear; Web 1 from Moss Stalker; Dust Cloud 1 from Galestrider and Ornery Galestrider; Savage Rend 1 from Shriekling Matriarch, Shadowgale Shriekling and Mystmane. No source names a teacher for ranks 2-5 of any of them, or for any rank of Tendon Rip, Pinch, Dismember, Mine! or Sonic Blast. 0 TP plus no teachers points toward automatic learning at pet level, but the rank 1 teachers point the other way. The 'source' field is 'beast' where a teacher exists and 'innate' (a guess) where none does. Check sourceConfidence and verify in game. (d) Trickster's Dance (1 rank, lvl 20, 10 TP) is taught by Vuldren Alpha (250874, Zephras Isle). Medium confidence. FASTER/SLOWER ATTACK: All pets swing at 2.0s base. Per-beast speed passives (Faster Attack I-VII, Slower Attack II-III) come from mmonster. conquestcapped says the tamed beast keeps them and no trainer sells them; Petopia says trainers teach them. They are kept out of 'teaches' and stored as beasts[].attackSpeedPassive, only on beasts that also teach something. About 40 beasts that only have a speed passive were left out. BEAST DATA: mmonster family pages are the main source (NPC IDs from the page's #b-<id> anchors, beta-labelled data). They match Petopia Forever's Classic-derived lists for Bite, Claw, Cower, Dash, Dive, Charge, Furious Howl and Lightning Breath 2, and also include new Forever NPCs (Zephras Isle, Riverglades, etc.). Added from Petopia: Kresh (3653, Bite 3), Ghamoo-ra (4887, Bite 4), Spawn of Hakkar (5708, Dive 3). Added from foreverchanges: Giant Surf Glider (Bite 7, no NPC ID given). Added from wowforevertools: Greater Fleshripper (154, Screech 1). Level ranges and zones follow mmonster (the first zone is kept when several are listed). Petopia's levels sometimes differ by 1-2 (e.g. Stonetusk Boar 7-8 vs 5-6). FAMILY ABILITY SETS: Bite/Claw/Dash/Dive membership agrees across warcrafttavern, Petopia and mmonster. Cower and Growl are available to all families (Petopia). mmonster lists Bat Dive starting at lvl 40 with 2 ranks, while the Dive rank table starts at 30. mmonster also lists a Bat 'Summoning' (15 TP) and an 'Intimidation' (lvl 30, 0 TP) with no details. Both are left out. DIETS: from mmonster, cross-checked against Petopia for Hyena, Fox and Bird of Prey. warcrafttavern disagrees on several: Fox +Fruit, Hyena Meat only, Bird of Prey +Fish, Gorilla +Bread, Tallstrider +Bread, Turtle +Bread. mmonster says Turtle is the only family that eats 'raw fish'. OTHER INCONSISTENCIES: mmonster's rank table gives Shadow Resistance rank 4 at lvl 40, which is probably a typo for 50 (50 is used here). The Savage Rend teachers are lvl 9-13 beasts teaching a rank that needs pet lvl 12, and two of them are not raptors. In Classic a hunter can learn from any family, so this is plausible, but it is unverified."
+ "confidence_notes": "UPDATE 2026-11-04: beastmaster.io field reports confirm the new Forever family abilities (Swipe, Savage Rend, Tendon Rip, Web, Dust Cloud, Pinch, Dismember, Mine!, Sonic Blast) come with tamed beasts, so they are beast-taught; Blizzard's Forever client tables (1.60.1.70790) confirm every rank and level. Trickster's Dance comes from Gray Fox, not Vuldren Alpha. Three Zephras Isle beasts were confirmed to have empty spellbooks and were removed. HOW UNIQUE ABILITIES ARE LEARNED: NOT SETTLED. No source states it outright. wow4ever.quest says Blizzard has not said whether you learn them by taming or the family comes with them. conquestcapped.com says pets never learn abilities on their own and everything comes from beasts or the trainer, but that is a general statement. Evidence by group: (a) Changed Classic family abilities (Charge, Furious Howl, Lightning Breath, Prowl, Scorpid Poison, Shell Shield, Thunderstomp) keep Classic TP costs and Classic teaching beasts in mmonster and Petopia. Treated as beast-taught (high confidence). Exceptions: Thunderstomp rank 4 (lvl 60, 0 TP) has no teacher, Charge 4 has none, Lightning Breath 1 has none. (b) Demoralizing Screech: Classic-style TP 10/15/20/25. Petopia says 'No known training source'. wowforevertools gives Greater Fleshripper (154) as rank 1 teacher. Marked beast with low confidence. (c) The new 5-rank abilities (Swipe, Savage Rend, Tendon Rip, Web, Dust Cloud, Pinch, Dismember, Mine!, Sonic Blast) cost 0 TP in mmonster and Petopia (Dismember is 1 TP in mmonster, 0 in Petopia; Sonic Blast TP is unknown). Petopia lists 'No known training source' for Dismember and Dust Cloud. The only teaching beasts found are rank 1 entries from mmonster beta data (build 70450): Swipe 1 from Giant Grizzled Bear; Web 1 from Moss Stalker; Dust Cloud 1 from Galestrider and Ornery Galestrider; Savage Rend 1 from Shriekling Matriarch, Shadowgale Shriekling and Mystmane. No source names a teacher for ranks 2-5 of any of them, or for any rank of Tendon Rip, Pinch, Dismember, Mine! or Sonic Blast. 0 TP plus no teachers points toward automatic learning at pet level, but the rank 1 teachers point the other way. The 'source' field is 'beast' where a teacher exists and 'innate' (a guess) where none does. Check sourceConfidence and verify in game. (d) Trickster's Dance (1 rank, lvl 20, 10 TP) is taught by Vuldren Alpha (250874, Zephras Isle). Medium confidence. FASTER/SLOWER ATTACK: All pets swing at 2.0s base. Per-beast speed passives (Faster Attack I-VII, Slower Attack II-III) come from mmonster. conquestcapped says the tamed beast keeps them and no trainer sells them; Petopia says trainers teach them. They are kept out of 'teaches' and stored as beasts[].attackSpeedPassive, only on beasts that also teach something. About 40 beasts that only have a speed passive were left out. BEAST DATA: mmonster family pages are the main source (NPC IDs from the page's #b-<id> anchors, beta-labelled data). They match Petopia Forever's Classic-derived lists for Bite, Claw, Cower, Dash, Dive, Charge, Furious Howl and Lightning Breath 2, and also include new Forever NPCs (Zephras Isle, Riverglades, etc.). Added from Petopia: Kresh (3653, Bite 3), Ghamoo-ra (4887, Bite 4), Spawn of Hakkar (5708, Dive 3). Added from foreverchanges: Giant Surf Glider (Bite 7, no NPC ID given). Added from wowforevertools: Greater Fleshripper (154, Screech 1). Level ranges and zones follow mmonster (the first zone is kept when several are listed). Petopia's levels sometimes differ by 1-2 (e.g. Stonetusk Boar 7-8 vs 5-6). FAMILY ABILITY SETS: Bite/Claw/Dash/Dive membership agrees across warcrafttavern, Petopia and mmonster. Cower and Growl are available to all families (Petopia). mmonster lists Bat Dive starting at lvl 40 with 2 ranks, while the Dive rank table starts at 30. mmonster also lists a Bat 'Summoning' (15 TP) and an 'Intimidation' (lvl 30, 0 TP) with no details. Both are left out. DIETS: from mmonster, cross-checked against Petopia for Hyena, Fox and Bird of Prey. warcrafttavern disagrees on several: Fox +Fruit, Hyena Meat only, Bird of Prey +Fish, Gorilla +Bread, Tallstrider +Bread, Turtle +Bread. mmonster says Turtle is the only family that eats 'raw fish'. OTHER INCONSISTENCIES: mmonster's rank table gives Shadow Resistance rank 4 at lvl 40, which is probably a typo for 50 (50 is used here). The Savage Rend teachers are lvl 9-13 beasts teaching a rank that needs pet lvl 12, and two of them are not raptors. In Classic a hunter can learn from any family, so this is plausible, but it is unverified."
 }

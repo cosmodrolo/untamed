@@ -32,7 +32,7 @@ Forever reworked hunter pets (new families, new family abilities, Owl renamed Bi
 - Item pet food types, ammo vendors, hunter and pet trainers: [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0).
 - Classic Era tameable beasts: [cmangos classic-db](https://github.com/cmangos/classic-db) (GPL-3.0).
 - Which abilities each beast teaches: Blizzard's Classic Era client table CreatureSpellData (build 1.15.9.70576), exported with [wago.tools](https://wago.tools).
-- WoW Forever beast abilities: compiled from public Forever pet guides (see `tools/forever_pets.json` for the list of sources) and corrected by in-game observation.
+- WoW Forever beast abilities: compiled from public Forever pet guides, with field-confirmed abilities and spawn points for new beasts from [beastmaster.io](https://beastmaster.io/forever) (see `tools/forever_pets.json` for the list of sources), and checked against Blizzard's Forever client tables (build 1.60.1.70790) via [wago.tools](https://wago.tools).
 - World of Warcraft and all game data are trademarks and copyrights of Blizzard Entertainment.
 
 `tools/` holds the scripts that regenerate `Data/Era.lua`, `Data/Forever.lua` and `Foods.lua`. `tests/` runs the addon offline against a mocked WoW API (`python tests/run.py`, needs `pip install lupa`).
