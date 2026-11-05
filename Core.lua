@@ -62,7 +62,7 @@ end
 local defaultsDB = {
   zoneAlerts = true, autoPins = true, hideTooHigh = false, minimapAngle = 200, showMinimap = true,
   tooltipInfo = true, targetAlert = true, targetSound = true, minimapPins = true, feedReminder = true,
-  arrowScale = 1, autoShotBar = true, growlWarning = true, aspectReminder = true, markReminder = true, resistAlerts = true,
+  arrowScale = 1, arrowNextSpot = true, autoShotBar = true, growlWarning = true, aspectReminder = true, markReminder = true, resistAlerts = true,
   gearTooltip = true, talentGlow = true, gearAlerts = true, recordData = true, ahHelper = true, openHome = true,
 }
 local function InitDB()
@@ -492,6 +492,8 @@ SlashCmdList.UNTAMED = function(msg)
     ns.NavigateLastRare()
   elseif msg == "next" then
     ns.Route_Next()
+  elseif msg == "spot" then
+    ns.Arrow_NextSpot()
   elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" or msg == "builds" or msg == "search"
     or msg == "supplies" or msg == "spells" or msg == "talents" or msg == "gear" or msg == "quests" then
     if ns.UI_Show then ns.UI_Show(msg) end
@@ -500,7 +502,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed search <text>  (or /ut s <text>)  find any item, NPC or beast and where to get it")
     ns.Print("/untamed zone  what your pet can learn in this zone   |  /untamed next  skip to the next route stop")
     ns.Print("/untamed ammo, trainer, pettrainer, stable  arrow to the nearest one   |  /untamed rare  arrow to the last rare seen")
-    ns.Print("/untamed clear  clear map focus and the navigation arrow")
+    ns.Print("/untamed clear  clear map focus and the navigation arrow   |  /untamed spot  arrow to the next spawn spot")
     ns.Print("/untamed alerts  toggle zone alerts   |  /untamed minimap  toggle the minimap button")
   else
     if ns.UI_Toggle then ns.UI_Toggle() end

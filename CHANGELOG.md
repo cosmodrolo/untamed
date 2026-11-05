@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.9.1
+- The arrow now hops between spawn spots. When you reach a spot and the beast isn't your target, under your mouse or on a nameplate, it shows a short countdown, then points to the next closest spot you haven't checked (right away if you walk off). Once it sees the beast it stays put and says "Found it". When every spot is checked it starts over from the nearest.
+- Skip ahead any time: Shift-right-click the arrow, type /ut spot, or bind a key (Key Bindings > AddOns > Arrow: next spawn spot). The arrow's tooltip shows how many spots are left.
+- New setting: "Arrow moves on to the next spawn spot" (on by default).
+
 ## v2.9.0
 - Roomier, easier to follow layout on every page: taller rows with larger text and icons, bigger section headings with a gold rule and space above them, wider columns, more space between toolbar controls, and a divider under the toolbar.
 - Page titles are larger, with the description on its own line under the title.

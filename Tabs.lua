@@ -147,6 +147,7 @@ local function BuildSettings(panel, top)
   check(L["Rare pop-up with a Target button"], "rareToast", L["Drag the pop-up to move it."])
   check(L["Put a skull on rares"], "rareMark", L["Marks a rare with a skull when you first see it, if it isn't marked yet."])
   check(L["Hide ranks above my pet's level"], "hideTooHigh")
+  check(L["Arrow moves on to the next spawn spot"], "arrowNextSpot", L["When you reach a spot and the beast isn't there, the arrow points to the next closest spot after a few seconds. Shift-right-click the arrow (or /ut spot) to skip ahead."])
 
   heading(L["Combat"])
   check(L["Auto Shot timer bar"], "autoShotBar", L["Shows while Auto Shot is on. Red means stand still. Shift-drag the bar to move it."])
@@ -251,8 +252,10 @@ BINDING_HEADER_UNTAMED = "Untamed"
 BINDING_NAME_UNTAMED_TOGGLE = L["Open or close the window"]
 BINDING_NAME_UNTAMED_NEXT = L["Next route stop"]
 BINDING_NAME_UNTAMED_CLEAR = L["Clear the arrow and map focus"]
+BINDING_NAME_UNTAMED_NEXTSPOT = L["Arrow: next spawn spot"]
 BINDING_NAME_UNTAMED_ZONE = L["Check this zone"]
 function Untamed_Toggle() ns.UI_Toggle() end
 function Untamed_NextStop() ns.Route_Next() end
 function Untamed_Clear() ns.Pins_Clear(); ns.Arrow_Clear() end
+function Untamed_NextSpot() ns.Arrow_NextSpot() end
 function Untamed_Zone() ns.ZoneAlert(true) end

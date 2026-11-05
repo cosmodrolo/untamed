@@ -107,6 +107,7 @@ local function Refresh(panel, t)
   add(0, nil, L["Good to know"], "", nil, nil, { header = true })
   local tips = {
     L["Click a beast, item or NPC for an arrow to it. Right-click a beast to see it on the world map."],
+    L["If a beast isn't at a spawn spot, the arrow moves on to the next closest one. Shift-right-click the arrow to skip ahead."],
     L["Hover anything for details: where to get it, what it teaches, what it needs."],
     L["Alt-click an item to add it to your wishlist. Shift-click to link it in chat."],
     L["Viewing (top right) switches between your pet, a stabled pet, or any family you might tame."],

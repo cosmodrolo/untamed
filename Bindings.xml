@@ -3,4 +3,5 @@
   <Binding name="UNTAMED_NEXT" category="ADDONS">Untamed_NextStop()</Binding>
   <Binding name="UNTAMED_CLEAR" category="ADDONS">Untamed_Clear()</Binding>
   <Binding name="UNTAMED_ZONE" category="ADDONS">Untamed_Zone()</Binding>
+  <Binding name="UNTAMED_NEXTSPOT" category="ADDONS">Untamed_NextSpot()</Binding>
 </Bindings>
