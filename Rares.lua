@@ -49,7 +49,7 @@ local function MakeToast()
   toast:SetMovable(true)
   toast:EnableMouse(true)
   toast:RegisterForDrag("LeftButton")
-  toast:SetScript("OnDragStart", toast.StartMoving)
+  toast:SetScript("OnDragStart", function(self) if not InCombatLockdown() then self:StartMoving() end end)
   toast:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
     local p, _, rp, x, y = self:GetPoint()
@@ -68,16 +68,22 @@ local function MakeToast()
   toast.sub:SetPoint("RIGHT", -10, 0)
   toast.sub:SetJustifyH("LEFT")
   toast.sub:SetWordWrap(false)
-  -- Targeting is a protected action, so the button is a secure macro button set up out of combat.
-  toast.target = CreateFrame("Button", "UntamedRareTargetButton", toast, "SecureActionButtonTemplate,UIPanelButtonTemplate")
+  -- Targeting is a protected action, so the button is a secure macro button. It is not a child of the
+  -- toast (that would make the toast protected and unable to show in combat), it is anchored to the
+  -- toast frame (never to a texture), and it is only shown, hidden or changed out of combat.
+  toast.target = CreateFrame("Button", "UntamedRareTargetButton", UIParent, "SecureActionButtonTemplate,UIPanelButtonTemplate")
   toast.target:SetSize(80, 18)
-  toast.target:SetPoint("BOTTOMLEFT", toast.icon, "BOTTOMRIGHT", 8, -4)
+  toast.target:SetPoint("BOTTOMLEFT", toast, "BOTTOMLEFT", 54, 7)
+  toast.target:SetFrameStrata("HIGH")
+  toast.target:SetFrameLevel(toast:GetFrameLevel() + 5)
   toast.target:SetText(L["Target"])
   toast.target:SetAttribute("type", "macro")
   toast.target:RegisterForClicks("AnyUp", "AnyDown")
+  toast.target:Hide()
   toast.arrow = ns.MakeButton(toast, L["Arrow"], 70, function() ns.NavigateLastRare() end)
   toast.arrow:SetHeight(18)
-  toast.arrow:SetPoint("LEFT", toast.target, "RIGHT", 4, 0)
+  toast.arrow:SetPoint("BOTTOMLEFT", toast, "BOTTOMLEFT", 138, 7)
+  toast:SetScript("OnHide", function() if not InCombatLockdown() then toast.target:Hide() end end)
   local close = CreateFrame("Button", nil, toast, "UIPanelCloseButton")
   close:SetPoint("TOPRIGHT", 2, 2)
   toast:Hide()
@@ -85,17 +91,39 @@ end
 
 local function ShowToast(name, sub, icon)
   if not ns.db.rareToast then return end
-  if not toast then MakeToast() end
+  if not toast then
+    if InCombatLockdown() then return end   -- the chat alert still fires; the toast is built after combat
+    MakeToast()
+  end
   toast.title:SetText(name)
   toast.sub:SetText(sub)
   toast.icon:SetTexture(icon or ns.Icon("Ability_Hunter_SniperShot"))
+  toast.targetName = name
+  toast:Show()
   if not InCombatLockdown() then
     toast.target:SetAttribute("macrotext", "/targetexact " .. name)
-    toast.target:Enable()
+    toast.target:Show()
+  else
+    toast.sub:SetText(sub .. C.GREY .. "  " .. L["(Target button after combat)"] .. "|r")
   end
-  toast:Show()
   toast.hideAt = GetTime() + 30
   toast:SetScript("OnUpdate", function(self) if GetTime() > (self.hideAt or 0) then self:Hide(); self:SetScript("OnUpdate", nil) end end)
+end
+
+-- Build the toast out of combat, and bring the Target button in line once combat ends.
+ns.On("LOGIN", function() if not toast and not InCombatLockdown() then MakeToast() end end)
+do
+  local f = CreateFrame("Frame")
+  pcall(f.RegisterEvent, f, "PLAYER_REGEN_ENABLED")
+  f:SetScript("OnEvent", function()
+    if not toast then MakeToast() return end
+    if toast:IsShown() and toast.targetName then
+      toast.target:SetAttribute("macrotext", "/targetexact " .. toast.targetName)
+      toast.target:Show()
+    else
+      toast.target:Hide()
+    end
+  end)
 end
 
 ---------------------------------------------------------------------------

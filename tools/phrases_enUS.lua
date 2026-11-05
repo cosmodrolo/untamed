@@ -7,6 +7,7 @@ L["%s is hungry: feed it to keep its damage up."] = true
 L["%s is on in combat. Switch aspects!"] = true
 L["%s uses Classic Era data. WoW Forever reworked hunters, so this page will be filled in once Forever's data is available."] = true
 L["%s: somewhere in %s (no exact spot known)."] = true
+L["(Target button after combat)"] = true
 L["(mail at 40)"] = true
 L["(or %d other trainers)"] = true
 L["(raid)"] = true

@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.8.5
+- Fixed: a rare spotted during combat (like Mother Fang) caused an "action blocked" error from the rare pop-up's Target button. The pop-up is now built at login, and its Target button is kept apart from it so the pop-up can show in combat. The button appears as soon as combat ends.
+
 ## v2.8.4
 - Fixed on Forever: the Auto Shot bar threw errors every shot in combat. Forever hides your ranged attack speed and movement speed during combat, so Untamed now remembers your speed from out of combat, measures the time between shots, and checks movement with a function Forever doesn't hide.
 - The Hunter's Mark boss check and aspect reminder no longer error when Forever hides your target's level or ID in combat.
