@@ -143,6 +143,48 @@ if SQL:
 items, npcs, objects, quests = load("Item"), load("Npc"), load("Object"), load("Quest")
 log("items", len(items), "npcs", len(npcs), "objects", len(objects), "quests", len(quests))
 
+# ------------------------------------------------------------------ live traces (Forever)
+# QuestieDB's traces: NPCs, objects and item drops seen by players since launch. New NPCs and
+# objects are added; seen spawns replace database spawns; drops are added to items.
+if FLAVOR == "forever":
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import traces
+    def to_lua(v):
+        if isinstance(v, dict): return lua.table_from({k: to_lua(x) for k, x in v.items()})
+        if isinstance(v, list): return lua.table_from([to_lua(x) for x in v])
+        return v
+    def lua_list(t): return pylist(t) if t is not None else []
+    NPC_F = {"name": 1, "minLevel": 4, "maxLevel": 5, "rank": 6, "spawns": 7, "zoneID": 9, "friendlyToFaction": 13}
+    added_n = added_o = links = new_items = 0
+    for nid, t in traces.load(Q, "npc").items():
+        r = npcs[nid]
+        if r is None:
+            if not t.get("name") or not t.get("spawns"): continue
+            r = lua.table(); npcs[nid] = r; added_n += 1
+        for f, i in NPC_F.items():
+            if t.get(f) is not None: r[i] = to_lua(t[f])
+        for f, i in (("questStarts_add", 10), ("questEnds_add", 11)):
+            if t.get(f):
+                cur = lua_list(r[i]); r[i] = to_lua(cur + [q for q in t[f] if q not in cur])
+    for oid, t in traces.load(Q, "object").items():
+        r = objects[oid]
+        if r is None:
+            if not t.get("name") or not t.get("spawns"): continue
+            r = lua.table(); objects[oid] = r; added_o += 1
+        if t.get("name"): r[1] = t["name"]
+        if t.get("spawns"): r[4] = to_lua(t["spawns"])
+        if t.get("zoneID"): r[5] = t["zoneID"]
+    for iid, t in traces.load(Q, "item").items():
+        r = items[iid]
+        if r is None:
+            if not t.get("name"): continue
+            r = lua.table(); r[1] = t["name"]; items[iid] = r; new_items += 1
+        for f, i in (("npcDrops_add", 2), ("objectDrops_add", 3)):
+            if t.get(f):
+                cur = lua_list(r[i]); add = [x for x in t[f] if x not in cur]
+                r[i] = to_lua(cur + add); links += len(add)
+    log("traces: new npcs", added_n, "new objects", added_o, "new items", new_items, "drop links", links)
+
 DROP_CAP, VEND_CAP = 10, 200   # keep every vendor: a short list can miss your faction entirely
 I, needN, needO, needQ, needI = {}, set(), set(), set(), set()
 for iid in items.keys():

@@ -192,6 +192,27 @@ for line in open(NPCDB, encoding="utf-8"):
             if flags & (8 | 8192): services_raw.append((nid, rec, "S" if flags & 8192 else "F"))
             if nid in EXTRA: services_raw.append((nid, rec, EXTRA[nid]))
 
+# ---------------------------------------------------------------- live traces (Forever)
+# QuestieDB's traces are spawn points aggregated from players' QuestieTrace recordings. For a
+# tameable beast, they replace the database spawns (as Questie itself applies them).
+if FLAVOR == "forever":
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import traces
+    tr = traces.load(Q, "npc")
+    used = 0
+    for nid in tame:
+        t = tr.get(nid)
+        if t and isinstance(t.get("spawns"), dict) and t["spawns"]:
+            rec = npcdb.get(nid)
+            if not isinstance(rec, list):
+                rec = [None] * 15; rec[0] = tame[nid]["name"]
+            while len(rec) < 15: rec.append(None)
+            rec[6] = {int(k): v for k, v in t["spawns"].items()}
+            if t.get("zoneID"): rec[8] = t["zoneID"]
+            npcdb[nid] = rec
+            used += 1
+    log("traces: live spawns for %d beasts" % used)
+
 # ---------------------------------------------------------------- emit
 def thin(points, grid=1.2, cap=45):
     seen, out = set(), []

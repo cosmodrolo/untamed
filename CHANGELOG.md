@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.9.2 (Forever)
+- Uses QuestieDB 1.0.11's live Forever traces (data gathered from players since launch). Search now knows 1,241 more Forever NPCs and 107 objects with their real spots, 785 new Forever items, and about 4,600 more "drops from" links.
+- 28 tameable beasts now use live spawn spots instead of database guesses, including Gray Fox, Maddened Rotclaw, Vuldren Alpha and the Zephras Isle beasts.
+- Your own recordings are built in: 58 vendor and 27 drop links found while playing (for example Nordun Steadysight's ammo in Goldshire).
+- From now on Untamed is developed for WoW Forever only.
+
 ## v2.9.1
 - The arrow now hops between spawn spots. When you reach a spot and the beast isn't your target, under your mouse or on a nameplate, it shows a short countdown, then points to the next closest spot you haven't checked (right away if you walk off). Once it sees the beast it stays put and says "Found it". When every spot is checked it starts over from the nearest.
 - Skip ahead any time: Shift-right-click the arrow, type /ut spot, or bind a key (Key Bindings > AddOns > Arrow: next spawn spot). The arrow's tooltip shows how many spots are left.
