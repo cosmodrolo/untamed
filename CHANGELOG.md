@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.8.7
+- Fixed: world map pins could still trigger a blocked SetPassThroughButtons call (seen after a Beast Training scan). Untamed's pins now skip that call, like TomTom and HandyNotes do.
+- Forever: Natural Armor rank 2 costs 4 training points (read from the Beast Training window), not 5.
+
 ## v2.8.6
 - Fixed: the rare pop-up couldn't hide itself in combat ("UntamedRareToast:Hide() blocked"), because its Target button was anchored to it. The button now sits at the pop-up's screen position without being attached.
 - Fixed: refreshing Untamed's world map pins during combat was blocked on Forever. Pin updates now wait until combat ends.

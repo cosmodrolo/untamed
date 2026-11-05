@@ -15,6 +15,12 @@ local AUTO_CAP = 12
 ---------------------------------------------------------------------------
 UntamedPinMixin = CreateFromMixins(MapCanvasPinMixin)
 
+-- The map canvas calls SetPassThroughButtons on each pin; from addon code that call is blocked in
+-- combat (and sometimes after a trainer scan). Pins don't need it, so do nothing (TomTom and HandyNotes do the same).
+function UntamedPinMixin:SetPassThroughButtons() end
+function UntamedPinMixin:SetPropagateMouseClicks() end
+function UntamedPinMixin:SetPropagateMouseMotion() end
+
 function UntamedPinMixin:OnLoad()
   self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
   self:SetScalingLimits(1, 1.0, 1.25)
