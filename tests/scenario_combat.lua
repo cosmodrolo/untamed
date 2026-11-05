@@ -15,6 +15,7 @@ CreateFrame = function(kind, name, parent, template)
       if k == "SetPoint" then return function(self, p, rel, ...)
         if COMBAT then error("Action[SetPoint] failed: in combat") end
         if type(rel) == "table" and rel._name == "child" then error("Action[SetPoint] failed because[Cannot anchor protected frames to regions]") end
+        if type(rel) == "table" and rel ~= UIParent then rel._protected = true end
       end end
       if k == "Show" or k == "Hide" or k == "SetAttribute" or k == "SetShown" then return function(self, ...)
         if COMBAT then error("Action[" .. k .. "] failed: protected frame in combat") end
@@ -31,6 +32,7 @@ FIRE("PLAYER_LOGIN")
 local toast = _G.UntamedRareToast
 check(toast ~= nil, "toast built at login")
 check(not rawget(toast, "_secureChild"), "toast has no secure child")
+check(not rawget(toast, "_protected"), "no secure button is anchored to the toast")
 -- A rare appears mid-fight
 COMBAT = true
 UnitClassification = function() return "rare" end
@@ -39,6 +41,7 @@ FIRE("PLAYER_TARGET_CHANGED")
 check(ns.lastRare == 61, "rare spotted in combat")
 check(toast:IsShown(), "toast shown in combat")
 check(not _G.UntamedRareTargetButton:IsShown(), "target button waits for combat to end")
+check(not rawget(toast, "_protected"), "toast can still hide in combat")
 -- Combat ends
 COMBAT = false
 FIRE("PLAYER_REGEN_ENABLED")

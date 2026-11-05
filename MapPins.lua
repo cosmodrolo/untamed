@@ -122,7 +122,12 @@ local function AddServicePins(map, mapID)
   end
 end
 
+-- Adding pins in combat is blocked on Forever (the map canvas calls a protected function), so pin
+-- refreshes wait until combat ends.
+local pendingRefresh
 local function RefreshAll(self)
+  if InCombatLockdown and InCombatLockdown() then pendingRefresh = true return end
+  pendingRefresh = false
   local map = self:GetMap()
   map:RemoveAllPinsByTemplate("UntamedPinTemplate")
   local mapID = map:GetMapID()
@@ -161,6 +166,11 @@ end)
 
 function ns.Pins_Refresh()
   if provider and provider:GetMap() then provider:RefreshAllData() end
+end
+do
+  local f = CreateFrame("Frame")
+  pcall(f.RegisterEvent, f, "PLAYER_REGEN_ENABLED")
+  f:SetScript("OnEvent", function() if pendingRefresh then ns.Pins_Refresh() end end)
 end
 ns.On("REFRESH", ns.Pins_Refresh)
 

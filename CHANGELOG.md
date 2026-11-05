@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.8.6
+- Fixed: the rare pop-up couldn't hide itself in combat ("UntamedRareToast:Hide() blocked"), because its Target button was anchored to it. The button now sits at the pop-up's screen position without being attached.
+- Fixed: refreshing Untamed's world map pins during combat was blocked on Forever. Pin updates now wait until combat ends.
+
 ## v2.8.5
 - Fixed: a rare spotted during combat (like Mother Fang) caused an "action blocked" error from the rare pop-up's Target button. The pop-up is now built at login, and its Target button is kept apart from it so the pop-up can show in combat. The button appears as soon as combat ends.
 

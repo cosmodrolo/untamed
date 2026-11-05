@@ -54,7 +54,17 @@ local function MakeToast()
     self:StopMovingOrSizing()
     local p, _, rp, x, y = self:GetPoint()
     ns.db.rareToastPos = { p, rp, x, y }
+    if self.PlaceTarget then self:PlaceTarget() end
   end)
+  -- Put the Target button over the toast (out of combat only).
+  function toast:PlaceTarget()
+    if InCombatLockdown() then return end
+    local l, b = self:GetLeft(), self:GetBottom()
+    if not l or not b then return end
+    local k = self:GetEffectiveScale() / UIParent:GetEffectiveScale()
+    self.target:ClearAllPoints()
+    self.target:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", l * k + 54, b * k + 7)
+  end
   toast.icon = toast:CreateTexture(nil, "ARTWORK")
   toast.icon:SetSize(36, 36)
   toast.icon:SetPoint("LEFT", 10, 0)
@@ -68,12 +78,12 @@ local function MakeToast()
   toast.sub:SetPoint("RIGHT", -10, 0)
   toast.sub:SetJustifyH("LEFT")
   toast.sub:SetWordWrap(false)
-  -- Targeting is a protected action, so the button is a secure macro button. It is not a child of the
-  -- toast (that would make the toast protected and unable to show in combat), it is anchored to the
-  -- toast frame (never to a texture), and it is only shown, hidden or changed out of combat.
+  -- Targeting is a protected action, so the button is a secure macro button. It is neither a child of
+  -- the toast nor anchored to it (either would make the toast protected, so it could not show or hide
+  -- in combat). It sits on UIParent at the toast's screen position, set out of combat only.
   toast.target = CreateFrame("Button", "UntamedRareTargetButton", UIParent, "SecureActionButtonTemplate,UIPanelButtonTemplate")
   toast.target:SetSize(80, 18)
-  toast.target:SetPoint("BOTTOMLEFT", toast, "BOTTOMLEFT", 54, 7)
+  toast.target:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
   toast.target:SetFrameStrata("HIGH")
   toast.target:SetFrameLevel(toast:GetFrameLevel() + 5)
   toast.target:SetText(L["Target"])
@@ -101,6 +111,7 @@ local function ShowToast(name, sub, icon)
   toast.targetName = name
   toast:Show()
   if not InCombatLockdown() then
+    toast:PlaceTarget()
     toast.target:SetAttribute("macrotext", "/targetexact " .. name)
     toast.target:Show()
   else
@@ -118,6 +129,7 @@ do
   f:SetScript("OnEvent", function()
     if not toast then MakeToast() return end
     if toast:IsShown() and toast.targetName then
+      toast:PlaceTarget()
       toast.target:SetAttribute("macrotext", "/targetexact " .. toast.targetName)
       toast.target:Show()
     else
