@@ -10,7 +10,7 @@ do
   local function Build(panel)
     feedBtn = ns.CreateFeedButton(panel, "UntamedTabFeedButton", 220, 22)
     feedBtn:SetPoint("TOPLEFT", 4, -2)
-    list = ns.NewList(panel, 30)
+    list = ns.NewList(panel, 36)
   end
   local function Refresh()
     local rows = {}

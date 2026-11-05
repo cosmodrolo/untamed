@@ -221,7 +221,7 @@ local function Build(panel)
   ns.MakeCheck(panel, L["Plan for my level"], 424, -2,
     function() return ns.db.planForPlayerLevel end, function(v) ns.db.planForPlayerLevel = v end,
     L["Plan ranks for your own level instead of your pet's current level (your pet will level up to use them)."])
-  list = ns.NewList(panel, 30)
+  list = ns.NewList(panel, 36)
 end
 
 local function Refresh(panel, t)

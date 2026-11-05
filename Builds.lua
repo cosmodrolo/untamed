@@ -166,7 +166,7 @@ local function Build(panel)
   ns.MakeButton(panel, L["Import"], 76, function()
     ns.TextPopup(L["Import build"], "", ImportBuild)
   end):SetPoint("TOPLEFT", 410, -2)
-  list = ns.NewList(panel, 30)
+  list = ns.NewList(panel, 36)
 end
 
 local function Refresh(panel, t)

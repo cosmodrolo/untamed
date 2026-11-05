@@ -120,7 +120,7 @@ local function Build(panel)
     buttons[r.key] = b
     x = x + 92
   end
-  list = ns.NewList(panel, 30)
+  list = ns.NewList(panel, 36)
 end
 
 local function Refresh()

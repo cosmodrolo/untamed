@@ -1,7 +1,10 @@
 local _, ns = ...
 local L = ns.L
 
-local ROW_H = 20
+-- Layout: roomier rows and section headings (v2.9 polish).
+local ROW_H = 26          -- normal row
+local HEAD_H = 30         -- section heading
+local HEAD_GAP = 10       -- space above a heading (not the first)
 local C = ns.C
 function ns.Icon(path)
   if path:find("\\", 1, true) then return path end
@@ -41,7 +44,7 @@ function ns.NewList(parent, topOffset)
   local list = { rows = {} }
   local scroll = CreateFrame("ScrollFrame", nil, parent, "UIPanelScrollFrameTemplate")
   scroll:SetPoint("TOPLEFT", 2, -topOffset)
-  scroll:SetPoint("BOTTOMRIGHT", -24, 2)
+  scroll:SetPoint("BOTTOMRIGHT", -26, 4)
   local content = CreateFrame("Frame", nil, scroll)
   content:SetSize(440, 1)
   scroll:SetScrollChild(content)
@@ -59,9 +62,9 @@ function ns.NewList(parent, topOffset)
     r.toggle = r:CreateTexture(nil, "ARTWORK")
     r.toggle:SetSize(14, 14)
     r.icon = r:CreateTexture(nil, "ARTWORK")
-    r.icon:SetSize(16, 16)
+    r.icon:SetSize(20, 20)
     r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    r.left = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    r.left = r:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     r.left:SetJustifyH("LEFT")
     r.left:SetWordWrap(false)
     r.mid = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -69,8 +72,13 @@ function ns.NewList(parent, topOffset)
     r.mid:SetWordWrap(false)
     r.right = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     r.right:SetJustifyH("RIGHT")
-    r.right:SetPoint("RIGHT", -6, 0)
+    r.right:SetPoint("RIGHT", -10, 0)
     r.right:SetWordWrap(false)
+    r.rule = r:CreateTexture(nil, "ARTWORK")
+    r.rule:SetPoint("BOTTOMLEFT", 4, 0)
+    r.rule:SetPoint("BOTTOMRIGHT", -4, 0)
+    r.rule:SetHeight(1)
+    r.rule:SetColorTexture(1, 0.82, 0, 0.35)
     local hl = r:CreateTexture(nil, "HIGHLIGHT")
     hl:SetAllPoints()
     hl:SetColorTexture(1, 1, 1, 0.08)
@@ -82,24 +90,30 @@ function ns.NewList(parent, topOffset)
   end
 
   function list:Set(data)
-    local stripe = 0
+    local stripe, y = 0, 0
     for i, d in ipairs(data) do
       local r = GetRow(i)
       local indent, iconPath, o = d[1] or 0, d[2], d[7] or {}
+      if o.header and i > 1 then y = y + HEAD_GAP end
+      local h = o.header and HEAD_H or ROW_H
+      r:SetHeight(h)
       r:ClearAllPoints()
-      r:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -(i - 1) * ROW_H)
+      r:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -y)
       r:SetPoint("RIGHT", content, "RIGHT", 0, 0)
+      y = y + h
 
-      -- background: section headings get a gold band, other rows alternate a faint stripe
+      -- section headings: a soft gold band with a rule under it; other rows alternate a faint stripe
       if o.header then
-        r.bg:SetColorTexture(1, 0.82, 0, 0.10); r.bg:Show(); stripe = 0
+        r.bg:SetColorTexture(1, 0.82, 0, 0.07); r.bg:Show(); r.rule:Show(); stripe = 0
       else
+        r.rule:Hide()
         stripe = stripe + 1
-        if stripe % 2 == 0 then r.bg:SetColorTexture(1, 1, 1, 0.035); r.bg:Show() else r.bg:Hide() end
+        if stripe % 2 == 0 then r.bg:SetColorTexture(1, 1, 1, 0.04); r.bg:Show() else r.bg:Hide() end
       end
-      r.left:SetFontObject(o.header and "GameFontNormal" or "GameFontHighlightSmall")
+      r.left:SetFontObject(o.header and "GameFontNormalLarge" or "GameFontHighlight")
+      r.icon:SetSize(o.header and 22 or 20, o.header and 22 or 20)
 
-      local x = 4 + indent
+      local x = 8 + indent
       r.toggle:ClearAllPoints()
       if o.toggle ~= nil then
         r.toggle:SetTexture(o.toggle and MINUS or PLUS)
@@ -114,7 +128,7 @@ function ns.NewList(parent, topOffset)
       r.left:ClearAllPoints()
       if iconPath then
         r.icon:SetTexture(iconPath); r.icon:SetPoint("LEFT", x, 0); r.icon:Show()
-        r.left:SetPoint("LEFT", r.icon, "RIGHT", 5, 0)
+        r.left:SetPoint("LEFT", r.icon, "RIGHT", 8, 0)
       else
         r.icon:Hide()
         r.left:SetPoint("LEFT", x, 0)
@@ -122,24 +136,24 @@ function ns.NewList(parent, topOffset)
 
       r.right:SetText(d[4] or "")
       if o.mid then
-        r.right:SetWidth(190)
+        r.right:SetWidth(220)
         r.mid:ClearAllPoints()
-        r.mid:SetPoint("RIGHT", r.right, "LEFT", -6, 0)
-        r.mid:SetWidth(78)
+        r.mid:SetPoint("RIGHT", r.right, "LEFT", -12, 0)
+        r.mid:SetWidth(96)
         r.mid:SetText(o.mid)
         r.mid:Show()
-        r.left:SetPoint("RIGHT", r.mid, "LEFT", -6, 0)
+        r.left:SetPoint("RIGHT", r.mid, "LEFT", -12, 0)
       else
         r.right:SetWidth(0)
         r.mid:Hide()
-        r.left:SetPoint("RIGHT", r.right, "LEFT", -6, 0)
+        r.left:SetPoint("RIGHT", r.right, "LEFT", -12, 0)
       end
       r.left:SetText(d[3] or "")
       r.onClick, r.tooltip = d[5], d[6]
       r:Show()
     end
     for j = #data + 1, #list.rows do list.rows[j]:Hide() end
-    content:SetHeight(math.max(1, #data * ROW_H))
+    content:SetHeight(math.max(1, y + 6))
   end
   return list
 end
@@ -178,7 +192,7 @@ end
 
 function ns.MakeButton(parent, text, w, onClick)
   local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-  b:SetSize(w, 22)
+  b:SetSize(w, 24)
   b:SetText(text)
   b:SetScript("OnClick", onClick)
   return b
@@ -297,13 +311,13 @@ function ns.CloseDropdown() if ddMenu then ddMenu:Hide() end end
 --   tb:Search(hint, width, onChange)  tb:Dropdown(width, options, get, set, tip)  tb:Check(label, get, set, tip)
 --   tb:Button(text, width, onClick)   tb:Row()   local list = tb:List()
 function ns.Toolbar(panel)
-  local tb = { x = 4, row = 0 }
-  local function y() return -2 - tb.row * 26 end
-  local function place(w) local x = tb.x; tb.x = tb.x + w + 6; return x end
-  function tb:Row() self.row = self.row + 1; self.x = 4 end
+  local tb = { x = 6, row = 0 }
+  local function y() return -4 - tb.row * 32 end
+  local function place(w) local x = tb.x; tb.x = tb.x + w + 12; return x end
+  function tb:Row() self.row = self.row + 1; self.x = 6 end
   function tb:Search(hint, width, onChange)
     local box = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
-    box:SetSize(width, 20)
+    box:SetSize(width, 22)
     box:SetPoint("TOPLEFT", place(width + 6) + 6, y() - 1)
     box:SetAutoFocus(false)
     box:SetScript("OnTextChanged", function(self) onChange((self:GetText() or ""):lower()); ns.UI_Refresh() end)
@@ -334,7 +348,15 @@ function ns.Toolbar(panel)
     b:SetPoint("TOPLEFT", place(width), y())
     return b
   end
-  function tb:List() return ns.NewList(panel, (self.row + 1) * 26 + 4) end
+  function tb:List()
+    -- a thin divider between the controls and the list
+    local line = panel:CreateTexture(nil, "ARTWORK")
+    line:SetPoint("TOPLEFT", 4, -((self.row + 1) * 32 + 2))
+    line:SetPoint("TOPRIGHT", -4, -((self.row + 1) * 32 + 2))
+    line:SetHeight(1)
+    line:SetColorTexture(1, 1, 1, 0.08)
+    return ns.NewList(panel, (self.row + 1) * 32 + 8)
+  end
   return tb
 end
 
@@ -432,8 +454,8 @@ local function SelectTab(key)
   content.sub:SetText(t.meta.sub or "")
   if not t.panel then
     t.panel = CreateFrame("Frame", nil, content)
-    t.panel:SetPoint("TOPLEFT", 6, -34)
-    t.panel:SetPoint("BOTTOMRIGHT", -4, 4)
+    t.panel:SetPoint("TOPLEFT", 8, -56)
+    t.panel:SetPoint("BOTTOMRIGHT", -6, 6)
     t.build(t.panel)
   end
   t.panel:Show()
@@ -626,36 +648,39 @@ end
 ---------------------------------------------------------------------------
 local function BuildSidebar()
   local side = ns.MakeInset(frame)
-  side:SetPoint("TOPLEFT", 10, -96)
-  side:SetPoint("BOTTOMLEFT", 10, 28)
-  side:SetWidth(158)
+  side:SetPoint("TOPLEFT", 10, -100)
+  side:SetPoint("BOTTOMLEFT", 10, 30)
+  side:SetWidth(186)
   local list = {}
   for _, t in pairs(tabs) do list[#list + 1] = t end
   table.sort(list, function(a, b)
     if a.meta.group ~= b.meta.group then return a.meta.group < b.meta.group end
     return a.meta.order < b.meta.order
   end)
-  local y, lastGroup = -8, nil
+  -- Buttons and group headings are laid out to fit the sidebar's height: roomy when there is space,
+  -- tighter on a short window, so Settings never runs off the bottom.
+  local items, lastGroup = {}, nil
   for _, t in ipairs(list) do
     local g = t.meta.group
-    local b = ns.MakeFlatButton(side, 22)
+    local b = ns.MakeFlatButton(side, 26)
     if g == 9 then
       b:SetPoint("BOTTOMLEFT", 4, 6)
       b:SetPoint("BOTTOMRIGHT", -4, 6)
     else
       if g ~= lastGroup then
-        if lastGroup then y = y - 6 end
         if GROUPS[g] then
-          local h = side:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-          h:SetPoint("TOPLEFT", 10, y)
+          local h = side:CreateFontString(nil, "OVERLAY", "GameFontNormal")
           h:SetText(GROUPS[g])
-          y = y - 16
+          local rule = side:CreateTexture(nil, "ARTWORK")
+          rule:SetPoint("LEFT", h, "RIGHT", 8, 0)
+          rule:SetPoint("RIGHT", side, "RIGHT", -10, 0)
+          rule:SetHeight(1)
+          rule:SetColorTexture(1, 0.82, 0, 0.25)
+          items[#items + 1] = { head = h, gap = lastGroup ~= nil }
         end
         lastGroup = g
       end
-      b:SetPoint("TOPLEFT", 4, y)
-      b:SetPoint("RIGHT", -4, 0)
-      y = y - 23
+      items[#items + 1] = { button = b }
     end
     b.icon:SetTexture(ns.Icon(t.meta.icon))
     b.text:SetText(t.title)
@@ -663,6 +688,28 @@ local function BuildSidebar()
     b:SetScript("OnClick", function() SelectTab(t.key) end)
     t.button = b
   end
+  local function Layout()
+    local nButtons, nHeads = 0, 0
+    for _, it in ipairs(items) do if it.button then nButtons = nButtons + 1 else nHeads = nHeads + 1 end end
+    local avail = (side:GetHeight() or 600) - 8 - 40   -- top padding, Settings at the bottom
+    local scale = math.min(1, math.max(0.72, avail / (nButtons * 27 + nHeads * 30)))
+    local step, headH, gap = math.floor(27 * scale), math.floor(20 * scale), math.floor(10 * scale)
+    local y = -8
+    for _, it in ipairs(items) do
+      if it.head then
+        if it.gap then y = y - gap end
+        it.head:ClearAllPoints(); it.head:SetPoint("TOPLEFT", 12, y)
+        y = y - headH
+      else
+        it.button:SetHeight(step - 1)
+        it.button.icon:SetSize(step - 8, step - 8)
+        it.button:ClearAllPoints(); it.button:SetPoint("TOPLEFT", 4, y); it.button:SetPoint("RIGHT", side, "RIGHT", -4, 0)
+        y = y - step
+      end
+    end
+  end
+  side:SetScript("OnSizeChanged", Layout)
+  Layout()
 end
 
 local function SaveGeometry()
@@ -675,14 +722,19 @@ end
 
 local function CreateMainFrame()
   frame = CreateFrame("Frame", "UntamedFrame", UIParent, "BasicFrameTemplate")
+  -- v2.9 made everything roomier: reset a window size saved by older versions once.
+  if ns.db.win and ns.db.win.layout ~= 2 then ns.db.win.w, ns.db.win.h = nil, nil; ns.db.win.layout = 2 end
   local win = ns.db.win or {}
-  frame:SetSize(win.w or 780, math.max(win.h or 680, 640))
+  -- Default size: roomy, but never taller or wider than the screen.
+  local sw, sh = UIParent:GetWidth() or 1365, UIParent:GetHeight() or 768
+  local dw, dh = math.min(1000, sw - 60), math.min(800, sh - 60)
+  frame:SetSize(math.max(win.w or dw, 860), math.max(win.h or dh, 640))
   if win.p then frame:SetPoint(win.p, UIParent, win.rp, win.x, win.y) else frame:SetPoint("CENTER", 120, 40) end
   frame:SetFrameStrata("HIGH")
   frame:SetMovable(true)
   frame:SetResizable(true)
-  if frame.SetResizeBounds then frame:SetResizeBounds(720, 640, 1400, 1100)
-  elseif frame.SetMinResize then frame:SetMinResize(720, 640); frame:SetMaxResize(1400, 1100) end
+  if frame.SetResizeBounds then frame:SetResizeBounds(860, 640, 1600, 1200)
+  elseif frame.SetMinResize then frame:SetMinResize(860, 640); frame:SetMaxResize(1600, 1200) end
   frame:SetClampedToScreen(true)
   frame:EnableMouse(true)
   frame:RegisterForDrag("LeftButton")
@@ -699,18 +751,18 @@ local function CreateMainFrame()
   BuildSidebar()
 
   content = ns.MakeInset(frame)
-  content:SetPoint("TOPLEFT", 172, -96)
-  content:SetPoint("BOTTOMRIGHT", -10, 28)
-  content.title = content:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-  content.title:SetPoint("TOPLEFT", 12, -9)
+  content:SetPoint("TOPLEFT", 202, -100)
+  content:SetPoint("BOTTOMRIGHT", -10, 30)
+  content.title = content:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+  content.title:SetPoint("TOPLEFT", 14, -11)
   content.sub = content:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-  content.sub:SetPoint("BOTTOMLEFT", content.title, "BOTTOMRIGHT", 10, 1)
+  content.sub:SetPoint("TOPLEFT", content.title, "BOTTOMLEFT", 1, -4)
   content.sub:SetPoint("RIGHT", content, "RIGHT", -10, 0)
   content.sub:SetJustifyH("LEFT")
   content.sub:SetWordWrap(false)
   local line = content:CreateTexture(nil, "ARTWORK")
-  line:SetPoint("TOPLEFT", 8, -30)
-  line:SetPoint("TOPRIGHT", -8, -30)
+  line:SetPoint("TOPLEFT", 10, -50)
+  line:SetPoint("TOPRIGHT", -10, -50)
   line:SetHeight(1)
   line:SetColorTexture(1, 0.82, 0, 0.25)
 

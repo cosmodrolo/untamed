@@ -469,7 +469,7 @@ do
       buttons[b.key] = btn
       x = x + 174
     end
-    list = ns.NewList(panel, 30)
+    list = ns.NewList(panel, 36)
   end
 
   local function Refresh()

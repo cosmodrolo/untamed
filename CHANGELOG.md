@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.9.0
+- Roomier, easier to follow layout on every page: taller rows with larger text and icons, bigger section headings with a gold rule and space above them, wider columns, more space between toolbar controls, and a divider under the toolbar.
+- Page titles are larger, with the description on its own line under the title.
+- Wider sidebar with larger buttons and group headings. It now fits itself to the window height, so Settings never runs off the bottom on a short window.
+- The window opens larger by default (up to 1000 x 800, never bigger than your screen). Sizes saved by older versions are reset once so you get the new size.
+- Forever data from beastmaster.io: Strider Clutchmother (Darkshore, rare) teaches Bite 3 and Dust Cloud 1; Highlands Ursera teaches Claw 1, not Claw 2.
+
 ## v2.8.7
 - Fixed: world map pins could still trigger a blocked SetPassThroughButtons call (seen after a Beast Training scan). Untamed's pins now skip that call, like TomTom and HandyNotes do.
 - Forever: Natural Armor rank 2 costs 4 training points (read from the Beast Training window), not 5.

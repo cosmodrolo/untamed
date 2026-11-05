@@ -7457,7 +7457,7 @@
    "teaches": [
     [
      "Claw",
-     2
+     1
     ]
    ],
    "zone": "Zephras Isle",
@@ -8009,6 +8009,25 @@
      ]
     ]
    }
+  },
+  {
+   "npcId": 2172,
+   "name": "Strider Clutchmother",
+   "family": "Tallstrider",
+   "minLevel": 20,
+   "maxLevel": 20,
+   "teaches": [
+    [
+     "Bite",
+     3
+    ],
+    [
+     "Dust Cloud",
+     1
+    ]
+   ],
+   "zone": "Darkshore",
+   "source": "beastmaster"
   }
  ],
  "sources": [
