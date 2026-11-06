@@ -106,6 +106,7 @@ ns.TrainerSpells = {
 {18,2643,2000,"Multi-Shot",1},
 {18,13550,2000,"Serpent Sting",3},
 {18,19884,2000,"Track Undead",0},
+{20,19434,-1,"Aimed Shot",1},
 {20,14282,2200,"Arcane Shot",3},
 {20,5118,2200,"Aspect of the Cheetah",0},
 {20,781,2200,"Disengage",1},
@@ -118,7 +119,6 @@ ns.TrainerSpells = {
 {24,1462,7000,"Beast Lore",0},
 {24,14262,7000,"Raptor Strike",4},
 {24,19885,7000,"Track Hidden",0},
-{25,1293241,-1,"Summon Hawk",1},
 {26,14302,7000,"Immolation Trap",2},
 {26,3045,7000,"Rapid Fire",0},
 {26,13551,7000,"Serpent Sting",4},
@@ -132,10 +132,10 @@ ns.TrainerSpells = {
 {30,1242634,-1,"Counterattack",2},
 {30,15629,8000,"Distracting Shot",3},
 {30,5384,8000,"Feign Death",0},
+{30,24118,-1,"Lacerate",1},
 {30,14269,8000,"Mongoose Bite",2},
 {30,14288,8000,"Multi-Shot",2},
 {30,14326,8000,"Scare Beast",2},
-{30,1317257,-1,"Strider Kick",0},
 {32,1543,10000,"Flare",0},
 {32,14263,10000,"Raptor Strike",5},
 {32,14275,10000,"Scorpid Sting",2},
@@ -188,7 +188,6 @@ ns.TrainerSpells = {
 {50,19879,36000,"Track Dragonkin",0},
 {50,20905,1800,"Trueshot Aura",4},
 {50,14294,36000,"Volley",2},
-{50,24132,1800,"Wyvern Sting",2},
 {52,20903,2000,"Aimed Shot",5},
 {52,14286,40000,"Arcane Shot",7},
 {52,13543,40000,"Mend Pet",6},
@@ -216,7 +215,6 @@ ns.TrainerSpells = {
 {60,1293527,-1,"Summon Hawk",4},
 {60,20906,2500,"Trueshot Aura",5},
 {60,14268,5000,"Wing Clip",3},
-{60,24133,2500,"Wyvern Sting",3},
 }
 -- [itemID] = {slot, requiredLevel, score, isMail}. Built from WoW Forever item data (wago.tools, build 1.60.1).
 -- Score: agility x2.4, attack power x1, crit% x20, hit% x18, stamina x0.5, intellect x0.3, ranged weapon DPS x14.

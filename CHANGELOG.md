@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.11.1
+- Talents page uses WoW Forever's real talent trees (checked against wowhead's Forever talent calculator), all three trees, including the new talents like Focused Fire, Summon Hawk, Careful Aim, Rapid Killing, Lone Wolf, Improved Stings, Predator's Edge, Expose Prey and Strider Kick.
+- New Forever builds: Leveling (Beast Mastery, 31/20/0) from Kargoz's 1-60 leveling guide, and Raid (Marksmanship, 7/32/12) from Feor's Marksmanship guide (both on mobalytics.gg).
+- Spells page fixes from the same check: Aimed Shot rank 1 (level 20) and Lacerate rank 1 (level 30) are trainer spells in Forever. Summon Hawk, Trueshot Aura, Counterattack and Sniper Shot ranks show "needs talent" until you have the talent. Wyvern Sting and Strider Kick are no longer listed as trainer spells.
+
 ## v2.11.0
 - Spells page works on WoW Forever. It uses Forever's own trainer data, including the new spells: Summon Hawk (ranks 1 to 4 at 25, 36, 48 and 60), Aspect of the Beast ranks 2 to 4, Strider Kick, and the extra ranks of Trueshot Aura, Counterattack, Lacerate and Sniper Shot. Costs for Forever-only spells show "?" until we know them.
 - Higher ranks of talent spells (Aimed Shot, Trueshot Aura, Lacerate and others) show "needs talent" and are not counted as "train now" unless you have the talent.

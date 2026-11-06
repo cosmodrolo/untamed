@@ -48,9 +48,8 @@ local OPTIONAL = {
 -- Higher ranks of talent spells: the trainer only sells them once you have the talent.
 -- Any of these spell IDs known means the talent is learned.
 local TALENT_SPELLS = {
-  ["Aimed Shot"] = { 19434 }, ["Trueshot Aura"] = { 1299346, 19506 }, ["Counterattack"] = { 19306 },
-  ["Lacerate"] = { 24118 }, ["Sniper Shot"] = { 1310687 }, ["Wyvern Sting"] = { 19386 },
-  ["Scatter Shot"] = { 19503 }, ["Deterrence"] = { 19263 }, ["Intimidation"] = { 19577 }, ["Bestial Wrath"] = { 19574 },
+  ["Summon Hawk"] = { 1293241 }, ["Trueshot Aura"] = { 1299346 }, ["Counterattack"] = { 19306 },
+  ["Sniper Shot"] = { 1310687 },
 }
 local function NeedsTalent(name)
   local ids = TALENT_SPELLS[name]
@@ -172,79 +171,86 @@ end
 ---------------------------------------------------------------------------
 -- Talents: leveling and raid builds, with the next point highlighted in the talent window
 ---------------------------------------------------------------------------
--- Tree layout (Classic Era): per tab, talents per tier in column order, with max ranks.
+-- WoW Forever talent trees (wowhead.com/forever/talent-calc/hunter, Nov 2026): per tab, the
+-- talents per tier in column order, with max ranks. Used to know which tree a talent is in.
 local TREES = {
   { -- Beast Mastery
-    { { "Improved Aspect of the Hawk", 5 }, { "Endurance Training", 5 } },
-    { { "Improved Eyes of the Beast", 2 }, { "Improved Aspect of the Monkey", 5 }, { "Thick Hide", 3 }, { "Improved Revive Pet", 2 } },
+    { { "Deadly Aspects", 5 }, { "Endurance Training", 5 } },
+    { { "Focused Fire", 2 }, { "Improved Aspect of the Monkey", 3 }, { "Improved Revive Pet", 2 } },
     { { "Pathfinding", 2 }, { "Bestial Swiftness", 1 }, { "Unleashed Fury", 5 } },
-    { { "Improved Mend Pet", 2 }, { "Ferocity", 5 } },
+    { { "Improved Mend Pet", 2 }, { "Ferocity", 5 }, { "Summon Hawk", 1 } },
     { { "Spirit Bond", 2 }, { "Intimidation", 1 }, { "Bestial Discipline", 2 } },
     { { "Frenzy", 5 } },
     { { "Bestial Wrath", 1 } },
   },
   { -- Marksmanship
-    { { "Improved Concussive Shot", 5 }, { "Efficiency", 5 } },
-    { { "Improved Hunter's Mark", 5 }, { "Lethal Shots", 5 } },
-    { { "Aimed Shot", 1 }, { "Improved Arcane Shot", 5 }, { "Hawk Eye", 3 } },
-    { { "Improved Serpent Sting", 5 }, { "Mortal Shots", 5 } },
-    { { "Scatter Shot", 1 }, { "Barrage", 3 }, { "Improved Scorpid Sting", 3 } },
+    { { "Hawk Eye", 3 }, { "Improved Concussive Shot", 5 }, { "Lethal Attacks", 5 } },
+    { { "Improved Stings", 3 }, { "Efficiency", 5 }, { "Careful Aim", 5 } },
+    { { "Rapid Killing", 2 }, { "Improved Arcane Shot", 5 }, { "Lone Wolf", 1 } },
+    { { "Trueshot Aura", 1 }, { "Mortal Shots", 5 } },
+    { { "Rapid Recuperation", 2 }, { "Barrage", 3 }, { "Scatter Shot", 1 } },
     { { "Ranged Weapon Specialization", 5 } },
-    { { "Trueshot Aura", 1 } },
+    { { "Sniper Shot", 1 } },
+  },
+  { -- Survival
+    { { "Improved Tracking", 5 }, { "Deflection", 5 } },
+    { { "Entrapment", 5 }, { "Savage Strikes", 2 }, { "Survivalist", 5 }, { "Improved Wing Clip", 3 } },
+    { { "Clever Traps", 2 }, { "Surefooted", 3 }, { "Deterrence", 1 } },
+    { { "Survival Tactics", 2 }, { "Predator's Edge", 5 }, { "Counterattack", 1 } },
+    { { "Resourcefulness", 2 }, { "Expose Prey", 2 }, { "Survivalist's Discipline", 2 }, { "Strider Kick", 1 } },
+    { { "Lightning Reflexes", 5 } },
+    { { "Lacerating Strikes", 1 } },
   },
 }
+local TREE_NAME = { L["Beast Mastery"], L["Marksmanship"], L["Survival"] }
 
 -- Builds as steps of { tab, talent, points } in the order to take them.
 local BUILDS = {
   {
     key = "leveling", label = L["Leveling (Beast Mastery)"], split = "31/20/0",
-    source = "Icy Veins, Classic Beast Mastery Hunter Leveling Guide 1-60",
+    source = "Kargoz, 1-60 Beast Mastery Hunter Leveling Guide (mobalytics.gg, WoW Forever, Oct 2026)",
     steps = {
-      { 1, "Improved Aspect of the Hawk", 5 }, { 1, "Improved Revive Pet", 2 }, { 1, "Thick Hide", 3 }, { 1, "Pathfinding", 2 },
-      { 1, "Bestial Swiftness", 1 }, { 1, "Unleashed Fury", 5 }, { 1, "Ferocity", 2 }, { 1, "Intimidation", 1 },
-      { 1, "Ferocity", 3 }, { 1, "Bestial Discipline", 1 }, { 1, "Frenzy", 5 }, { 1, "Bestial Wrath", 1 },
-      { 2, "Improved Concussive Shot", 5 }, { 2, "Lethal Shots", 5 }, { 2, "Aimed Shot", 1 }, { 2, "Hawk Eye", 3 },
-      { 2, "Efficiency", 1 }, { 2, "Mortal Shots", 5 },
+      { 1, "Deadly Aspects", 5 }, { 1, "Focused Fire", 2 }, { 1, "Pathfinding", 2 }, { 1, "Improved Revive Pet", 1 },
+      { 1, "Bestial Swiftness", 1 }, { 1, "Unleashed Fury", 4 }, { 1, "Summon Hawk", 1 }, { 1, "Unleashed Fury", 1 },
+      { 1, "Ferocity", 3 }, { 1, "Intimidation", 1 }, { 1, "Ferocity", 2 }, { 1, "Bestial Discipline", 2 },
+      { 1, "Frenzy", 4 }, { 1, "Spirit Bond", 1 }, { 1, "Bestial Wrath", 1 },
+      { 2, "Lethal Attacks", 5 }, { 2, "Hawk Eye", 3 }, { 2, "Careful Aim", 5 }, { 2, "Rapid Killing", 2 },
+      { 2, "Mortal Shots", 5 },
     },
   },
   {
-    key = "raid", label = L["Raid (Marksmanship)"], split = "20/31/0",
-    source = "Icy Veins and Warcraft Tavern, Classic hunter raid builds",
+    key = "raid", label = L["Raid (Marksmanship)"], split = "7/32/12",
+    source = "Feor, Marksmanship Hunter Guide (mobalytics.gg, WoW Forever, Nov 2026)",
     steps = {
-      { 1, "Improved Aspect of the Hawk", 5 }, { 1, "Endurance Training", 5 }, { 1, "Unleashed Fury", 5 }, { 1, "Ferocity", 5 },
-      { 2, "Efficiency", 5 }, { 2, "Lethal Shots", 5 }, { 2, "Improved Hunter's Mark", 3 }, { 2, "Aimed Shot", 1 },
-      { 2, "Hawk Eye", 3 }, { 2, "Mortal Shots", 5 }, { 2, "Barrage", 3 }, { 2, "Ranged Weapon Specialization", 5 },
-      { 2, "Trueshot Aura", 1 },
+      { 2, "Lethal Attacks", 5 }, { 2, "Careful Aim", 5 }, { 2, "Improved Stings", 3 }, { 2, "Rapid Killing", 2 },
+      { 2, "Mortal Shots", 5 }, { 2, "Trueshot Aura", 1 }, { 2, "Rapid Recuperation", 2 }, { 2, "Barrage", 3 },
+      { 2, "Ranged Weapon Specialization", 5 }, { 2, "Sniper Shot", 1 },
+      { 1, "Deadly Aspects", 5 }, { 1, "Focused Fire", 2 },
+      { 3, "Improved Tracking", 5 }, { 3, "Savage Strikes", 2 }, { 3, "Survivalist", 3 }, { 3, "Clever Traps", 2 },
     },
   },
 }
 
--- Find the game's talent index for one of ours: by English name, else by position in the tree.
-local function TalentInfo(tab, i)
-  if C_SpecializationInfo and C_SpecializationInfo.GetTalentInfo then
-    local ok, t = pcall(C_SpecializationInfo.GetTalentInfo, { specializationIndex = tab, talentIndex = i })
-    if ok and t then return t.name, t.tier, t.column, t.rank, t.maxRank end
-  end
-  if GetTalentInfo then
-    local ok, name, _, tier, column, rank, maxRank = pcall(GetTalentInfo, tab, i)
-    if ok and name then return name, tier, column, rank, maxRank end
-  end
-end
-
 -- WoW Forever: talents live in a trait tree (C_Traits), with all three hunter trees in one config.
--- Two talents were renamed; we keep the Classic names as keys. First-rank spell IDs come from
--- Forever's Talent client table (1.60.1.70790), so matching works in any language.
-local ALIAS = { ["Deadly Aspects"] = "Improved Aspect of the Hawk", ["Lethal Attacks"] = "Lethal Shots" }
+-- Talents are matched by their first-rank spell ID (wowhead Forever talent calculator), so it works
+-- in any language.
 local TALENT_SPELL = {
-  [19552] = "Improved Aspect of the Hawk", [19583] = "Endurance Training", [19557] = "Improved Eyes of the Beast",
-  [19549] = "Improved Aspect of the Monkey", [19609] = "Thick Hide", [24443] = "Improved Revive Pet", [19559] = "Pathfinding",
+  [19552] = "Deadly Aspects", [19583] = "Endurance Training", [1223755] = "Focused Fire",
+  [19549] = "Improved Aspect of the Monkey", [24443] = "Improved Revive Pet", [19559] = "Pathfinding",
   [19596] = "Bestial Swiftness", [19616] = "Unleashed Fury", [19572] = "Improved Mend Pet", [19598] = "Ferocity",
-  [19578] = "Spirit Bond", [19577] = "Intimidation", [19590] = "Bestial Discipline", [19621] = "Frenzy", [19574] = "Bestial Wrath",
-  [19407] = "Improved Concussive Shot", [19416] = "Efficiency", [19421] = "Improved Hunter's Mark", [19426] = "Lethal Shots",
-  [19434] = "Aimed Shot", [19454] = "Improved Arcane Shot", [19498] = "Hawk Eye", [19464] = "Improved Serpent Sting",
-  [19485] = "Mortal Shots", [19503] = "Scatter Shot", [19461] = "Barrage", [19491] = "Improved Scorpid Sting",
-  [19507] = "Ranged Weapon Specialization", [19506] = "Trueshot Aura",
+  [1293241] = "Summon Hawk", [19578] = "Spirit Bond", [19577] = "Intimidation", [19590] = "Bestial Discipline",
+  [19621] = "Frenzy", [19574] = "Bestial Wrath",
+  [19498] = "Hawk Eye", [19407] = "Improved Concussive Shot", [19426] = "Lethal Attacks", [1310661] = "Improved Stings",
+  [19416] = "Efficiency", [1223984] = "Careful Aim", [415405] = "Rapid Killing", [19454] = "Improved Arcane Shot",
+  [415370] = "Lone Wolf", [1299346] = "Trueshot Aura", [19485] = "Mortal Shots", [1223987] = "Rapid Recuperation",
+  [19461] = "Barrage", [19503] = "Scatter Shot", [19507] = "Ranged Weapon Specialization", [1310687] = "Sniper Shot",
+  [24293] = "Improved Tracking", [19295] = "Deflection", [19184] = "Entrapment", [19159] = "Savage Strikes",
+  [19255] = "Survivalist", [19228] = "Improved Wing Clip", [19239] = "Clever Traps", [19290] = "Surefooted",
+  [19263] = "Deterrence", [19376] = "Survival Tactics", [1310627] = "Predator's Edge", [19306] = "Counterattack",
+  [440529] = "Resourcefulness", [1310532] = "Expose Prey", [1310496] = "Survivalist's Discipline",
+  [1317257] = "Strider Kick", [19168] = "Lightning Reflexes", [1310533] = "Lacerating Strikes",
 }
+local ALIAS = {}
 
 -- Your talent config, found the way Forever's own talent window does it (combat config for your
 -- active spec group), falling back to the active config. Returns configID, treeID.
@@ -276,11 +282,11 @@ local function TraitName(def)
 end
 
 local function MapTraits()
-  local map, total = { {}, {} }, 0
+  local map, total = { {}, {}, {} }, 0
   local cfg, tree = TraitConfig()
   if not cfg or not tree then return map, 0 end
   local tabOf = {}
-  for tab = 1, 2 do for _, tier in ipairs(TREES[tab]) do for _, t in ipairs(tier) do tabOf[t[1]] = tab end end end
+  for tab = 1, 3 do for _, tier in ipairs(TREES[tab]) do for _, t in ipairs(tier) do tabOf[t[1]] = tab end end end
   for _, nodeID in ipairs(C_Traits.GetTreeNodes(tree) or {}) do
     local node = C_Traits.GetNodeInfo(cfg, nodeID)
     local entry = node and node.entryIDs and node.entryIDs[1]
@@ -321,7 +327,7 @@ function ns.TalentDebug()
     local def = e and e.definitionID and C_Traits.GetDefinitionInfo(e.definitionID)
     local key = TraitName(def)
     local found = false
-    for tab = 1, 2 do if key and map[tab][key] then found = true end end
+    for tab = 1, 3 do if key and map[tab][key] then found = true end end
     if not found and shown < 6 and def then
       shown = shown + 1
       ns.Print(string.format("  not in a build: %s (spell %s)", tostring(key), tostring(def.spellID)))
@@ -344,40 +350,12 @@ end
 local talentMap   -- [tab][englishName] = { index or node, maxRank, name }
 local function MapTalents()
   if talentMap then return talentMap end
-  if not ERA then
-    local ok, map, total = pcall(MapTraits)
-    if not ok then
-      ns.talentError = map
-      return { {}, {} }
-    end
-    ns.talentError = nil
-    if total > 0 then talentMap = map end
-    return map
+  local ok, map, total = pcall(MapTraits)
+  if not ok then
+    ns.talentError = map
+    return { {}, {}, {} }
   end
-  local map, total = {}, 0
-  for tab = 1, 2 do
-    map[tab] = {}
-    local n = GetNumTalents and GetNumTalents(tab) or 0
-    total = total + n
-    local byTier = {}
-    for i = 1, n do
-      local name, tier, column, _, maxRank = TalentInfo(tab, i)
-      if name then
-        byTier[tier] = byTier[tier] or {}
-        table.insert(byTier[tier], { i = i, name = name, column = column, maxRank = maxRank })
-      end
-    end
-    for tier, ours in ipairs(TREES[tab]) do
-      local theirs = byTier[tier] or {}
-      table.sort(theirs, function(a, b) return a.column < b.column end)
-      for k, t in ipairs(ours) do
-        local hit
-        for _, g in ipairs(theirs) do if g.name == t[1] then hit = g end end
-        if not hit and #theirs == #ours and theirs[k] and theirs[k].maxRank == t[2] then hit = theirs[k] end
-        if hit then map[tab][t[1]] = { index = hit.i, maxRank = hit.maxRank, name = hit.name } end
-      end
-    end
-  end
+  ns.talentError = nil
   if total > 0 then talentMap = map end
   return map
 end
@@ -385,12 +363,8 @@ end
 local function CurrentRank(tab, english)
   local m = MapTalents()[tab][english]
   if not m then return nil end
-  if m.node then
-    local ok, rank = pcall(TraitRank, m.node)
-    return ok and rank or 0, m
-  end
-  local _, _, _, rank = TalentInfo(tab, m.index)
-  return rank or 0, m
+  local ok, rank = pcall(TraitRank, m.node)
+  return ok and rank or 0, m
 end
 
 -- Walk the build: returns each step with done points, and the next talent to take.
@@ -537,13 +511,10 @@ do
     add(0, ns.Icon(build.key == "raid" and "Ability_TrueShot" or "Ability_Druid_FerociousBite"), build.label .. "  " .. C.GREY .. build.split .. "|r",
       free and free > 0 and (C.GREEN .. ns.Count(free, L["point to spend"], L["points to spend"]) .. "|r") or "", nil,
       { build.label, L["Source: "] .. build.source, L["Open your talent window: the next talent in this build glows green."] }, { header = true })
-    if not MapTalents()[1]["Improved Aspect of the Hawk"] then
+    if not MapTalents()[1]["Deadly Aspects"] then
       add(0, nil, C.GREY .. L["Open your talent window once so Untamed can read your talents."] .. "|r")
       if ns.talentError then add(0, nil, C.RED .. L["Couldn't read your talents: "] .. tostring(ns.talentError) .. "|r") end
-      if not ERA then add(0, nil, C.GREY .. L["Still empty? Type /ut talents and send me what it prints."] .. "|r") end
-    end
-    if not ERA then
-      add(0, nil, C.GREY .. L["WoW Forever renamed two talents: Improved Aspect of the Hawk is now Deadly Aspects, and Lethal Shots is now Lethal Attacks. These builds are Classic picks with Forever's names."] .. "|r")
+      add(0, nil, C.GREY .. L["Still empty? Type /ut talents and send me what it prints."] .. "|r")
     end
     local level = 9
     for i, st in ipairs(steps) do
@@ -553,7 +524,7 @@ do
       local color = st.done >= st.pts and C.GREEN or (isNext and C.GOLD or C.WHITE)
       local lvlText = st.pts > 1 and (first .. "-" .. level) or tostring(first)
       add(14, nil, string.format("%s%s|r  %s%d/%d|r", color, st.label, C.GREY, st.done, st.pts),
-        (st.tab == 1 and L["Beast Mastery"] or L["Marksmanship"]) .. (isNext and (C.GOLD .. "   " .. L["next"] .. "|r") or ""), nil, nil,
+        TREE_NAME[st.tab] .. (isNext and (C.GOLD .. "   " .. L["next"] .. "|r") or ""), nil, nil,
         { mid = C.GREY .. L["lvl "] .. lvlText .. "|r" })
     end
     add(0, nil, C.GREY .. L["Builds are common community picks. Swap points to suit your pet and playstyle."] .. "|r")
@@ -925,4 +896,4 @@ do
   ns.RegisterTab("quests", L["Hunter Quests"], Build, Refresh)
 end
 
-ns.CharacterTest = { BuildProgress = BuildProgress, SelectedBuild = SelectedBuild, Score = Score, OnItemTooltip = OnItemTooltip, Money = Money }
+ns.CharacterTest = { BuildProgress = BuildProgress, SelectedBuild = SelectedBuild, Score = Score, OnItemTooltip = OnItemTooltip, Money = Money, Builds = BUILDS, Trees = TREES }

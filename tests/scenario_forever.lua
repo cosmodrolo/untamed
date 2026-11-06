@@ -62,10 +62,25 @@ local bf = ns.BrowserFilter(); bf.speed = "fast"; ns.UI_Show("browse"); bf.speed
 -- Forever spells and gear pages
 local hawk, aimed
 for _, e in ipairs(ns.TrainerSpells) do
-  if e[2] == 1293241 then hawk = e end
+  if e[2] == 1293525 then hawk = e end
   if e[4] == "Aimed Shot" then aimed = true end
 end
-assert(hawk and hawk[1] == 25 and hawk[3] == -1, "forever trainer has Summon Hawk")
+assert(hawk and hawk[1] == 36 and hawk[3] == -1, "forever trainer has Summon Hawk rank 2")
+for _, e in ipairs(ns.TrainerSpells) do assert(e[4] ~= "Wyvern Sting" and e[4] ~= "Strider Kick", "no Classic-only or talent-only spells") end
+-- the leveling build only uses talents that exist in the Forever trees, and adds up to 51 points
+local bt = ns.CharacterTest and ns.CharacterTest.Builds
+assert(bt, "builds exposed")
+local inTree = {}
+for tab, tiers in ipairs(ns.CharacterTest.Trees) do for _, tier in ipairs(tiers) do for _, t in ipairs(tier) do inTree[tab .. t[1]] = t[2] end end end
+for _, b in ipairs(bt) do
+  local n, per = 0, {}
+  for _, st in ipairs(b.steps) do
+    n = n + st[3]; per[st[1] .. st[2]] = (per[st[1] .. st[2]] or 0) + st[3]
+    assert(inTree[st[1] .. st[2]], b.key .. ": " .. st[2] .. " is in the Forever tree")
+    assert(per[st[1] .. st[2]] <= inTree[st[1] .. st[2]], b.key .. ": " .. st[2] .. " within max rank")
+  end
+  assert(n == 51, b.key .. " build is 51 points")
+end
 assert(aimed, "forever trainer lists talent ranks")
 local n = ns.SpellsToTrain(); print("forever spells to train at 26: " .. n)
 assert(n > 0, "spells to train on forever")

@@ -9,10 +9,14 @@ rows = [[int(a), int(b), int(c), d, int(e)] for a, b, c, d, e in rows]
 RERANK = {20909: 3, 20910: 4, 20905: 4, 20906: 5}       # Forever added lower ranks
 for r in rows:
     if r[1] in RERANK: r[4] = RERANK[r[1]]
+DROP = {24132, 24133}                                   # Wyvern Sting is not in Forever (talent removed)
+rows = [r for r in rows if r[1] not in DROP]
+# Checked against wowhead.com/forever/talent-calc/hunter: Aimed Shot and Lacerate are trainer spells now;
+# Summon Hawk, Trueshot Aura, Counterattack and Sniper Shot are talents (rank 1), the trainer sells the rest.
 NEW = [
-    (25, 1293241, "Summon Hawk", 1), (36, 1293525, "Summon Hawk", 2), (48, 1293526, "Summon Hawk", 3), (60, 1293527, "Summon Hawk", 4),
+    (20, 19434, "Aimed Shot", 1), (30, 24118, "Lacerate", 1),
+    (36, 1293525, "Summon Hawk", 2), (48, 1293526, "Summon Hawk", 3), (60, 1293527, "Summon Hawk", 4),
     (40, 1299445, "Aspect of the Beast", 2), (50, 1299446, "Aspect of the Beast", 3), (60, 1299447, "Aspect of the Beast", 4),
-    (30, 1317257, "Strider Kick", 0),
     (30, 1242634, "Counterattack", 2),
     (32, 1299348, "Trueshot Aura", 2), (40, 19506, "Trueshot Aura", 3),
     (40, 24119, "Lacerate", 2), (50, 24120, "Lacerate", 3), (60, 1299332, "Lacerate", 4),
