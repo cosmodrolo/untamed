@@ -235,6 +235,42 @@ function ns.ScanBeastTraining()
   if count > 0 then ns.cdb.scanned = true; ns.Refresh() end
 end
 
+-- Hunter trainer: save what each spell rank costs, so the Spells page can show real costs for
+-- WoW Forever's new spells (and Claude can fold them into the data). Keyed "English name|rank".
+function ns.ScanHunterTrainer()
+  if UnitExists and not UnitExists("npc") then return end
+  if not (GetNumTrainerServices and GetTrainerServiceInfo and GetTrainerServiceCost) then return end
+  local _, class = UnitClass("player")
+  if class ~= "HUNTER" then return end
+  local seen = ns.db.trainerCosts or {}
+  ns.db.trainerCosts = seen
+  local byName = {}
+  for _, e in ipairs(ns.TrainerSpells or {}) do byName[e[4]] = true end
+  local n = 0
+  for i = 1, GetNumTrainerServices() do
+    local name, serviceType, _, reqLevel, sub = GetTrainerServiceInfo(i)
+    if name and serviceType ~= "header" and not ns.IsSecret(name) and byName[name] then
+      local cost = GetTrainerServiceCost(i)
+      if cost and not ns.IsSecret(cost) then
+        local r = ParseRank(sub) or 0
+        seen[name .. "|" .. r] = { reqLevel or 0, cost }
+        n = n + 1
+      end
+    end
+  end
+  if n > 0 and ns.ApplyTrainerCosts then ns.ApplyTrainerCosts() end
+end
+
+-- Fill unknown (-1) or changed costs in the spell list from what the trainer showed.
+function ns.ApplyTrainerCosts()
+  local seen = ns.db and ns.db.trainerCosts
+  if not seen or not ns.TrainerSpells then return end
+  for _, e in ipairs(ns.TrainerSpells) do
+    local v = seen[e[4] .. "|" .. e[5]]
+    if v and v[2] then e[3] = v[2]; if v[1] and v[1] > 0 then e[1] = v[1] end end
+  end
+end
+
 function ns.ScanPetTrainer()
   if not (C_Trainer and C_Trainer.GetTrainerType and Enum and Enum.TrainerType and Enum.TrainerType.Pet) then return end
   if C_Trainer.GetTrainerType() ~= Enum.TrainerType.Pet then return end
@@ -433,11 +469,16 @@ ev:SetScript("OnEvent", function(self, event, arg1, arg2, arg3, arg4)
     pcall(self.RegisterEvent, self, "CRAFT_UPDATE")
     pcall(self.RegisterEvent, self, "TRAINER_SHOW")
     pcall(self.RegisterEvent, self, "TRAINER_UPDATE")
+    if ns.ApplyTrainerCosts then pcall(ns.ApplyTrainerCosts) end
     ns.Fire("LOGIN")
   elseif event == "CRAFT_SHOW" or event == "CRAFT_UPDATE" then
     ns.ScanBeastTraining()
   elseif event == "TRAINER_SHOW" or event == "TRAINER_UPDATE" then
     ns.ScanPetTrainer()
+    if not (C_Trainer and C_Trainer.GetTrainerType and Enum and Enum.TrainerType
+            and C_Trainer.GetTrainerType() == Enum.TrainerType.Pet) then
+      pcall(ns.ScanHunterTrainer)
+    end
   elseif event == "ZONE_CHANGED_NEW_AREA" or event == "PLAYER_ENTERING_WORLD" then
     C_Timer.After(3, function() ns.ZoneAlert(false) end)
   elseif event == "UNIT_SPELLCAST_START" then

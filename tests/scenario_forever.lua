@@ -94,4 +94,18 @@ ns.UI_Show("spells")
 local cnt = 0 for _ in pairs(ns.GearItems) do cnt = cnt + 1 end
 assert(cnt > 4000 and ns.GearItems[2825] and ns.GearItems[288930], "forever gear table merged")
 ns.UI_Show("gear")
+-- Hunter trainer visit: real costs replace the unknown ones
+local oldType, oldExists = C_Trainer.GetTrainerType, UnitExists
+C_Trainer.GetTrainerType = function() return 0 end
+UnitExists = function(u) return u == "npc" or oldExists(u) end
+SERVICES = { { "Summon Hawk", "available", nil, 36, "Rank 2", 18000 }, { "Lacerate", "unavailable", nil, 30, "Rank 1", 2200 } }
+FIRE("TRAINER_SHOW")
+C_Trainer.GetTrainerType, UnitExists = oldType, oldExists
+local hawk2, lac1
+for _, e in ipairs(ns.TrainerSpells) do
+  if e[2] == 1293525 then hawk2 = e end
+  if e[2] == 24118 then lac1 = e end
+end
+assert(hawk2[3] == 18000 and lac1[3] == 2200, "hunter trainer costs recorded and applied")
+assert(ns.db.trainerCosts["Summon Hawk|2"][2] == 18000, "costs saved for later")
 print("DONE")

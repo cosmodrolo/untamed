@@ -1,6 +1,7 @@
 # Changelog
 
 ## v2.11.4
+- Visiting a hunter trainer saves what each spell rank costs and fills in the "?" costs on the Spells page (and the level, if Forever moved it).
 - 56 more Forever beasts from beastmaster.io (now 623). Includes the Gloomrise spiders and Broodmother Valraxx in Mulgore, the Ruins of Lordaeron spiders (Spider and Deep Widow teach Web 1), the Excavation Site: Wetlands beasts (Dismember 2 and Savage Rend 2 teachers), Ghostfang, Matriarch Bristlefur, Slydris, Chakuyak, Carnage, and Classic beasts like Echeyakee, Ishamuhale, Arikara, Shy-Rotam, Deathmaw and Enraged Stanley.
 - Beasts with only a known zone or dungeon (no exact spots yet) are now listed instead of skipped. Elite and rare tags carry over from beastmaster.io.
 
