@@ -76,6 +76,8 @@ local function InitDB()
   c.levels = c.levels or {}   -- [ability][rank] = required pet level (read in game)
   c.tp = c.tp or {}           -- [ability][rank] = training point cost (read in game)
   c.plan = c.plan or {}       -- [ability] = false to exclude from the trip planner
+  -- v2.11.3: older scans saved upgrade costs (not full costs) and put unreadable ranks on rank 1.
+  if (c.scanVersion or 0) < 2 then c.levels = {}; c.tp = {}; c.scanVersion = 2 end
   ns.db, ns.cdb = UntamedDB, UntamedCharDB
 end
 
@@ -180,31 +182,55 @@ end
 ---------------------------------------------------------------------------
 -- Reading Beast Training (Classic Era: craft window, Forever: trainer window)
 ---------------------------------------------------------------------------
-local function Record(name, sub, reqLevel, tp)
+-- Rank from the subtext; an ability with a single rank has no rank text. Returns nil if unsure.
+local function RankOf(name, sub)
+  local r = ParseRank(sub)
+  if r then return r end
+  if (ns.MaxRank and ns.MaxRank[name] or 1) <= 1 then return 1 end
+end
+
+-- Beast Training shows the training points to go from your pet's current rank to this one,
+-- so the full cost is that plus what the pet's current rank cost.
+local function FullCost(name, r, tp, petRanks)
+  local cur = petRanks and petRanks[name] or 0
+  if cur >= r then return nil end
+  if cur == 0 then return tp end
+  local base = ns.RankCost(name, cur)
+  return base and (tp + base) or nil
+end
+
+local function Record(name, sub, reqLevel, tp, petRanks)
   if not name or ns.IsSecret(name) then return false end
   name = ns.ToEnglish(name)
-  local r = ParseRank(sub) or 1
+  local r = RankOf(name, sub)
+  if not r then return false end
   ns.cdb.known[name] = ns.cdb.known[name] or {}
   ns.cdb.known[name][r] = true
   if reqLevel and reqLevel > 0 then
     ns.cdb.levels[name] = ns.cdb.levels[name] or {}
     ns.cdb.levels[name][r] = reqLevel
   end
-  if tp and tp > 0 then
+  local full = tp and tp > 0 and FullCost(name, r, tp, petRanks)
+  if full then
     ns.cdb.tp[name] = ns.cdb.tp[name] or {}
-    ns.cdb.tp[name][r] = tp
+    ns.cdb.tp[name][r] = full
   end
   return true
+end
+
+local function PetRanks()
+  local ok, info = pcall(ns.ScanPet)
+  return ok and info and info.known or nil
 end
 
 function ns.ScanBeastTraining()
   if not (GetCraftDisplaySkillLine and GetNumCrafts) then return end
   local line = GetCraftDisplaySkillLine()
   if not line or (line ~= ns.SpellName(5149) and line ~= "Beast Training") then return end
-  local count = 0
+  local count, petRanks = 0, PetRanks()
   for i = 1, GetNumCrafts() do
     local name, sub, kind, _, _, tp, reqLevel = GetCraftInfo(i)
-    if name and kind ~= "header" and Record(name, sub, reqLevel, tp) then count = count + 1 end
+    if name and kind ~= "header" and Record(name, sub, reqLevel, tp, petRanks) then count = count + 1 end
   end
   if count > 0 then ns.cdb.scanned = true; ns.Refresh() end
 end
@@ -214,17 +240,18 @@ function ns.ScanPetTrainer()
   if C_Trainer.GetTrainerType() ~= Enum.TrainerType.Pet then return end
   -- Beast Training opened from the spellbook has no NPC; a pet trainer NPC sells passives instead.
   local fromNpc = UnitExists("npc")
-  local count = 0
+  local count, petRanks = 0, PetRanks()
   for i = 1, (GetNumTrainerServices and GetNumTrainerServices() or 0) do
     local name, serviceType, _, reqLevel, sub = GetTrainerServiceInfo(i)
     if name and serviceType ~= "header" then
       local tp = GetTrainerServiceCost and GetTrainerServiceCost(i)
       if fromNpc then
-        local r = ParseRank(sub) or 1
-        if reqLevel and reqLevel > 0 then
+        local r = name and not ns.IsSecret(name) and RankOf(ns.ToEnglish(name), sub)
+        if r and reqLevel and reqLevel > 0 then
+          name = ns.ToEnglish(name)
           ns.cdb.levels[name] = ns.cdb.levels[name] or {}; ns.cdb.levels[name][r] = reqLevel
         end
-      elseif Record(name, sub, reqLevel, tp) then
+      elseif Record(name, sub, reqLevel, tp, petRanks) then
         count = count + 1
       end
     end

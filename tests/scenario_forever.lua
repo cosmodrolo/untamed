@@ -2,6 +2,11 @@ local ns = NS
 FIRE("ADDON_LOADED", "Untamed")
 FIRE("PLAYER_LOGIN")
 FIRE("TRAINER_SHOW")
+-- Beast Training shows upgrade costs: Claw 3 costs 3 more than the pet's Claw 2 (4), so 7 in full.
+assert(ns.cdb.tp.Bite[4] == 10, "new ability keeps its cost")
+assert(ns.cdb.tp.Claw[3] == 7, "upgrade cost converted to full cost: " .. tostring(ns.cdb.tp.Claw[3]))
+assert(not (ns.cdb.levels.Growl and ns.cdb.levels.Growl[1]), "unreadable rank is not saved as rank 1")
+assert(ns.RankCost("Natural Armor", 2) == 5, "Natural Armor rank 2 is 5 training points")
 print("flavor", ns.FLAVOR, "fams", #ns.Families, "order", table.concat(ns.AbilityOrder, ","))
 print("knows Bite4", ns.HunterKnows("Bite", 4), "Screech?", ns.AbilityFamilies["Screech"])
 for _, tab in ipairs({ "abilities", "plan", "browse", "care", "settings" }) do ns.UI_Show(tab); print("tab ok", tab) end

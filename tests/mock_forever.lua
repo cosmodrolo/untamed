@@ -13,7 +13,8 @@ C_PetInfo = {
 }
 C_Item = { GetItemInfo = function(id) local i = ITEMS[id]; if i then return i[1], nil, nil, i[2] end end }
 C_Trainer = { GetTrainerType = function() return 3 end }
-SERVICES = { { "Bite", "available", nil, 24, "Rank 4", 10 }, { "Swipe", "available", nil, 12, "Rank 1", 0 } }
+SERVICES = { { "Bite", "available", nil, 24, "Rank 4", 10 }, { "Swipe", "available", nil, 12, "Rank 1", 0 },
+  { "Claw", "available", nil, 16, "Rank 3", 3 }, { "Growl", "used", nil, 20, nil, 0 } }
 GetNumTrainerServices = function() return #SERVICES end
 GetTrainerServiceInfo = function(i) local s = SERVICES[i]; return s[1], s[2], s[3], s[4], s[5] end
 GetTrainerServiceCost = function(i) return SERVICES[i][6] end

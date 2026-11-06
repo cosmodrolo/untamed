@@ -96,8 +96,6 @@ do
     ["Shadow Resistance"] = { { 20, 30, 40, 50 }, R },
   }
   for ability, v in pairs(trainer) do ns.RankLevels[ability] = v[1]; ns.RankTP[ability] = v[2] end
-  -- Forever, seen in Beast Training (2026-11-05): Natural Armor rank 2 costs 4 training points, not 5.
-  if FOREVER then ns.RankTP["Natural Armor"][2] = 4 end
 end
 
 ns.TrainerAbilities = {

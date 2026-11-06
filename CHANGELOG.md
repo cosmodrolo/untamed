@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.11.3
+- Fixed training point costs read from Beast Training. The game shows what it costs to upgrade from your pet's current rank, not the full cost; Untamed now adds the current rank's cost back. Forever's training point costs match Classic, so the earlier "Natural Armor rank 2 costs 4" change is undone (it costs 5; your pet only needed 4 more).
+- Fixed trainer entries with no readable rank being saved as rank 1 (Growl rank 1 showed level 20). Old scans are cleared once so they're read again correctly.
+
 ## v2.11.2
 - Fixed a login warning ("Couldn't open embeds.xml"). Untamed no longer lists optional libraries it doesn't ship; the minimap button still uses LibDBIcon when another addon provides it.
 - Find a Pet uses family damage, armor and health bonuses again, now read from WoW Forever's own client data (each family's passive spell). Forever kept the Classic values, added Bird of Prey (same as the old Owl) and Fox (same as Wolf). The old "based on abilities only" note is gone.
