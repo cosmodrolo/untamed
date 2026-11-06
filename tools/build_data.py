@@ -100,12 +100,13 @@ if FLAVOR == "forever":
             if nid in tame:
                 b = tame[nid]; matched += 1
                 if fb.get("family"): b["fam"] = fb["family"]
+                if fb.get("rank") and not b.get("rank"): b["rank"] = fb["rank"]
                 b["zone"] = fb.get("zone")
                 if fb.get("coords"): b["coords"] = fb["coords"]
                 b["spells"] = sorted(set(b["spells"]) | set(teaches))
             else:
                 tame[nid] = dict(name=fb.get("name"), lo=fb.get("minLevel") or 1, hi=fb.get("maxLevel") or fb.get("minLevel") or 1,
-                                 fam=fb.get("family"), rank=None, speed=None, skin=None, spells=teaches, zone=fb.get("zone"))
+                                 fam=fb.get("family"), rank=fb.get("rank"), speed=None, skin=None, spells=teaches, zone=fb.get("zone"))
                 if fb.get("coords"): tame[nid]["coords"] = fb["coords"]
                 added += 1
         log("forever json: matched", matched, "added", added)
@@ -141,6 +142,18 @@ for line in open(os.path.join(ZDIR, "dungeons.lua"), encoding="utf-8"):
     dnames[int(m.group(1))] = ent
     if m.group(3) != "nil":
         for alt in re.findall(r"\d+", m.group(3)): dnames.setdefault(int(alt), ent)
+
+dungeon_by_name = {}
+for _area, (dn, dlocs) in dnames.items(): dungeon_by_name.setdefault(dn.lower(), (dn, dlocs))
+def zone_spawns(zn):
+    """Spawn entries for a zone name from the json: an outdoor zone (no points), or a dungeon's entrance."""
+    if not zn: return [], None
+    zn = re.sub(r"\s*\((Dungeon|Raid)\)$", "", zn).strip()
+    if "," in zn: zn = zn.split(",")[-1].strip()            # "Spirit Den, Stranglethorn Vale"
+    if zn.lower() in zone_by_name: return ["[%d]={}" % zone_by_name[zn.lower()]], None
+    d = dungeon_by_name.get(zn.lower())
+    if d: return ["[%d]={%.1f,%.1f}" % (ui, x, y) for ui, x, y in d[1]], d[0]
+    return [], None
 
 # ---------------------------------------------------------------- lua literal parser
 class P:
@@ -258,9 +271,11 @@ for nid in sorted(tame, key=lambda n: (str(tame[n]["fam"]), tame[n]["lo"], n)):
         for zn, pts in b["coords"].items():
             if zn.lower() in zone_by_name:
                 spawns.append("[%d]={%s}" % (zone_by_name[zn.lower()], ",".join("%.1f,%.1f" % tuple(p) for p in pts)))
-    if not spawns and b.get("zone") and b["zone"].lower() in zone_by_name and b["spells"]:
-        spawns.append("[%d]={}" % zone_by_name[b["zone"].lower()])
-    if not spawns:
+    if not spawns and b.get("zone"):
+        spawns, inst = zone_spawns(b["zone"])
+        if not spawns and inst is None:
+            inst = re.sub(r"\s*\((Dungeon|Raid)\)$", "", b["zone"]).strip()   # a place Untamed can't map yet: name only
+    if not spawns and not inst:
         nospawn.append(b["name"]); continue
     sp = ",".join('%s,%d' % (lstr(a), r) for a, r in b["spells"])
     lines.append('  [%d]={%s,%d,%d,%s,%s,{%s},{%s},%s,%s,%s},' % (
@@ -312,4 +327,5 @@ with open(OUT, "w", encoding="utf-8") as f:
     f.write("ns.ZoneNames = {\n" + "\n".join('  [%d]=%s,' % (ui, lstr(nm)) for ui, nm in sorted(set(zmap.values()))) + "\n}\n")
 
 log("beasts written:", len(lines), "teaching:", sum(1 for b in tame.values() if b["spells"]), "no spawn:", len(nospawn))
+log("  no spawn:", ", ".join(sorted(nospawn)))
 log("services:", {k: sum(1 for l in svc_lines if l.startswith('  {"%s"' % k)) for k in "SFATP"})

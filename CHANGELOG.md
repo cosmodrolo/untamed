@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.11.4
+- 56 more Forever beasts from beastmaster.io (now 623). Includes the Gloomrise spiders and Broodmother Valraxx in Mulgore, the Ruins of Lordaeron spiders (Spider and Deep Widow teach Web 1), the Excavation Site: Wetlands beasts (Dismember 2 and Savage Rend 2 teachers), Ghostfang, Matriarch Bristlefur, Slydris, Chakuyak, Carnage, and Classic beasts like Echeyakee, Ishamuhale, Arikara, Shy-Rotam, Deathmaw and Enraged Stanley.
+- Beasts with only a known zone or dungeon (no exact spots yet) are now listed instead of skipped. Elite and rare tags carry over from beastmaster.io.
+
 ## v2.11.3
 - Fixed training point costs read from Beast Training. The game shows what it costs to upgrade from your pet's current rank, not the full cost; Untamed now adds the current rank's cost back. Forever's training point costs match Classic, so the earlier "Natural Armor rank 2 costs 4" change is undone (it costs 5; your pet only needed 4 more).
 - Fixed trainer entries with no readable rank being saved as rank 1 (Growl rank 1 showed level 20). Old scans are cleared once so they're read again correctly.
