@@ -494,6 +494,8 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Route_Next()
   elseif msg == "spot" then
     ns.Arrow_NextSpot()
+  elseif msg == "talents" then
+    if ns.TalentDebug then ns.TalentDebug() end
   elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" or msg == "builds" or msg == "search"
     or msg == "supplies" or msg == "spells" or msg == "talents" or msg == "gear" or msg == "quests" then
     if ns.UI_Show then ns.UI_Show(msg) end

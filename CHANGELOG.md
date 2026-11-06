@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.10.0
+- All Beasts: new attack speed filter (fast, faster than normal, normal, slow). Forever beasts now have real attack speeds (field-confirmed from beastmaster.io, 2.0 s for the rest), shown on each row in green (faster) or orange (slower), and sorting by attack speed works on Forever.
+- Find a Pet prefers faster beasts for damage on Forever too, now that the speeds are known.
+- Talents on Forever: Untamed now finds your talent tree the same way Forever's own talent window does. If the page is still empty, it shows why, and /ut talents prints what it can see.
+- Search includes your latest recordings (72 vendor and 46 drop links).
+
 ## v2.9.3
 - Fixed: recording loot in combat errored ("attempt to compare a secret string value") when Forever hid your target's ID. The recorder now checks before comparing.
 - Gamepad: with Forever's gamepad UI on, Untamed no longer opens the world map itself (that could pass taint into the gamepad bars and block "SetPreferredGamepadInteractTarget"). It sets the pins, tells you to open your map, and jumps to the zone when you do. Mouse and keyboard work as before.

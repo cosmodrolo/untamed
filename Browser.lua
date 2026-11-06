@@ -5,7 +5,7 @@ local C = ns.C
 -- All Beasts: every tameable beast, with filters for family, the ability it teaches, where it is,
 -- whether you can tame it now, and rares.
 local list
-local filter = { family = "any", text = "", tameable = false, rare = false, teaches = "any", where = "any", sort = "level" }
+local filter = { family = "any", text = "", tameable = false, rare = false, teaches = "any", where = "any", sort = "level", speed = "any" }
 
 local function FamilyOptions()
   local o = { { "any", L["All families"] } }
@@ -21,6 +21,23 @@ local function TeachOptions()
 end
 local WHERE = { { "any", L["Anywhere"] }, { "zone", L["This zone"] }, { "near", L["My continent, nearest first"] } }
 local SORTS = { { "level", L["Sort: Level"] }, { "name", L["Sort: Name"] }, { "speed", L["Sort: Attack speed"] } }
+-- Attack speed: in seconds between swings, lower is faster.
+local SPEEDS = {
+  { "any", L["Any attack speed"] },
+  { "fast", L["Fast (1.5 s or quicker)"] },
+  { "quick", L["Faster than normal (under 2.0 s)"] },
+  { "normal", L["Normal (2.0 s)"] },
+  { "slow", L["Slow (over 2.0 s)"] },
+}
+local function SpeedOK(s)
+  if filter.speed == "any" then return true end
+  if not s then return false end
+  if filter.speed == "fast" then return s <= 1.5 end
+  if filter.speed == "quick" then return s < 2.0 end
+  if filter.speed == "normal" then return s == 2.0 end
+  if filter.speed == "slow" then return s > 2.0 end
+  return true
+end
 
 local function Build(panel)
   local tb = ns.Toolbar(panel)
@@ -30,7 +47,10 @@ local function Build(panel)
     { L["Teaches"], L["Pick an ability to see every beast that teaches it."] })
   tb:Row()
   tb:Dropdown(170, WHERE, function() return filter.where end, function(v) filter.where = v end)
-  tb:Dropdown(140, ns.FLAVOR == "forever" and { SORTS[1], SORTS[2] } or SORTS, function() return filter.sort end, function(v) filter.sort = v end)
+  tb:Dropdown(200, SPEEDS, function() return filter.speed end, function(v) filter.speed = v end,
+    { L["Attack speed"], L["Seconds between your pet's attacks. Faster pets hit more often, for less damage per hit."] })
+  tb:Dropdown(140, SORTS, function() return filter.sort end, function(v) filter.sort = v end)
+  tb:Row()
   tb:Check(L["Tameable now"], function() return filter.tameable end, function(v) filter.tameable = v end)
   tb:Check(L["Rares only"], function() return filter.rare end, function(v) filter.rare = v end)
   list = tb:List()
@@ -40,6 +60,7 @@ local function Matches(b, playerLevel, zone)
   if filter.family ~= "any" and b[4] ~= filter.family then return false end
   if filter.tameable and b[2] > playerLevel then return false end
   if filter.rare and not (b[5] and b[5]:find("Rare")) then return false end
+  if not SpeedOK(b[9]) then return false end
   if filter.teaches == "some" and #b[6] == 0 then return false end
   if filter.teaches ~= "any" and filter.teaches ~= "some" then
     local hit = false
@@ -87,7 +108,7 @@ local function Refresh()
     local left = string.format("%s%s|r", b[5] and C.ORANGE or C.WHITE, b[1]) .. C.GREY .. "  " .. ns.FamilyLabel(b[4]) .. "|r"
     local right = ns.ZonesText(b)
     if dist[id] then right = right .. C.GREY .. ", " .. ns.FormatDistance(dist[id]) .. "|r" end
-    if b[9] then right = C.GREY .. b[9] .. "s|r  " .. right end
+    if b[9] then right = ((b[9] < 2.0) and C.GREEN or (b[9] > 2.0 and C.ORANGE or C.GREY)) .. string.format("%.1f s", b[9]) .. "|r  " .. right end
     rows[#rows + 1] = { 0, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"), left, right, ns.BeastClick(id), ns.BeastTooltip(id), { mid = lv .. ns.LevelText(b) .. "|r" } }
   end
   if #ids == 0 then rows[#rows + 1] = { 0, nil, C.GREY .. L["No beasts match. Try fewer filters."] .. "|r" } end

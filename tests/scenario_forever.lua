@@ -53,4 +53,10 @@ print("gamepad map " .. (opened and "OPENED" or "left closed"))
 UnitRangedDamage, GetUnitSpeed, UnitLevel, UnitGUID = oldRD, oldSpeed, oldLevel, oldGUID
 issecretvalue = function() return false end
 type = realType
+-- Forever attack speeds and the All Beasts speed filter
+local fast, missing = 0, 0
+for _, b in pairs(ns.Beasts) do if not b[9] then missing = missing + 1 elseif b[9] <= 1.5 then fast = fast + 1 end end
+print("forever speeds: fast " .. fast .. ", missing " .. missing)
+assert(fast > 20 and missing == 0, "forever beasts have attack speeds")
+local bf = ns.BrowserFilter(); bf.speed = "fast"; ns.UI_Show("browse"); bf.speed = "any"
 print("DONE")

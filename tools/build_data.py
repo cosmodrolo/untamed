@@ -213,6 +213,13 @@ if FLAVOR == "forever":
             used += 1
     log("traces: live spawns for %d beasts" % used)
 
+# Forever attack speeds: field-confirmed per beast (beastmaster.io), 2.0 for everything else.
+if FLAVOR == "forever" and FJSON:
+    asp = json.load(open(FJSON, encoding="utf-8")).get("attackSpeeds")
+    if asp:
+        for nid, b in tame.items():
+            b["speed"] = asp["speeds"].get(str(nid), asp.get("default", 2.0))
+
 # ---------------------------------------------------------------- emit
 def thin(points, grid=1.2, cap=45):
     seen, out = set(), []

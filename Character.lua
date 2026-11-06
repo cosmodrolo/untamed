@@ -227,16 +227,22 @@ local TALENT_SPELL = {
   [19507] = "Ranged Weapon Specialization", [19506] = "Trueshot Aura",
 }
 
+-- Your talent config, found the way Forever's own talent window does it (combat config for your
+-- active spec group), falling back to the active config. Returns configID, treeID.
 local function TraitConfig()
   if not C_Traits or not C_Traits.GetConfigInfo then return nil end
-  local cfg = C_ClassTalents and C_ClassTalents.GetActiveConfigID and C_ClassTalents.GetActiveConfigID()
-  if not cfg and C_SpecializationInfo and C_SpecializationInfo.GetCombatConfigIDForSpecGroup then
+  local candidates = {}
+  if C_SpecializationInfo and C_SpecializationInfo.GetCombatConfigIDForSpecGroup then
     local group = C_SpecializationInfo.GetActiveSpecGroup and C_SpecializationInfo.GetActiveSpecGroup() or 1
-    cfg = C_SpecializationInfo.GetCombatConfigIDForSpecGroup(group)
+    candidates[#candidates + 1] = C_SpecializationInfo.GetCombatConfigIDForSpecGroup(group)
   end
-  if not cfg then return nil end
-  local info = C_Traits.GetConfigInfo(cfg)
-  return cfg, info and info.treeIDs and info.treeIDs[1]
+  if C_ClassTalents and C_ClassTalents.GetActiveConfigID then candidates[#candidates + 1] = C_ClassTalents.GetActiveConfigID() end
+  for _, cfg in ipairs(candidates) do
+    local info = cfg and C_Traits.GetConfigInfo(cfg)
+    local tree = info and info.treeIDs and info.treeIDs[1]
+    if tree then return cfg, tree end
+  end
+  return nil
 end
 
 local function TraitName(def)
@@ -278,6 +284,32 @@ local function TraitRank(nodeID)
   return node and (node.activeRank or node.currentRank) or 0
 end
 
+-- /ut talents: what Untamed can see of your Forever talent tree (for troubleshooting).
+function ns.TalentDebug()
+  local ok, cfg, tree = pcall(TraitConfig)
+  ns.Print(string.format("Talents: config %s, tree %s", tostring(ok and cfg), tostring(ok and tree)))
+  if not ok then ns.Print("Talents error: " .. tostring(cfg)) return end
+  if not cfg or not tree then ns.Print("Talents: no talent tree found yet (open the talent window once, then try again).") return end
+  local nodes = C_Traits.GetTreeNodes(tree) or {}
+  local ok2, map, total = pcall(MapTraits)
+  if not ok2 then ns.Print("Talents error: " .. tostring(map)) return end
+  ns.Print(string.format("Talents: %d nodes in the tree, %d matched to the builds.", #nodes, total))
+  -- the first few unmatched names, so a rename shows up
+  local shown = 0
+  for _, nodeID in ipairs(nodes) do
+    local node = C_Traits.GetNodeInfo(cfg, nodeID)
+    local e = node and node.entryIDs and node.entryIDs[1] and C_Traits.GetEntryInfo(cfg, node.entryIDs[1])
+    local def = e and e.definitionID and C_Traits.GetDefinitionInfo(e.definitionID)
+    local key = TraitName(def)
+    local found = false
+    for tab = 1, 2 do if key and map[tab][key] then found = true end end
+    if not found and shown < 6 and def then
+      shown = shown + 1
+      ns.Print(string.format("  not in a build: %s (spell %s)", tostring(key), tostring(def.spellID)))
+    end
+  end
+end
+
 -- Unspent talent points on either flavor.
 function ns.FreeTalentPoints()
   if UnitCharacterPoints then return UnitCharacterPoints("player") or 0 end
@@ -295,7 +327,11 @@ local function MapTalents()
   if talentMap then return talentMap end
   if not ERA then
     local ok, map, total = pcall(MapTraits)
-    if not ok then return { {}, {} } end
+    if not ok then
+      ns.talentError = map
+      return { {}, {} }
+    end
+    ns.talentError = nil
     if total > 0 then talentMap = map end
     return map
   end
@@ -484,6 +520,8 @@ do
       { build.label, L["Source: "] .. build.source, L["Open your talent window: the next talent in this build glows green."] }, { header = true })
     if not MapTalents()[1]["Improved Aspect of the Hawk"] then
       add(0, nil, C.GREY .. L["Open your talent window once so Untamed can read your talents."] .. "|r")
+      if ns.talentError then add(0, nil, C.RED .. L["Couldn't read your talents: "] .. tostring(ns.talentError) .. "|r") end
+      if not ERA then add(0, nil, C.GREY .. L["Still empty? Type /ut talents and send me what it prints."] .. "|r") end
     end
     if not ERA then
       add(0, nil, C.GREY .. L["WoW Forever renamed two talents: Improved Aspect of the Hawk is now Deadly Aspects, and Lethal Shots is now Lethal Attacks. These builds are Classic picks with Forever's names."] .. "|r")

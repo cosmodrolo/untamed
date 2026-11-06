@@ -93,7 +93,7 @@ function ns.BestBeasts(family, role, maxCount)
       list[#list + 1] = { id = id, speed = b[9] or 2.0, level = b[3], dist = d or 1e9, rare = b[5] and b[5]:find("Rare") }
     end
   end
-  local speedMatters = role ~= "tank" and role ~= "utility" and ns.FLAVOR ~= "forever"
+  local speedMatters = role ~= "tank" and role ~= "utility"
   table.sort(list, function(a, b)
     if speedMatters and a.speed ~= b.speed then return a.speed < b.speed end
     if math.abs(a.level - b.level) > 4 then return a.level > b.level end
