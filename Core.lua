@@ -238,26 +238,33 @@ end
 -- Hunter trainer: save what each spell rank costs, so the Spells page can show real costs for
 -- WoW Forever's new spells (and Claude can fold them into the data). Keyed "English name|rank".
 function ns.ScanHunterTrainer()
-  if UnitExists and not UnitExists("npc") then return end
   if not (GetNumTrainerServices and GetTrainerServiceInfo and GetTrainerServiceCost) then return end
   local _, class = UnitClass("player")
   if class ~= "HUNTER" then return end
   local seen = ns.db.trainerCosts or {}
   ns.db.trainerCosts = seen
-  local byName = {}
-  for _, e in ipairs(ns.TrainerSpells or {}) do byName[e[4]] = true end
+  -- What the trainer window handed us, so a scan that finds nothing can be explained.
+  local diag = { t = time and time() or 0, npc = UnitExists("npc") and true or false, count = GetNumTrainerServices() or 0,
+                 type = C_Trainer and C_Trainer.GetTrainerType and C_Trainer.GetTrainerType() or "?", sample = {} }
+  if GetTrainerServiceTypeFilter then
+    diag.filters = (GetTrainerServiceTypeFilter("available") and "A" or "") .. (GetTrainerServiceTypeFilter("unavailable") and "U" or "")
+                   .. (GetTrainerServiceTypeFilter("used") and "K" or "")
+  end
   local n = 0
-  for i = 1, GetNumTrainerServices() do
+  for i = 1, diag.count do
     local name, serviceType, _, reqLevel, sub = GetTrainerServiceInfo(i)
-    if name and serviceType ~= "header" and not ns.IsSecret(name) and byName[name] then
+    if #diag.sample < 8 then diag.sample[#diag.sample + 1] = tostring(name) .. "/" .. tostring(serviceType) .. "/" .. tostring(sub) end
+    if name and serviceType ~= "header" and not ns.IsSecret(name) then
       local cost = GetTrainerServiceCost(i)
       if cost and not ns.IsSecret(cost) then
-        local r = ParseRank(sub) or 0
-        seen[name .. "|" .. r] = { reqLevel or 0, cost }
+        local r = (sub and not ns.IsSecret(sub)) and tonumber(sub:match("(%d+)")) or 0
+        seen[name .. "|" .. r] = { (reqLevel and not ns.IsSecret(reqLevel)) and reqLevel or 0, cost }
         n = n + 1
       end
     end
   end
+  diag.saved = n
+  ns.db.trainerScan = diag
   if n > 0 and ns.ApplyTrainerCosts then ns.ApplyTrainerCosts() end
 end
 
