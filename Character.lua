@@ -426,7 +426,8 @@ local function UpdateForeverGlow()
   local tf = PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame
   if not tf or not tf.GetTalentButtonByNodeID then return end
   if not fglow then
-    fglow = CreateFrame("Frame", nil, tf)
+    -- Parented to UIParent, not the talent window, so the gamepad UI never sees it as part of that panel.
+    fglow = CreateFrame("Frame", nil, UIParent)
     local tex = fglow:CreateTexture(nil, "OVERLAY")
     tex:SetAllPoints()
     tex:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
@@ -440,10 +441,13 @@ local function UpdateForeverGlow()
   if not nextStep or not nextStep.node then return end
   local btn = tf:GetTalentButtonByNodeID(nextStep.node)
   if btn and btn:IsShown() then
-    local size = math.max(btn:GetWidth(), btn:GetHeight()) * 1.75
+    -- The glow lives on UIParent, so convert the button's size from the talent window's scale.
+    local k = (btn:GetEffectiveScale() or 1) / (UIParent:GetEffectiveScale() or 1)
+    local size = math.max(btn:GetWidth(), btn:GetHeight()) * 1.75 * k
     fglow:ClearAllPoints()
     fglow:SetPoint("CENTER", btn, "CENTER", 0, 0)
     fglow:SetSize(size, size)
+    fglow:SetFrameStrata(tf:GetFrameStrata())
     fglow:SetFrameLevel(btn:GetFrameLevel() + 5)
     fglow:Show()
   end
@@ -453,17 +457,20 @@ local function RefreshGlow()
   if ERA then UpdateGlow() else pcall(UpdateForeverGlow) end
 end
 
+-- Hooked-already flags live here, not on Blizzard's frames (writing fields onto them taints them).
+local hooked = {}
+
 local function HookTalentFrame()
-  if not PlayerTalentFrame or PlayerTalentFrame.untamedHooked then return end
-  PlayerTalentFrame.untamedHooked = true
+  if not PlayerTalentFrame or hooked.classic then return end
+  hooked.classic = true
   PlayerTalentFrame:HookScript("OnShow", UpdateGlow)
   if PlayerTalentFrame_Update then hooksecurefunc("PlayerTalentFrame_Update", UpdateGlow) end
 end
 
 local function HookTraitFrame()
   local tf = PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame
-  if not tf or tf.untamedHooked then return end
-  tf.untamedHooked = true
+  if not tf or hooked.traits then return end
+  hooked.traits = true
   tf:HookScript("OnShow", function()
     talentMap = nil
     if C_Timer and C_Timer.After then C_Timer.After(0.1, RefreshGlow) else RefreshGlow() end

@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.11.6
+- Gamepad taint fix: Untamed no longer writes its own fields onto Blizzard frames (the unit tooltip and the talent window), and the next-talent glow is no longer parented inside the talent window. One of these could get Untamed blamed for "SetPreferredGamepadInteractTarget()" when opening a controller radial menu.
+- Unit tooltips skip beasts whose identity is hidden in combat on WoW Forever.
+
 ## v2.11.5
 - Spells page uses a real WoW Forever hunter trainer list (recorded in game): 124 spells, every one with its Forever price and level. Forever reworked trainer prices (everything at a level costs the same, for example 67s 50c at 28 and 3g 78s at 60).
 - Multi-Shot and Scorpid Sting are a single rank in Forever, and the trainer doesn't sell Lacerate, so those old ranks are gone from the list. Aspect of the Beast now has ranks 1 to 4.

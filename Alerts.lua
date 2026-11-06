@@ -10,13 +10,20 @@ local function NeedFor(npcId)
   return need and need[npcId]
 end
 
+-- What we already added to each tooltip. Kept here, not on the tooltip: writing our own fields onto
+-- Blizzard frames taints them, and on WoW Forever that taint reaches the gamepad controls.
+local added = setmetatable({}, { __mode = "k" })
+
 local function AddUnitLines(tooltip, unit)
   if not ns.db or not ns.db.tooltipInfo then return end
   if not unit or ns.IsSecret(unit) then return end
-  local npcId = ns.NpcIdFromGUID(UnitGUID(unit))
+  local guid = UnitGUID(unit)
+  if not guid or ns.IsSecret(guid) then return end
+  local npcId = ns.NpcIdFromGUID(guid)
   local b = npcId and ns.Beasts[npcId]
   if not b then return end
-  if tooltip.psfAddedFor == npcId and tooltip:IsShown() and tooltip.psfLines == tooltip:NumLines() then return end
+  local a = added[tooltip]
+  if a and a[1] == npcId and tooltip:IsShown() and a[2] == tooltip:NumLines() then return end
   local need = NeedFor(npcId)
   if need and #need > 0 then
     tooltip:AddLine(GOLD .. "Untamed:|r " .. GREEN .. "your pet needs " .. table.concat(need, ", ") .. "|r", 1, 1, 1, true)
@@ -25,8 +32,7 @@ local function AddUnitLines(tooltip, unit)
   else
     tooltip:AddLine(GOLD .. "Untamed:|r " .. GREY .. "tameable " .. b[4] .. (b[9] and (", attack speed " .. b[9]) or "") .. "|r", 1, 1, 1, true)
   end
-  tooltip.psfAddedFor = npcId
-  tooltip.psfLines = tooltip:NumLines()
+  added[tooltip] = { npcId, tooltip:NumLines() }
   tooltip:Show()
 end
 
@@ -44,7 +50,7 @@ ns.On("LOGIN", function()
       AddUnitLines(self, unit)
     end)
   end
-  GameTooltip:HookScript("OnHide", function(self) self.psfAddedFor = nil end)
+  GameTooltip:HookScript("OnHide", function(self) added[self] = nil end)
 end)
 
 -- Target alert
