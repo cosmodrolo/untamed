@@ -123,7 +123,7 @@ do
           ns.ItemClick(e.id), ns.ItemTooltip(e.id), { mid = C.GREY .. (ns.GearSlotLabel and ns.GearSlotLabel(e.slot) or e.slot) .. "|r" })
       end
     end
-    if shown == 0 then add(14, nil, C.GREY .. (ns.GearItems and L["No hunter gear found for this dungeon."] or L["Hunter loot uses Classic Era data."]) .. "|r") end
+    if shown == 0 then add(14, nil, C.GREY .. (ns.GearItems and L["No hunter gear found for this dungeon."] or L["No hunter gear data loaded."]) .. "|r") end
 
     -- Bosses (creatures with gear drops), most loot first.
     local bosses = {}

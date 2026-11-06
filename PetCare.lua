@@ -113,7 +113,7 @@ local function UpdateFeedMacro()
     else
       b:SetAttribute("type", nil)
       b:SetAttribute("macrotext", nil)
-      b.food = nil
+      b.food = false
     end
     if b.UpdateLabel then b:UpdateLabel() end
   end
@@ -124,6 +124,7 @@ function ns.CreateFeedButton(parent, name, w, h)
   local b = CreateFrame("Button", name, parent, "SecureActionButtonTemplate,UIPanelButtonTemplate")
   b:SetSize(w or 150, h or 22)
   b:RegisterForClicks("AnyUp", "AnyDown")
+  b.food = false
   function b:UpdateLabel()
     if self.food then self:SetText(L["Feed: "] .. self.food[6]) else self:SetText(L["No food your pet eats"]) end
   end

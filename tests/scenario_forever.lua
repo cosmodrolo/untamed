@@ -59,4 +59,19 @@ for _, b in pairs(ns.Beasts) do if not b[9] then missing = missing + 1 elseif b[
 print("forever speeds: fast " .. fast .. ", missing " .. missing)
 assert(fast > 20 and missing == 0, "forever beasts have attack speeds")
 local bf = ns.BrowserFilter(); bf.speed = "fast"; ns.UI_Show("browse"); bf.speed = "any"
+-- Forever spells and gear pages
+local hawk, aimed
+for _, e in ipairs(ns.TrainerSpells) do
+  if e[2] == 1293241 then hawk = e end
+  if e[4] == "Aimed Shot" then aimed = true end
+end
+assert(hawk and hawk[1] == 25 and hawk[3] == -1, "forever trainer has Summon Hawk")
+assert(aimed, "forever trainer lists talent ranks")
+local n = ns.SpellsToTrain(); print("forever spells to train at 26: " .. n)
+assert(n > 0, "spells to train on forever")
+assert(ns.Money(-1):find("?", 1, true), "unknown cost shows ?")
+ns.UI_Show("spells")
+local cnt = 0 for _ in pairs(ns.GearItems) do cnt = cnt + 1 end
+assert(cnt > 4000 and ns.GearItems[2825] and ns.GearItems[288930], "forever gear table merged")
+ns.UI_Show("gear")
 print("DONE")

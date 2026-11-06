@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.11.0
+- Spells page works on WoW Forever. It uses Forever's own trainer data, including the new spells: Summon Hawk (ranks 1 to 4 at 25, 36, 48 and 60), Aspect of the Beast ranks 2 to 4, Strider Kick, and the extra ranks of Trueshot Aura, Counterattack, Lacerate and Sniper Shot. Costs for Forever-only spells show "?" until we know them.
+- Higher ranks of talent spells (Aimed Shot, Trueshot Aura, Lacerate and others) show "needs talent" and are not counted as "train now" unless you have the talent.
+- Gear page, gear upgrade alerts, the gear line on item tooltips, and dungeon and reputation gear lists work on WoW Forever. Scores use Forever's own item stats (2,646 items Forever changed or added), and Classic values for items Forever left alone.
+- Classic Era support is removed. Untamed is now a WoW Forever addon only. If your Forever AddOns\Untamed folder still has Untamed.toc, Untamed_Vanilla.toc or Data\*_Era.lua files, you can delete them.
+
 ## v2.10.0
 - All Beasts: new attack speed filter (fast, faster than normal, normal, slow). Forever beasts now have real attack speeds (field-confirmed from beastmaster.io, 2.0 s for the rest), shown on each row in green (faster) or orange (slower), and sorting by attack speed works on Forever.
 - Find a Pet prefers faster beasts for damage on Forever too, now that the speeds are known.

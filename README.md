@@ -1,6 +1,6 @@
 # Untamed
 
-A hunter pet guide for **World of Warcraft Classic Era** and **WoW Forever**.
+A hunter pet guide for **WoW Forever**.
 
 Untamed looks at the pet you have out (or a family you pick), shows every ability rank it can still learn, tells you which wild beasts teach each rank, and gets you there: map and minimap pins, an on-screen arrow, the nearest stable master and flight master, and a trip planner that orders the stops for you.
 
@@ -11,7 +11,7 @@ Untamed looks at the pet you have out (or a family you pick), shows every abilit
 - **Navigation arrow.** Points to the nearest spawn of any beast, stable master or flight master. No other addon needed (TomTom is supported with shift-click).
 - **Stable and flight masters.** The closest ones for your faction to every beast, on the map and in tooltips.
 - **Map, minimap and tooltips.** Pins for every beast your pet still needs, tooltip lines on beasts in the world, and an alert when you target one.
-- **Pet browser.** Every tameable beast, searchable by name or zone, filterable by family, rares and what you can tame now, sortable by level, name and (Classic Era) attack speed.
+- **Pet browser.** Every tameable beast, searchable by name or zone, filterable by family, rares and what you can tame now, sortable by level, name and attack speed.
 - **Pet care.** Happiness, loyalty, experience, training points, diet, and the food in your bags your pet will eat, with a one-click Feed button that pops up when your pet is unhappy.
 - **Find a Pet.** Pick a role (Tank, Damage, Leveling, PvP, Utility) and get the best families and the best beasts to tame near you.
 - **Stable manager.** Remembers every pet you own and what each can learn from ranks you already know.
@@ -31,11 +31,12 @@ Forever reworked hunter pets (new families, new family abilities, Owl renamed Bi
 - Classic family damage, armor and health modifiers: [Icy Veins Classic hunter pet guide](https://www.icy-veins.com/wow-classic/hunter-dps-pets-guide).
 - Item pet food types, ammo vendors, hunter and pet trainers: [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0).
 - Classic Era tameable beasts: [cmangos classic-db](https://github.com/cmangos/classic-db) (GPL-3.0).
+- Forever trainer spells and item stats: WoW Forever client tables (build 1.60.1.70790), exported with [wago.tools](https://wago.tools).
 - Which abilities each beast teaches: Blizzard's Classic Era client table CreatureSpellData (build 1.15.9.70576), exported with [wago.tools](https://wago.tools).
 - WoW Forever beast abilities: compiled from public Forever pet guides, with field-confirmed abilities and spawn points for new beasts from [beastmaster.io](https://beastmaster.io/forever) (see `tools/forever_pets.json` for the list of sources), and checked against Blizzard's Forever client tables (build 1.60.1.70790) via [wago.tools](https://wago.tools).
 - World of Warcraft and all game data are trademarks and copyrights of Blizzard Entertainment.
 
-`tools/` holds the scripts that regenerate `Data/Era.lua`, `Data/Forever.lua` and `Foods.lua`. `tests/` runs the addon offline against a mocked WoW API (`python tests/run.py`, needs `pip install lupa`).
+`tools/` holds the scripts that regenerate `Data/Forever.lua`, `Data/Hunter_Forever.lua` and `Foods.lua`. `tests/` runs the addon offline against a mocked WoW API (`python tests/run.py`, needs `pip install lupa`).
 
 ## License
 

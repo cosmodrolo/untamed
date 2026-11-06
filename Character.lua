@@ -8,6 +8,7 @@ local ERA = ns.FLAVOR ~= "forever"
 
 local function Money(copper)
   copper = copper or 0
+  if copper < 0 then return C.GREY .. "?|r" end
   local g, s, c = math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100
   local out = {}
   if g > 0 then out[#out + 1] = C.GOLD .. g .. "g|r" end
@@ -30,7 +31,7 @@ local function Known(spellID)
 end
 
 local function NotForever(add, what)
-  add(0, nil, C.ORANGE .. string.format(L["%s uses Classic Era data. WoW Forever reworked hunters, so this page will be filled in once Forever's data is available."], what) .. "|r")
+  add(0, nil, C.ORANGE .. string.format(L["%s has no data loaded."], what) .. "|r")
 end
 
 ---------------------------------------------------------------------------
@@ -44,12 +45,27 @@ local OPTIONAL = {
   ["Explosive Trap"] = true, ["Beast Lore"] = true,
 }
 
+-- Higher ranks of talent spells: the trainer only sells them once you have the talent.
+-- Any of these spell IDs known means the talent is learned.
+local TALENT_SPELLS = {
+  ["Aimed Shot"] = { 19434 }, ["Trueshot Aura"] = { 1299346, 19506 }, ["Counterattack"] = { 19306 },
+  ["Lacerate"] = { 24118 }, ["Sniper Shot"] = { 1310687 }, ["Wyvern Sting"] = { 19386 },
+  ["Scatter Shot"] = { 19503 }, ["Deterrence"] = { 19263 }, ["Intimidation"] = { 19577 }, ["Bestial Wrath"] = { 19574 },
+}
+local function NeedsTalent(name)
+  local ids = TALENT_SPELLS[name]
+  if not ids then return false end
+  for _, id in ipairs(ids) do if Known(id) then return false end end
+  return true
+end
+local function Cost(c) return (c and c > 0) and c or 0 end
+
 -- For the Home page: spells you can train now (not counting optional ones).
 function ns.SpellsToTrain()
-  if not ERA or not ns.TrainerSpells then return 0, 0 end
+  if not ns.TrainerSpells then return 0, 0 end
   local lvl, n, cost = UnitLevel("player"), 0, 0
   for _, e in ipairs(ns.TrainerSpells) do
-    if e[1] <= lvl and not OPTIONAL[e[4]] and not Known(e[2]) then n = n + 1; cost = cost + e[3] end
+    if e[1] <= lvl and not OPTIONAL[e[4]] and not NeedsTalent(e[4]) and not Known(e[2]) then n = n + 1; cost = cost + Cost(e[3]) end
   end
   return n, cost
 end
@@ -67,7 +83,7 @@ do
   local function Refresh()
     local rows = {}
     local function add(...) rows[#rows + 1] = { ... } end
-    if not ERA or not ns.TrainerSpells then NotForever(add, L["The spell guide"]); list:Set(rows) return end
+    if not ns.TrainerSpells then NotForever(add, L["The spell guide"]); list:Set(rows) return end
     local playerLevel = UnitLevel("player")
     -- Highest rank per spell name the player knows.
     local missingNow, missingNowCost, optionalCost = 0, 0, 0
@@ -77,9 +93,9 @@ do
       local known = Known(id)
       if not byLevel[lvl] then byLevel[lvl] = {}; levels[#levels + 1] = lvl end
       table.insert(byLevel[lvl], e)
-      if not known and lvl <= playerLevel then
-        if OPTIONAL[name] then optionalCost = optionalCost + cost
-        else missingNow = missingNow + 1; missingNowCost = missingNowCost + cost end
+      if not known and lvl <= playerLevel and not NeedsTalent(name) then
+        if OPTIONAL[name] then optionalCost = optionalCost + Cost(cost)
+        else missingNow = missingNow + 1; missingNowCost = missingNowCost + Cost(cost) end
       end
     end
     table.sort(levels)
@@ -95,6 +111,7 @@ do
       local known = Known(id)
       local status
       if known then status = C.GREEN .. L["known"] .. "|r"
+      elseif NeedsTalent(name) then status = C.GREY .. L["needs talent"] .. "|r"
       elseif lvl > playerLevel then status = C.GREY .. L["later"] .. "|r"
       elseif OPTIONAL[name] then status = C.GREY .. L["optional"] .. "|r"
       else status = C.ORANGE .. L["train now"] .. "|r" end
@@ -102,7 +119,9 @@ do
       add(indent or 14, icon, (known and C.GREY or C.WHITE) .. label .. "|r" .. (rank > 0 and (C.GREY .. "  " .. L["Rank "] .. rank .. "|r") or ""),
         status .. "   " .. Money(cost), nil,
         { label .. (rank > 0 and (" " .. L["Rank "] .. rank) or ""), L["Trainer level "] .. lvl .. ", " .. Money(cost),
-          OPTIONAL[name] and (C.GREY .. L["Many hunters skip this while leveling to save gold and buy it later if they need it."] .. "|r") or "" },
+          OPTIONAL[name] and (C.GREY .. L["Many hunters skip this while leveling to save gold and buy it later if they need it."] .. "|r")
+            or (NeedsTalent(name) and (C.GREY .. L["The trainer sells this rank once you have the talent."] .. "|r")) or "",
+          cost < 0 and (C.GREY .. L["Cost not known yet for this WoW Forever spell."] .. "|r") or "" },
         { mid = C.GREY .. L["lvl "] .. lvl .. "|r" })
     end
 
@@ -110,7 +129,7 @@ do
       -- Every trainer level, everything, known or not.
       for _, lvl in ipairs(levels) do
         local total = 0
-        for _, e in ipairs(byLevel[lvl]) do total = total + e[3] end
+        for _, e in ipairs(byLevel[lvl]) do total = total + Cost(e[3]) end
         add(0, nil, (lvl <= playerLevel and C.GOLD or C.GREY) .. L["Level "] .. lvl .. "|r", Money(total), nil, nil, { header = true })
         for _, e in ipairs(byLevel[lvl]) do SpellRow(e, lvl) end
       end
@@ -119,7 +138,7 @@ do
       for _, lvl in ipairs(levels) do
         if lvl <= playerLevel then
           for _, e in ipairs(byLevel[lvl]) do
-            if not Known(e[2]) and not OPTIONAL[e[4]] then SpellRow(e, lvl) end
+            if not Known(e[2]) and not OPTIONAL[e[4]] and not NeedsTalent(e[4]) then SpellRow(e, lvl) end
           end
         end
       end
@@ -128,7 +147,7 @@ do
         if lvl > playerLevel and shown < 2 then
           shown = shown + 1
           local total = 0
-          for _, e in ipairs(byLevel[lvl]) do total = total + e[3] end
+          for _, e in ipairs(byLevel[lvl]) do total = total + Cost(e[3]) end
           add(0, nil, string.format(L["At level %d"], lvl), Money(total), nil, nil, { header = true })
           for _, e in ipairs(byLevel[lvl]) do SpellRow(e, lvl) end
         end
@@ -644,7 +663,7 @@ do
   local function Refresh()
     local rows = {}
     local function add(...) rows[#rows + 1] = { ... } end
-    if not ERA or not ns.GearItems then NotForever(add, L["The gear guide"]); list:Set(rows) return end
+    if not ns.GearItems then NotForever(add, L["The gear guide"]); list:Set(rows) return end
     local level = UnitLevel("player")
     local db = ns.SearchDB and ns.SearchDB()
     local buckets = {
@@ -691,7 +710,7 @@ end
 local alerted = {}
 local function SlotOf(id) local g = ns.GearItems and ns.GearItems[id]; return g and g[1] end
 local function AlertNewLevel(level)
-  if not ERA or not ns.db.gearAlerts or not ns.GearItems then return end
+  if not ns.db.gearAlerts or not ns.GearItems then return end
   local n = 0
   for _, s in ipairs(SLOTS) do
     local id, score = BestFor(s[1], level, level, WornScore(s[1]), "easy", false)
@@ -704,7 +723,7 @@ local function AlertNewLevel(level)
   end
 end
 local function AlertZone()
-  if not ERA or not ns.db.gearAlerts or not ns.GearItems then return end
+  if not ns.db.gearAlerts or not ns.GearItems then return end
   local map = ns.PlayerMap and ns.PlayerMap()
   if not map then return end
   local db = ns.SearchDB()
@@ -739,6 +758,7 @@ ns.GearAlertTest = { AlertNewLevel = AlertNewLevel, AlertZone = AlertZone }
 -- Upgrade line on item tooltips.
 local function OnItemTooltip(tt, id)
   if not ns.db.gearTooltip or not id or not ns.GearItems then return end
+  if ns.IsSecret and ns.IsSecret(id) then return end
   local g = ns.GearItems[id]
   if not g then return end
   local worn = WornScore(g[1])
@@ -752,7 +772,7 @@ local function OnItemTooltip(tt, id)
   end
 end
 
-if ERA then
+do
   ns.On("LOGIN", function()
     if TooltipDataProcessor and Enum and Enum.TooltipDataType then
       TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tt, data)

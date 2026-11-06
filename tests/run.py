@@ -8,15 +8,11 @@ import lupa.lua51 as L
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 T = os.path.join(ROOT, "tests")
 CASES = [
-    ("Untamed_Vanilla.toc", ["mock.lua"], "scenario_era.lua"),
-    ("Untamed_Vanilla.toc", ["mock.lua"], "scenario_food.lua"),
     ("Untamed_Forever.toc", ["mock.lua", "mock_forever.lua"], "scenario_forever.lua"),
-    ("Untamed_Vanilla.toc", ["mock.lua"], "scenario_features.lua"),
+    ("Untamed_Forever.toc", ["mock.lua", "mock_forever.lua"], "scenario_food.lua"),
     ("Untamed_Forever.toc", ["mock.lua", "mock_forever.lua"], "scenario_features.lua"),
-    ("Untamed_Vanilla.toc", ["mock.lua", "mock_deDE.lua"], "scenario_locale.lua"),
-    ("Untamed_Vanilla.toc", ["mock.lua"], "scenario_combat.lua"),
+    ("Untamed_Forever.toc", ["mock.lua", "mock_forever.lua", "mock_deDE.lua"], "scenario_locale.lua"),
     ("Untamed_Forever.toc", ["mock.lua", "mock_forever.lua"], "scenario_combat.lua"),
-    ("Untamed_Vanilla.toc", ["mock.lua"], "scenario_arrow.lua"),
     ("Untamed_Forever.toc", ["mock.lua", "mock_forever.lua"], "scenario_arrow.lua"),
 ]
 
