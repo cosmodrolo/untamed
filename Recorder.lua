@@ -155,7 +155,14 @@ local function RecordLoot()
           local rec = drops[key]
           if not rec then
             local name
-            if kind == "Creature" and UnitExists("target") and UnitGUID("target") == src[k] then name = UnitName("target") end
+            if kind == "Creature" and UnitExists("target") then
+              -- Forever can hide the target's GUID and name in combat (secret values): don't compare those.
+              local tg = UnitGUID("target")
+              if not ns.IsSecret(tg) and tg == src[k] then
+                local n = UnitName("target")
+                if not ns.IsSecret(n) then name = n end
+              end
+            end
             rec = { name = name, map = map, x = x, y = y, items = {} }
             drops[key] = rec
           end

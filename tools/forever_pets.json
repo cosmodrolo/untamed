@@ -2156,14 +2156,10 @@
     [
      "Bite",
      2
-    ],
-    [
-     "Furious Howl",
-     1
     ]
    ],
    "zone": "Mulgore",
-   "source": "mmonster",
+   "source": "beastmaster",
    "attackSpeedPassive": "Faster Attack IV"
   },
   {

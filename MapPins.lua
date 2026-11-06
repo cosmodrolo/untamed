@@ -200,11 +200,32 @@ local function BestZone(npcList)
   return best
 end
 
+-- With Forever's gamepad UI on, opening the world map from addon code passes taint into the
+-- gamepad action bars ("SetPreferredGamepadInteractTarget" blocked). So in gamepad mode Untamed
+-- only sets the pins and jumps to the zone when you open the map yourself.
+local pendingMap
+local function GamepadUI()
+  return InputUtil and InputUtil.IsGamepadUIEnabled and InputUtil.IsGamepadUIEnabled() or false
+end
 function ns.OpenMapTo(mapID)
   if not mapID then return end
-  if InCombatLockdown() then ns.Print(L["Pins set. Open your map after combat."]) return end
-  if not WorldMapFrame:IsShown() then ToggleWorldMap() end
+  if WorldMapFrame:IsShown() then WorldMapFrame:SetMapID(mapID) return end
+  if InCombatLockdown() then pendingMap = mapID; ns.Print(L["Pins set. Open your map after combat."]) return end
+  if GamepadUI() then
+    pendingMap = mapID
+    ns.Print(L["Pins set. Open your map to see them."])
+    return
+  end
+  ToggleWorldMap()
   WorldMapFrame:SetMapID(mapID)
+end
+if WorldMapFrame and WorldMapFrame.HookScript then
+  WorldMapFrame:HookScript("OnShow", function()
+    if not pendingMap then return end
+    local m = pendingMap
+    pendingMap = nil
+    if C_Timer and C_Timer.After then C_Timer.After(0, function() if WorldMapFrame:IsShown() then WorldMapFrame:SetMapID(m) end end) end
+  end)
 end
 
 function ns.Pins_Focus(npcList, label, openMap)

@@ -305,6 +305,7 @@ L["Pick a role and get the best family and beasts for it"] = true
 L["Pick an ability to see every beast that teaches it."] = true
 L["Pin All Stops"] = true
 L["Pins set. Open your map after combat."] = true
+L["Pins set. Open your map to see them."] = true
 L["Plan for a family"] = true
 L["Plan for my level"] = true
 L["Plan how to spend your pet's training points"] = true

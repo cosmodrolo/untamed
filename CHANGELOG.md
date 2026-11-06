@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.9.3
+- Fixed: recording loot in combat errored ("attempt to compare a secret string value") when Forever hid your target's ID. The recorder now checks before comparing.
+- Gamepad: with Forever's gamepad UI on, Untamed no longer opens the world map itself (that could pass taint into the gamepad bars and block "SetPreferredGamepadInteractTarget"). It sets the pins, tells you to open your map, and jumps to the zone when you do. Mouse and keyboard work as before.
+- The rare scanner skips hidden (secret) IDs and levels instead of risking an error in combat.
+- Forever data: Prairie Wolf Alpha teaches only Bite 2 (beastmaster.io). Search includes your latest recordings.
+
 ## v2.9.2 (Forever)
 - Uses QuestieDB 1.0.11's live Forever traces (data gathered from players since launch). Search now knows 1,241 more Forever NPCs and 107 objects with their real spots, 785 new Forever items, and about 4,600 more "drops from" links.
 - 28 tameable beasts now use live spawn spots instead of database guesses, including Gray Fox, Maddened Rotclaw, Vuldren Alpha and the Zephras Isle beasts.

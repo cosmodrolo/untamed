@@ -176,7 +176,7 @@ end
 function ns.CheckRare(unit)
   if not ns.db or not ns.db.rareAlert or not unit then return end
   local ok, guid = pcall(UnitGUID, unit)
-  if not ok or not guid then return end
+  if not ok or not guid or ns.IsSecret(guid) then return end
   local cls = UnitClassification and UnitClassification(unit)
   if ns.IsSecret(cls) then return end
   local npcId = ns.NpcIdFromGUID(guid)
@@ -187,7 +187,9 @@ function ns.CheckRare(unit)
   if UnitIsPlayer and UnitIsPlayer(unit) then return end
   local name = UnitName(unit)
   if not name or ns.IsSecret(name) then return end
-  Announce(npcId, name, UnitLevel(unit), cls, unit)
+  local level = UnitLevel(unit)
+  if ns.IsSecret(level) then level = nil end
+  Announce(npcId, name, level, cls, unit)
 end
 
 -- Map vignettes (only where the game shows them for rares).

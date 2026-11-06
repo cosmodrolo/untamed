@@ -29,7 +29,27 @@ UnitGUID = function(u) if u == "target" then return SECRET end return oldGUID(u)
 ns.db.autoShotBar = true; ns.Combat.ShowBar(true)
 ns.Combat.ShotFired(); ns.Combat.ShotFired()
 FIRE("PLAYER_REGEN_DISABLED"); FIRE("PLAYER_TARGET_CHANGED")
+-- loot recorded while the target GUID is hidden
+ns.db.recordData = true
+GetNumLootItems = function() return 1 end
+GetLootSlotLink = function() return "|cffffffff|Hitem:2516::::::::1:::::::|h[Light Shot]|h|r" end
+GetLootSourceInfo = function() return "Creature-0-1-2-3-299-0000000001", 1 end
+FIRE("LOOT_OPENED")
+-- a rare whose level is hidden
+UnitClassification = function() return "rare" end
+local oldG = UnitGUID; UnitGUID = function(u) if u == "mouseover" then return "Creature-0-1-2-3-61-0000000002" end return SECRET end
+UnitExists = function() return true end
+ns.CheckRare("mouseover")
+UnitGUID = oldG
 print("secret combat ok")
+-- gamepad UI on: Untamed doesn't open the world map itself
+InputUtil = { IsGamepadUIEnabled = function() return true end }
+local opened = false
+local oldToggle = ToggleWorldMap; ToggleWorldMap = function() opened = true end
+WorldMapFrame.IsShown = function() return false end
+ns.OpenMapTo(1429)
+ToggleWorldMap = oldToggle; InputUtil = nil
+print("gamepad map " .. (opened and "OPENED" or "left closed"))
 UnitRangedDamage, GetUnitSpeed, UnitLevel, UnitGUID = oldRD, oldSpeed, oldLevel, oldGUID
 issecretvalue = function() return false end
 type = realType
