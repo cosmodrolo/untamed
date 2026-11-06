@@ -82,7 +82,7 @@ local function MaxUsable(ability, level)
   return best
 end
 
-local SPECIAL_DEFENSIVE = { ["Shell Shield"] = true, ["Thunderstomp"] = true, ["Cower"] = false }
+local SPECIAL_DEFENSIVE = { ["Shell Shield"] = true, ["Thunderstomp"] = true, ["Dust Cloud"] = true, ["Trickster's Dance"] = true, ["Cower"] = false }
 
 local function Preset(family, level, role)
   local b = {}

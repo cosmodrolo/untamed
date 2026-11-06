@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.11.2
+- Find a Pet uses family damage, armor and health bonuses again, now read from WoW Forever's own client data (each family's passive spell). Forever kept the Classic values, added Bird of Prey (same as the old Owl) and Fox (same as Wolf). The old "based on abilities only" note is gone.
+- Checked against Forever's client tables: which families learn each ability and the pet level for every rank (including Swipe, Pinch, Dismember, Web, Mine! and Thunderstomp rank 4) already matched Forever.
+- Tank preset on the Builds tab includes Forever's new defensive abilities, Dust Cloud and Trickster's Dance.
+
 ## v2.11.1
 - Talents page uses WoW Forever's real talent trees (checked against wowhead's Forever talent calculator), all three trees, including the new talents like Focused Fire, Summon Hawk, Careful Aim, Rapid Killing, Lone Wolf, Improved Stings, Predator's Edge, Expose Prey and Strider Kick.
 - New Forever builds: Leveling (Beast Mastery, 31/20/0) from Kargoz's 1-60 leveling guide, and Raid (Marksmanship, 7/32/12) from Feor's Marksmanship guide (both on mobalytics.gg).

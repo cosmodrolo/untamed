@@ -4,15 +4,17 @@ local C, L = ns.C, ns.L
 -- Pet recommender: pick a role, get the best families for it and the best
 -- actual beasts to tame near you, plus a matching starting build.
 
--- Classic Era family modifiers in percent: damage, armor, health (Icy Veins Classic hunter pet guide).
+-- Family modifiers in percent: damage, armor, health. From WoW Forever's client data (each family's
+-- "Tamed Pet Passive" spell, wago.tools build 1.60.1.70790). Forever kept the Classic values; Fox
+-- shares Wolf's passive and Bird of Prey has the old Owl one. Pets also scale with your gear in Forever.
 local STATS = {
-  ["Bat"] = { 7, 0, 0 }, ["Bear"] = { -9, 5, 8 }, ["Boar"] = { -10, 9, 4 }, ["Carrion Bird"] = { 0, 5, 0 },
-  ["Cat"] = { 10, 0, -2 }, ["Crab"] = { -5, 13, -4 }, ["Crocolisk"] = { 0, 10, -5 }, ["Gorilla"] = { 2, 0, 4 },
-  ["Hyena"] = { 0, 5, 0 }, ["Owl"] = { 7, 0, 0 }, ["Raptor"] = { 10, 3, -5 }, ["Scorpid"] = { -6, 10, 0 },
-  ["Spider"] = { 7, 0, 0 }, ["Tallstrider"] = { 0, 0, 5 }, ["Turtle"] = { -10, 13, 0 }, ["Wind Serpent"] = { 7, 0, 0 },
-  ["Wolf"] = { 0, 5, 0 },
+  ["Bat"] = { 7, 0, 0 }, ["Bear"] = { -9, 5, 8 }, ["Bird of Prey"] = { 7, 0, 0 }, ["Boar"] = { -10, 9, 4 },
+  ["Carrion Bird"] = { 0, 5, 0 }, ["Cat"] = { 10, 0, -2 }, ["Crab"] = { -5, 13, -4 }, ["Crocolisk"] = { 0, 10, -5 },
+  ["Fox"] = { 0, 5, 0 }, ["Gorilla"] = { 2, 0, 4 }, ["Hyena"] = { 0, 5, 0 }, ["Raptor"] = { 10, 3, -5 },
+  ["Scorpid"] = { -6, 10, 0 }, ["Spider"] = { 7, 0, 0 }, ["Tallstrider"] = { 0, 0, 5 }, ["Turtle"] = { -10, 13, 0 },
+  ["Wind Serpent"] = { 7, 0, 0 }, ["Wolf"] = { 0, 5, 0 },
 }
-ns.FamilyStats = ns.FLAVOR ~= "forever" and STATS or nil
+ns.FamilyStats = STATS
 
 -- What each ability brings to a role (points added to a family's score).
 local ABILITY_ROLE = {
@@ -82,7 +84,7 @@ function ns.RankFamilies(role)
   return out
 end
 
--- Best actual beasts of a family: tameable now, fastest attack (Classic Era), highest level, closest.
+-- Best actual beasts of a family: tameable now, fastest attack, highest level, closest.
 function ns.BestBeasts(family, role, maxCount)
   local playerLevel = UnitLevel("player")
   local pc, pe, pn = ns.PlayerWorld()
@@ -130,9 +132,6 @@ local function Refresh()
   local function add(...) rows[#rows + 1] = { ... } end
   local roleLabel
   for _, r in ipairs(ROLES) do if r.key == role then roleLabel = L[r.label] end end
-  if ns.FLAVOR == "forever" then
-    add(0, nil, C.ORANGE .. L["Forever reworked pet stats, so these picks are based on family abilities only."] .. "|r", "")
-  end
   local ranked = ns.RankFamilies(role)
   add(0, nil, C.GREY .. string.format(L["Best families for %s"], roleLabel) .. "|r",
     C.GREY .. L["click a beast for an arrow"] .. "|r")
