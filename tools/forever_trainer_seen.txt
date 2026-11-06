@@ -1,0 +1,143 @@
+Arcane Shot|8|60|37800
+Beast Lore|0|24|6480
+Mongoose Bite|1|0|1350
+Arcane Shot|4|28|6750
+Aspect of the Beast|3|50|27000
+Wing Clip|0|60|37800
+Hunter's Mark|1|0|90
+Serpent Sting|0|58|35100
+Parry|0|8|180
+Freezing Trap|2|40|14400
+Multi-Shot|0|0|1440
+Serpent Sting|4|26|6660
+Aimed Shot|0|60|37800
+Trueshot Aura|0|60|37800
+Track Humanoids|0|0|360
+Wing Clip|2|38|13500
+Trueshot Aura|3|40|14400
+Counterattack|0|54|33300
+Mend Pet|6|52|32400
+Aimed Shot|2|28|6750
+Summon Hawk|3|48|26100
+Freezing Trap|1|0|1890
+Mend Pet|1|0|540
+Track Undead|0|0|1440
+Arcane Shot|7|52|32400
+Eagle Eye|0|0|1080
+Serpent Sting|3|0|1440
+Trueshot Aura|2|32|9000
+Immolation Trap|1|0|1350
+Arcane Shot|2|0|540
+Serpent Sting|2|0|360
+Immolation Trap|4|46|25200
+Explosive Trap|0|54|33300
+Track Demons|0|32|9000
+Hunter's Mark|0|58|35100
+Scorpid Sting|0|22|6300
+Concussive Shot|0|0|180
+Serpent Sting|5|34|9900
+Aspect of the Hawk|5|48|26100
+Raptor Strike|6|40|14400
+Raptor Strike|3|0|1350
+Freezing Trap|0|60|37800
+Volley|2|50|27000
+Dual Wield|0|20|1890
+Track Dragonkin|0|50|27000
+Immolation Trap|3|36|11700
+Aspect of the Cheetah|0|0|1890
+Serpent Sting|8|58|35100
+Trueshot Aura|5|60|37800
+Volley|0|58|35100
+Distracting Shot|1|0|540
+Serpent Sting|6|42|19800
+Distracting Shot|6|60|37800
+Summon Hawk|2|36|11700
+Disengage|1|0|1890
+Mail|0|40|14400
+Counterattack|4|54|33300
+Mend Pet|7|60|37800
+Arcane Shot|0|60|37800
+Distracting Shot|0|60|37800
+Summon Hawk|4|60|37800
+Viper Sting|0|56|34200
+Immolation Trap|5|56|34200
+Aspect of the Pack|0|40|14400
+Aimed Shot|6|60|37800
+Sniper Shot|3|58|35100
+Distracting Shot|5|50|27000
+Aimed Shot|5|52|32400
+Arcane Shot|1|0|90
+Feign Death|0|30|6840
+Hunter's Mark|2|22|6300
+Distracting Shot|3|30|6840
+Disengage|0|48|26100
+Viper Sting|2|46|25200
+Wing Clip|1|0|540
+Summon Hawk|0|60|37800
+Volley|1|40|14400
+Track Beasts|0|0|9
+Counterattack|3|42|19800
+Raptor Strike|8|56|34200
+Trueshot Aura|4|50|27000
+Frost Trap|0|28|6750
+Sniper Shot|2|48|26100
+Viper Sting|1|36|11700
+Mend Pet|4|36|11700
+Eyes of the Beast|0|0|1080
+Aspect of the Hawk|1|0|360
+Rapid Fire|0|26|6660
+Mongoose Bite|3|44|20700
+Mend Pet|0|60|37800
+Mongoose Bite|2|30|6840
+Scare Beast|0|46|25200
+Aspect of the Wild|1|46|25200
+Disengage|2|34|9900
+Track Hidden|0|24|6480
+Aspect of the Hawk|3|28|6750
+Aimed Shot|3|36|11700
+Mend Pet|2|0|1890
+Aimed Shot|4|44|20700
+Arcane Shot|3|0|1890
+Aimed Shot|1|0|1890
+Track Elementals|0|26|6660
+Sniper Shot|0|58|35100
+Aspect of the Wild|2|56|34200
+Raptor Strike|7|48|26100
+Raptor Strike|4|24|6480
+Aspect of the Beast|2|40|14400
+Mend Pet|3|28|6750
+Aspect of the Beast|1|30|6840
+Mongoose Bite|4|58|35100
+Scare Beast|3|46|25200
+Raptor Strike|0|56|34200
+Mend Pet|5|44|20700
+Aspect of the Monkey|0|0|90
+Aspect of the Hawk|6|58|35100
+Serpent Sting|7|50|27000
+Raptor Strike|2|0|180
+Aspect of the Hawk|4|38|13500
+Immolation Trap|2|26|6660
+Distracting Shot|4|40|14400
+Counterattack|2|30|6840
+Scare Beast|2|30|6840
+Raptor Strike|5|32|9000
+Explosive Trap|1|34|9900
+Distracting Shot|2|20|1890
+Track Giants|0|40|14400
+Arcane Shot|5|36|11700
+Flare|0|32|9000
+Serpent Sting|1|0|90
+Scare Beast|1|0|1080
+Hunter's Mark|3|40|14400
+Arcane Shot|6|44|20700
+Aspect of the Beast|4|60|37800
+Disengage|3|48|26100
+Wing Clip|3|60|37800
+Explosive Trap|2|44|20700
+Aspect of the Hawk|2|0|1440
+Explosive Trap|3|54|33300
+Immolation Trap|0|56|34200
+Volley|3|58|35100
+Viper Sting|3|56|34200
+Freezing Trap|3|60|37800
+Hunter's Mark|4|58|35100

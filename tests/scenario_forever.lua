@@ -70,8 +70,12 @@ for _, e in ipairs(ns.TrainerSpells) do
   if e[2] == 1293525 then hawk = e end
   if e[4] == "Aimed Shot" then aimed = true end
 end
-assert(hawk and hawk[1] == 36 and hawk[3] == -1, "forever trainer has Summon Hawk rank 2")
-for _, e in ipairs(ns.TrainerSpells) do assert(e[4] ~= "Wyvern Sting" and e[4] ~= "Strider Kick", "no Classic-only or talent-only spells") end
+assert(hawk and hawk[1] == 36 and hawk[3] == 11700, "forever trainer has Summon Hawk rank 2 at its Forever price")
+for _, e in ipairs(ns.TrainerSpells) do
+  assert(e[4] ~= "Wyvern Sting" and e[4] ~= "Strider Kick" and e[4] ~= "Lacerate", "only spells a Forever trainer sells")
+  assert(e[3] >= 0, "every trainer spell has a cost: " .. e[4])
+  if e[4] == "Multi-Shot" then assert(e[5] == 0, "Multi-Shot is a single rank in Forever") end
+end
 -- the leveling build only uses talents that exist in the Forever trees, and adds up to 51 points
 local bt = ns.CharacterTest and ns.CharacterTest.Builds
 assert(bt, "builds exposed")
@@ -98,13 +102,13 @@ ns.UI_Show("gear")
 local oldType, oldExists = C_Trainer.GetTrainerType, UnitExists
 C_Trainer.GetTrainerType = function() return 0 end
 UnitExists = function(u) return u == "npc" or oldExists(u) end
-SERVICES = { { "Summon Hawk", "available", nil, 36, "Rank 2", 18000 }, { "Lacerate", "unavailable", nil, 30, "Rank 1", 2200 } }
+SERVICES = { { "Summon Hawk", "available", nil, 36, "Rank 2", 18000 }, { "Aspect of the Beast", "unavailable", nil, 40, "Rank 2", 2200 } }
 FIRE("TRAINER_SHOW")
 C_Trainer.GetTrainerType, UnitExists = oldType, oldExists
 local hawk2, lac1
 for _, e in ipairs(ns.TrainerSpells) do
   if e[2] == 1293525 then hawk2 = e end
-  if e[2] == 24118 then lac1 = e end
+  if e[2] == 1299445 then lac1 = e end
 end
 assert(hawk2[3] == 18000 and lac1[3] == 2200, "hunter trainer costs recorded and applied")
 assert(ns.db.trainerCosts["Summon Hawk|2"][2] == 18000, "costs saved for later")

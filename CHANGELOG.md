@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.11.5
+- Spells page uses a real WoW Forever hunter trainer list (recorded in game): 124 spells, every one with its Forever price and level. Forever reworked trainer prices (everything at a level costs the same, for example 67s 50c at 28 and 3g 78s at 60).
+- Multi-Shot and Scorpid Sting are a single rank in Forever, and the trainer doesn't sell Lacerate, so those old ranks are gone from the list. Aspect of the Beast now has ranks 1 to 4.
+
 ## v2.11.4
 - Visiting a hunter trainer saves what each spell rank costs and fills in the "?" costs on the Spells page (and the level, if Forever moved it).
 - 56 more Forever beasts from beastmaster.io (now 623). Includes the Gloomrise spiders and Broodmother Valraxx in Mulgore, the Ruins of Lordaeron spiders (Spider and Deep Widow teach Web 1), the Excavation Site: Wetlands beasts (Dismember 2 and Savage Rend 2 teachers), Ghostfang, Matriarch Bristlefur, Slydris, Chakuyak, Carnage, and Classic beasts like Echeyakee, Ishamuhale, Arikara, Shy-Rotam, Deathmaw and Enraged Stanley.
