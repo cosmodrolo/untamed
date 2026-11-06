@@ -1,6 +1,7 @@
 # Changelog
 
 ## v2.11.2
+- Fixed a login warning ("Couldn't open embeds.xml"). Untamed no longer lists optional libraries it doesn't ship; the minimap button still uses LibDBIcon when another addon provides it.
 - Find a Pet uses family damage, armor and health bonuses again, now read from WoW Forever's own client data (each family's passive spell). Forever kept the Classic values, added Bird of Prey (same as the old Owl) and Fox (same as Wolf). The old "based on abilities only" note is gone.
 - Checked against Forever's client tables: which families learn each ability and the pet level for every rank (including Swipe, Pinch, Dismember, Web, Mine! and Thunderstomp rank 4) already matched Forever.
 - Tank preset on the Builds tab includes Forever's new defensive abilities, Dust Cloud and Trickster's Dance.

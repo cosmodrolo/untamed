@@ -11,10 +11,6 @@
 ## X-License: GPL-3.0
 ## X-Website: https://github.com/cosmodrolo/untamed
 
-#@no-lib-strip@
-embeds.xml
-#@end-no-lib-strip@
-
 Init.lua
 Data\Forever.lua
 Data\Names_Forever.lua
