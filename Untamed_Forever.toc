@@ -32,7 +32,6 @@ Locales\zhTW.lua
 Locale.lua
 Geo.lua
 MapPins.lua
-MapPins.xml
 Minimap.lua
 Arrow.lua
 Alerts.lua

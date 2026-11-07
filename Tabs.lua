@@ -202,24 +202,8 @@ ns.BuildSettings = BuildSettings
 ns.RegisterTab("settings", L["Settings"], function(panel) BuildSettings(panel) end, function() end)
 ns.On("REFRESH", function() ns.Fire("MINIMAP_TOGGLE") end)
 
--- Game options panel
-ns.On("LOGIN", function()
-  local panel = CreateFrame("Frame")
-  panel.name = "Untamed"
-  local title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-  title:SetPoint("TOPLEFT", 16, -16)
-  title:SetText("|cffabd473Untamed|r  The hunter's companion")
-  local open = ns.MakeButton(panel, L["Open Untamed"], 140, function() ns.UI_Show() end)
-  open:SetPoint("TOPLEFT", 16, -44)
-  BuildSettings(panel, -76)
-  if Settings and Settings.RegisterCanvasLayoutCategory then
-    local cat = Settings.RegisterCanvasLayoutCategory(panel, "Untamed")
-    Settings.RegisterAddOnCategory(cat)
-    ns.settingsCategory = cat
-  elseif InterfaceOptions_AddCategory then
-    InterfaceOptions_AddCategory(panel)
-  end
-end)
+-- No page in Blizzard's Settings window: on WoW Forever's controller UI an addon page there
+-- poisons the face buttons when Settings closes. Untamed's settings live on its own Settings tab.
 
 ---------------------------------------------------------------------------
 -- Data broker launcher (button collectors and LibDBIcon, when present)

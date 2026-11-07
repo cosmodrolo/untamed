@@ -175,6 +175,21 @@ IsAltKeyDown = function() return ALT end
 ns.ItemClick(3021)()
 ALT = false
 check(ns.OnWishlist(3021), "alt-click adds to wishlist")
+-- world map pins: drawn as textures on one overlay, with no frames made in the open map and no map hooks
+WorldMapFrame._shown = true
+ns.Pins_Focus({ 2384 }, "Starving Mountain Lion", false)
+WorldMapFrame.SetMapID(WorldMapFrame, 1424)
+TICK(2)
+local drawn = ns.Pins_Drawn()
+check(#drawn > 0 and drawn[1].npcId == 2384, "focused beast drawn on the map (" .. #drawn .. " pins)")
+check(MAP_FRAMES_WHILE_OPEN == 0, "no frames created inside the open map")
+check(WorldMapFrame._scripts.OnShow == nil, "Untamed doesn't hook the world map")
+InputUtil = { IsGamepadUIEnabled = function() return true end }
+WorldMapFrame.SetMapID(WorldMapFrame, 1429)
+ns.OpenMapTo(1424)
+check(WorldMapFrame:GetMapID() == 1429, "controller UI: Untamed never changes the map's zone")
+InputUtil = nil
+WorldMapFrame._shown = false
 local pins = ns.PinSources[1]()
 check(pins and #pins > 0, "wishlist sources become map pins (" .. (pins and #pins or 0) .. ")")
 ns.UI_Show("wishlist")

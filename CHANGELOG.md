@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.12.0
+- Controller fix (found with GamepadGuard): world map pins are rebuilt so they can't poison the face buttons. Before, Untamed added its pins through a map data provider that made pin frames inside the open map, so Blizzard's controller navigation rebuilt itself inside Untamed's code and closing the map with the controller blocked "SetPreferredGamepadInteractTarget" and killed the face buttons until /reload. Now the pins are plain images on one overlay made at login, with no hooks or data providers on the map.
+- Hover a pin with the controller crosshair (or the mouse) to see Untamed's info box: beast, level, what it teaches and what your pet needs. Clicking a map pin to set the arrow is gone; set it from Untamed's window instead.
+- With the controller UI on, Untamed never opens the map or changes its zone itself; it tells you which zone to open.
+- Removed Untamed's page from Blizzard's Settings window (an addon page there poisons the face buttons when Settings closes). All settings are on Untamed's own Settings tab.
+
 ## v2.11.8
 - Fixed the next-talent glow staying on screen as a small green square after closing the talent window. It now hides itself whenever its talent button isn't visible.
 

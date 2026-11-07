@@ -2,114 +2,87 @@ local _, ns = ...
 local L = ns.L
 
 -- World map pins.
---   focus: set by clicking a rank, beast or planner stop (bigger gold pins)
+--   focus: set by picking a rank, beast or planner stop (bigger gold pins)
 --   auto:  every beast that teaches something your pet still needs (small pins)
---   stable/flight masters for the focused beasts are shown too.
+--   stable/flight masters for the focused beasts are shown too, plus other features' points.
+--
+-- Gamepad safety (WoW Forever's controller UI). Blizzard's map navigation rebuilds itself inside
+-- whatever code creates a frame in the open map, and a map closed in that state kills the face
+-- buttons until /reload (GamepadGuard caught Untamed doing this through its old data provider).
+-- So, like ForeverMapPins:
+--  * the only frame inside the world map is one overlay, made at login while the map is closed;
+--  * pins are textures, never frames: no CreateFrame while the map is open, nothing navigable;
+--  * no data providers, hooks or callbacks on the map, and nothing written onto Blizzard frames;
+--    map changes are found by polling while the map is visible;
+--  * on a controller Untamed never changes the map's zone itself.
 local focus = nil   -- { npcs = { [npcId] = true }, label = "..." }
 ns.PinSources = ns.PinSources or {}
-local provider
 local AUTO_CAP = 12
+local REFRESH_THROTTLE = 0.5
+local FALLBACK_OVERLAY_LEVEL = 2100
+
+local overlay, canvas, tip
+local pins, used = {}, 0      -- pool of { icon, border, x, y, size, info }
+local view = {}               -- what is drawn: map, canvas size and scale
+local dirty, lastRefresh = true, 0
 
 ---------------------------------------------------------------------------
--- Pin mixin (no OnLoad/OnEnter scripts in XML: the map canvas wires those)
+-- Drawing
 ---------------------------------------------------------------------------
-UntamedPinMixin = CreateFromMixins(MapCanvasPinMixin)
-
--- The map canvas calls SetPassThroughButtons on each pin; from addon code that call is blocked in
--- combat (and sometimes after a trainer scan). Pins don't need it, so do nothing (TomTom and HandyNotes do the same).
-function UntamedPinMixin:SetPassThroughButtons() end
-function UntamedPinMixin:SetPropagateMouseClicks() end
-function UntamedPinMixin:SetPropagateMouseMotion() end
-
-function UntamedPinMixin:OnLoad()
-  self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
-  self:SetScalingLimits(1, 1.0, 1.25)
+local function AcquirePin()
+  used = used + 1
+  local p = pins[used]
+  if not p then
+    p = { border = overlay:CreateTexture(nil, "ARTWORK", nil, 1), icon = overlay:CreateTexture(nil, "ARTWORK", nil, 2) }
+    p.border:SetTexture("Interface\\Buttons\\WHITE8X8")
+    p.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    pins[used] = p
+  end
+  return p
 end
 
-function UntamedPinMixin:OnAcquired(info)
-  self.info = info
-  self:SetPosition(info.x / 100, info.y / 100)
-  if info.point then
-    self:SetSize(info.size or 14, info.size or 14)
-    self.Icon:SetTexture(info.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
-    self.Border:SetVertexColor(unpack(info.border or { 0.64, 0.21, 0.93, 1 }))
-    return
-  end
-  if info.service then
-    self:SetSize(14, 14)
-    self.Icon:SetTexture(info.service == "S" and "Interface\\Icons\\Ability_Hunter_BeastCall" or "Interface\\Icons\\Ability_Mount_Gryphon_01")
-    self.Border:SetVertexColor(0.3, 0.6, 1, 1)
-    return
-  end
-  local size = info.focus and 16 or 11
-  self:SetSize(size, size)
-  self.Icon:SetTexture("Interface\\Icons\\" .. (ns.FamilyIcons[info.beast[4]] or "Ability_Hunter_BeastTaming"))
-  if info.focus then self.Border:SetVertexColor(1, 0.82, 0, 1) else self.Border:SetVertexColor(0, 0, 0, 0.9) end
+local function AddPin(info, size, iconPath, r, g, b, a)
+  local p = AcquirePin()
+  p.x, p.y, p.size, p.info = info.x, info.y, size, info
+  p.icon:SetTexture(iconPath)
+  p.border:SetVertexColor(r, g, b, a or 1)
+  -- Focused pins draw above the small automatic ones.
+  local layer = info.focus and 5 or (info.beast and 1 or 3)
+  p.border:SetDrawLayer("ARTWORK", layer); p.icon:SetDrawLayer("ARTWORK", layer + 1)
+  p.icon:Show(); p.border:Show()
 end
 
-function UntamedPinMixin:OnMouseEnter()
-  local info = self.info
-  if not info then return end
-  GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-  if info.point then
-    for i, line in ipairs(info.lines or { info.name }) do
-      if i == 1 then GameTooltip:AddLine(line, 1, 0.82, 0) else GameTooltip:AddLine(line, 1, 1, 1, true) end
-    end
-    GameTooltip:AddLine(L["Click: navigate here"], 0.7, 0.7, 0.7)
-    GameTooltip:Show()
-    return
+local function Layout()
+  local width, height, scale = canvas:GetWidth(), canvas:GetHeight(), canvas:GetScale()
+  if not width or width <= 0 or not scale or scale <= 0 then return end
+  for i = 1, used do
+    local p = pins[i]
+    local s = p.size / scale                      -- the same size on screen at any zoom
+    local x, y = p.x / 100 * width, -p.y / 100 * height
+    p.icon:ClearAllPoints(); p.icon:SetPoint("CENTER", overlay, "TOPLEFT", x, y); p.icon:SetSize(s, s)
+    local e = 1.5 / scale
+    p.border:ClearAllPoints(); p.border:SetPoint("CENTER", overlay, "TOPLEFT", x, y); p.border:SetSize(s + e * 2, s + e * 2)
   end
-  if info.service then
-    GameTooltip:AddLine(info.name, 1, 0.82, 0)
-    GameTooltip:AddLine(info.service == "S" and L["Stable Master"] or L["Flight Master"], 1, 1, 1)
-    GameTooltip:AddLine(L["Click: navigate here"], 0.7, 0.7, 0.7)
-    GameTooltip:Show()
-    return
-  end
-  local b = info.beast
-  GameTooltip:AddLine(b[1], 1, 0.82, 0)
-  GameTooltip:AddLine(string.format("Level %s %s", ns.LevelText(b), b[4]), 1, 1, 1)
-  if b[8] then GameTooltip:AddLine(L["Inside "] .. b[8] .. " (entrance shown)", 1, 0.5, 0.25) end
-  if #b[6] > 0 then GameTooltip:AddLine(L["Teaches: "] .. ns.TeachesText(b), 0.67, 0.83, 0.45, true) end
-  if info.need and #info.need > 0 then
-    GameTooltip:AddLine(L["Your pet needs: "] .. table.concat(info.need, ", "), 0.4, 1, 0.4, true)
-  end
-  if b[2] > UnitLevel("player") then GameTooltip:AddLine(L["Too high for you to tame right now"], 1, 0.3, 0.3) end
-  GameTooltip:AddLine(L["Click: navigate here"], 0.7, 0.7, 0.7)
-  GameTooltip:Show()
+  view.width, view.height, view.scale = width, height, scale
 end
 
-function UntamedPinMixin:OnMouseLeave() GameTooltip:Hide() end
-
-function UntamedPinMixin:OnClick(button)
-  local info = self.info
-  if not info or button ~= "LeftButton" then return end
-  local mapID = self:GetMap():GetMapID()
-  if info.point or info.service then
-    ns.Arrow_Set(mapID, info.x, info.y, info.name, nil)
-  else
-    ns.Arrow_Set(mapID, info.x, info.y, info.beast[1], info.npcId)
-  end
-end
-
----------------------------------------------------------------------------
--- Data provider
----------------------------------------------------------------------------
-local function AddBeastPins(map, mapID, npcId, isFocus, need, cap)
+local function AddBeastPins(mapID, npcId, isFocus, need, cap)
   local b = ns.Beasts[npcId]
   local pts = b and b[7][mapID]
   if not pts then return end
   local n = #pts / 2
   local step = (cap and n > cap) and (n / cap) or 1
   local i = 0
+  local icon = "Interface\\Icons\\" .. (ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming")
   while i < n do
     local idx = math.floor(i) * 2 + 1
-    map:AcquirePin("UntamedPinTemplate", { x = pts[idx], y = pts[idx + 1], beast = b, npcId = npcId, focus = isFocus, need = need })
+    local info = { x = pts[idx], y = pts[idx + 1], beast = b, npcId = npcId, focus = isFocus, need = need }
+    if isFocus then AddPin(info, 16, icon, 1, 0.82, 0) else AddPin(info, 11, icon, 0, 0, 0, 0.9) end
     i = i + step
   end
 end
 
-local function AddServicePins(map, mapID)
+local function AddServicePins(mapID)
   if not focus then return end
   local shown = {}
   for npcId in pairs(focus.npcs) do
@@ -120,7 +93,8 @@ local function AddServicePins(map, mapID)
           local s = ns.NearestService(kind, m, pts[1], pts[2])
           if s and s[4] == mapID and not shown[s] then
             shown[s] = true
-            map:AcquirePin("UntamedPinTemplate", { x = s[5], y = s[6], service = kind, name = s[2] })
+            AddPin({ x = s[5], y = s[6], service = kind, name = s[2] }, 14,
+              kind == "S" and "Interface\\Icons\\Ability_Hunter_BeastCall" or "Interface\\Icons\\Ability_Mount_Gryphon_01", 0.3, 0.6, 1)
           end
         end
       end
@@ -128,57 +102,181 @@ local function AddServicePins(map, mapID)
   end
 end
 
--- Adding pins in combat is blocked on Forever (the map canvas calls a protected function), so pin
--- refreshes wait until combat ends.
-local pendingRefresh
-local function RefreshAll(self)
-  if InCombatLockdown and InCombatLockdown() then pendingRefresh = true return end
-  pendingRefresh = false
-  local map = self:GetMap()
-  map:RemoveAllPinsByTemplate("UntamedPinTemplate")
-  local mapID = map:GetMapID()
-  if not mapID then return end
-  local need = ns.NeededSet() or {}
-  if focus then
-    for npcId in pairs(focus.npcs) do AddBeastPins(map, mapID, npcId, true, need[npcId], nil) end
-    AddServicePins(map, mapID)
-  end
-  -- Other features add their own pins (wishlist sources, ...): each source returns
-  -- { {map, x, y, name, icon, lines, border}, ... }
-  for _, src in ipairs(ns.PinSources) do
-    local ok, pts = pcall(src)
-    if ok and pts then
-      for _, p in ipairs(pts) do
-        if p.map == mapID and p.x and p.x ~= 0 then
-          map:AcquirePin("UntamedPinTemplate", { point = true, x = p.x, y = p.y, name = p.name, icon = p.icon, lines = p.lines, border = p.border })
+local function Refresh()
+  used = 0
+  local mapID = WorldMapFrame:GetMapID()
+  if mapID then
+    local need = ns.NeededSet() or {}
+    if focus then
+      for npcId in pairs(focus.npcs) do AddBeastPins(mapID, npcId, true, need[npcId], nil) end
+      AddServicePins(mapID)
+    end
+    -- Other features add their own points (wishlist sources, ...): { {map, x, y, name, icon, lines, border}, ... }
+    for _, src in ipairs(ns.PinSources) do
+      local ok, pts = pcall(src)
+      if ok and pts then
+        for _, p in ipairs(pts) do
+          if p.map == mapID and p.x and p.x ~= 0 then
+            local c = p.border or { 0.64, 0.21, 0.93, 1 }
+            AddPin({ point = true, x = p.x, y = p.y, name = p.name, lines = p.lines }, p.size or 14,
+              p.icon or "Interface\\Icons\\INV_Misc_QuestionMark", c[1], c[2], c[3], c[4])
+          end
         end
       end
     end
-  end
-  if ns.db.autoPins then
-    for npcId, list in pairs(need) do
-      if not (focus and focus.npcs[npcId]) then AddBeastPins(map, mapID, npcId, false, list, AUTO_CAP) end
+    if ns.db.autoPins then
+      for npcId, list in pairs(need) do
+        if not (focus and focus.npcs[npcId]) then AddBeastPins(mapID, npcId, false, list, AUTO_CAP) end
+      end
     end
   end
+  for i = used + 1, #pins do pins[i].icon:Hide(); pins[i].border:Hide() end
+  view.mapID, dirty, lastRefresh = mapID, false, GetTime()
+  Layout()
+end
+
+---------------------------------------------------------------------------
+-- Info box for the pin under the controller crosshair (or the mouse)
+---------------------------------------------------------------------------
+local PICK_RADIUS = 14
+
+local function CursorScreenPosition()
+  local sc = _G.SoftCursor
+  if sc and sc:IsShown() then
+    local x, y = sc:GetCenter()
+    if x then local s = sc:GetEffectiveScale(); return x * s, y * s end
+  end
+  if WorldMapFrame.ScrollContainer:IsMouseOver() then return GetCursorPosition() end
+end
+
+local function PickPin()
+  local cx, cy = CursorScreenPosition()
+  if not cx then return nil end
+  local radius = PICK_RADIUS * UIParent:GetEffectiveScale()
+  local best, bestD = nil, radius * radius
+  for i = 1, used do
+    local x, y = pins[i].icon:GetCenter()
+    if x then
+      local s = pins[i].icon:GetEffectiveScale()
+      local dx, dy = x * s - cx, y * s - cy
+      local d = dx * dx + dy * dy
+      if d < bestD then best, bestD = pins[i], d end
+    end
+  end
+  return best, cx, cy
+end
+
+local function Describe(info)
+  local out = {}
+  local function add(text, r, g, b) out[#out + 1] = { text, r or 1, g or 1, b or 1 } end
+  if info.point then
+    for i, line in ipairs(info.lines or { info.name }) do if i == 1 then add(line, 1, 0.82, 0) else add(line) end end
+  elseif info.service then
+    add(info.name, 1, 0.82, 0)
+    add(info.service == "S" and L["Stable Master"] or L["Flight Master"])
+  else
+    local b = info.beast
+    add(b[1], 1, 0.82, 0)
+    add(string.format("Level %s %s", ns.LevelText(b), b[4]))
+    if b[8] then add(L["Inside "] .. b[8] .. " (entrance shown)", 1, 0.5, 0.25) end
+    if #b[6] > 0 then add(L["Teaches: "] .. ns.TeachesText(b), 0.67, 0.83, 0.45) end
+    if info.need and #info.need > 0 then add(L["Your pet needs: "] .. table.concat(info.need, ", "), 0.4, 1, 0.4) end
+    if b[2] > UnitLevel("player") then add(L["Too high for you to tame right now"], 1, 0.3, 0.3) end
+  end
+  return out
+end
+
+local tipLines = {}
+local shownInfo
+local function UpdateTip()
+  local pin, cx, cy = PickPin()
+  if not pin then tip:Hide(); shownInfo = nil; return end
+  if pin.info ~= shownInfo then
+    shownInfo = pin.info
+    local rows, w, h = Describe(pin.info), 0, 8
+    for i, row in ipairs(rows) do
+      local fs = tipLines[i]
+      if not fs then
+        fs = tip:CreateFontString(nil, "OVERLAY", i == 1 and "GameFontNormal" or "GameFontHighlightSmall")
+        fs:SetJustifyH("LEFT"); fs:SetWordWrap(true); fs:SetWidth(240)
+        tipLines[i] = fs
+      end
+      fs:ClearAllPoints(); fs:SetPoint("TOPLEFT", 8, -h)
+      fs:SetText(row[1]); fs:SetTextColor(row[2], row[3], row[4]); fs:Show()
+      w = math.max(w, math.min(240, fs:GetStringWidth() or 0)); h = h + (fs:GetStringHeight() or 12) + 2
+    end
+    for i = #rows + 1, #tipLines do tipLines[i]:Hide() end
+    tip:SetSize(w + 16, h + 6)
+  end
+  local s = UIParent:GetEffectiveScale()
+  tip:ClearAllPoints()
+  tip:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", cx / s + 18, cy / s + 12)
+  tip:Show()
+end
+
+---------------------------------------------------------------------------
+-- Driver
+---------------------------------------------------------------------------
+local function OnUpdate()
+  local mapID = WorldMapFrame:GetMapID()
+  if mapID ~= view.mapID or (dirty and GetTime() - lastRefresh >= REFRESH_THROTTLE) then
+    Refresh()
+  elseif canvas:GetWidth() ~= view.width or canvas:GetHeight() ~= view.height or canvas:GetScale() ~= view.scale then
+    Layout()
+  end
+  UpdateTip()
+end
+
+-- Blizzard map pins use absolute frame levels from 2000 up; sit just above the area layers (explored
+-- areas, fog, quest blobs) so outdoor zones don't cover the pins. Plain table reads only.
+local function OverlayFrameLevel()
+  local m = WorldMapFrame.pinFrameLevelsManager
+  local defs = type(m) == "table" and m.definitions
+  local d = type(defs) == "table" and defs.PIN_FRAME_LEVEL_MAP_HIGHLIGHT
+  if type(d) == "table" and type(d.startLevel) == "number" then return d.startLevel + (d.range or 1) end
+  return FALLBACK_OVERLAY_LEVEL
+end
+
+-- Must run while the world map is closed.
+local function Init()
+  if overlay then return true end
+  canvas = WorldMapFrame and WorldMapFrame.ScrollContainer and WorldMapFrame.ScrollContainer.Child
+  if not canvas or WorldMapFrame:IsShown() then return false end
+  overlay = CreateFrame("Frame", nil, canvas)
+  overlay:SetAllPoints(canvas)
+  overlay:SetFrameLevel(OverlayFrameLevel())
+  overlay:EnableMouse(false)
+  overlay:SetScript("OnUpdate", OnUpdate)          -- only runs while the map is shown
+  overlay:SetScript("OnHide", function() if tip then tip:Hide() end end)
+  tip = CreateFrame("Frame", "UntamedMapInfo", UIParent, "BackdropTemplate")
+  tip:SetFrameStrata("TOOLTIP")
+  tip:EnableMouse(false)
+  if tip.SetBackdrop then
+    tip:SetBackdrop({ bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+      tile = true, tileSize = 16, edgeSize = 12, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
+    tip:SetBackdropColor(0.05, 0.05, 0.05, 0.92)
+  end
+  tip:Hide()
+  return true
 end
 
 ns.On("LOGIN", function()
-  if not WorldMapFrame or not WorldMapFrame.AddDataProvider then return end
-  provider = CreateFromMixins(MapCanvasDataProviderMixin)
-  provider.RefreshAllData = RefreshAll
-  provider.RemoveAllData = function(self) self:GetMap():RemoveAllPinsByTemplate("UntamedPinTemplate") end
-  WorldMapFrame:AddDataProvider(provider)
+  if not Init() then
+    -- The map was open at login: try again once it's closed.
+    local f = CreateFrame("Frame")
+    f:SetScript("OnUpdate", function(self) if Init() then self:SetScript("OnUpdate", nil) end end)
+  end
 end)
 
-function ns.Pins_Refresh()
-  if provider and provider:GetMap() then provider:RefreshAllData() end
-end
-do
-  local f = CreateFrame("Frame")
-  pcall(f.RegisterEvent, f, "PLAYER_REGEN_ENABLED")
-  f:SetScript("OnEvent", function() if pendingRefresh then ns.Pins_Refresh() end end)
-end
+function ns.Pins_Refresh() dirty = true end
 ns.On("REFRESH", ns.Pins_Refresh)
+
+-- For tests and /ut debugging: the pins currently drawn.
+function ns.Pins_Drawn()
+  local out = {}
+  for i = 1, used do out[i] = pins[i].info end
+  return out
+end
 
 function ns.Pins_Clear()
   focus = nil
@@ -200,32 +298,25 @@ local function BestZone(npcList)
   return best
 end
 
--- With Forever's gamepad UI on, opening the world map from addon code passes taint into the
--- gamepad action bars ("SetPreferredGamepadInteractTarget" blocked). So in gamepad mode Untamed
--- only sets the pins and jumps to the zone when you open the map yourself.
-local pendingMap
 local function GamepadUI()
   return InputUtil and InputUtil.IsGamepadUIEnabled and InputUtil.IsGamepadUIEnabled() or false
 end
+local function ZoneName(mapID)
+  local info = C_Map.GetMapInfo and C_Map.GetMapInfo(mapID)
+  return info and info.name or ""
+end
+
+-- With the controller UI on, opening the map or changing its zone from addon code runs Blizzard's
+-- map navigation inside Untamed's code, so Untamed only sets the pins and tells you where to look.
 function ns.OpenMapTo(mapID)
   if not mapID then return end
-  if WorldMapFrame:IsShown() then WorldMapFrame:SetMapID(mapID) return end
-  if InCombatLockdown() then pendingMap = mapID; ns.Print(L["Pins set. Open your map after combat."]) return end
   if GamepadUI() then
-    pendingMap = mapID
-    ns.Print(L["Pins set. Open your map to see them."])
+    ns.Print(L["Pins set. Open your map to "] .. ZoneName(mapID) .. ".")
     return
   end
-  ToggleWorldMap()
+  if InCombatLockdown() then ns.Print(L["Pins set. Open your map after combat."]) return end
+  if not WorldMapFrame:IsShown() then ToggleWorldMap() end
   WorldMapFrame:SetMapID(mapID)
-end
-if WorldMapFrame and WorldMapFrame.HookScript then
-  WorldMapFrame:HookScript("OnShow", function()
-    if not pendingMap then return end
-    local m = pendingMap
-    pendingMap = nil
-    if C_Timer and C_Timer.After then C_Timer.After(0, function() if WorldMapFrame:IsShown() then WorldMapFrame:SetMapID(m) end end) end
-  end)
 end
 
 function ns.Pins_Focus(npcList, label, openMap)

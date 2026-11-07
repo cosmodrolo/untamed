@@ -49,26 +49,21 @@ IsIndoors = function() return false end
 GetCVar = function() return "0" end
 function CreateFromMixins(...) local t = {} for i = 1, select("#", ...) do for k, v in pairs(select(i, ...)) do t[k] = v end end return t end
 function CreateVector2D(x, y) return { x = x, y = y, GetXY = function(self) return self.x, self.y end } end
-MapCanvasPinMixin = { SetPosition = function(self, x, y) self.x, self.y = x, y end, SetSize = function() end,
-  UseFrameLevelType = function() end, SetScalingLimits = function() end, GetMap = function(self) return self._map end }
-MapCanvasDataProviderMixin = {}
-PINS = {}
 WorldMapFrame = newObj("WorldMapFrame")
 local mapID = 1429
 PLAYERPOS = { x = 0.42, y = 0.65 }
 WorldMapFrame.SetMapID = function(self, id) mapID = id end
-WorldMapFrame.AddDataProvider = function(self, p)
-  local map
-  map = {
-    GetMapID = function() return mapID end,
-    RemoveAllPinsByTemplate = function() PINS = {} end,
-    AcquirePin = function(_, tmpl, info)
-      local pin = CreateFromMixins(UntamedPinMixin)
-      pin.Icon = newObj("i"); pin.Border = newObj("b"); pin._map = map
-      pin:OnLoad(); pin:OnAcquired(info); PINS[#PINS + 1] = pin
-    end,
-  }
-  p.GetMap = function() return map end
+WorldMapFrame.GetMapID = function() return mapID end
+WorldMapFrame.ScrollContainer = newObj("ScrollContainer")
+WorldMapFrame.ScrollContainer.Child = newObj("Canvas")
+WorldMapFrame.ScrollContainer.Child.GetHeight = function() return 100 end
+WorldMapFrame.ScrollContainer.Child.GetScale = function() return 1 end
+-- Gamepad safety checks: frames made inside the open map, and Untamed hooks on the map.
+MAP_FRAMES_WHILE_OPEN = 0
+local realCreate = CreateFrame
+CreateFrame = function(kind, name, parent, ...)
+  if WorldMapFrame._shown and parent == WorldMapFrame.ScrollContainer.Child then MAP_FRAMES_WHILE_OPEN = MAP_FRAMES_WHILE_OPEN + 1 end
+  return realCreate(kind, name, parent, ...)
 end
 ToggleWorldMap = function() WorldMapFrame._shown = true end
 InCombatLockdown = function() return false end
