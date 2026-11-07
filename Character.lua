@@ -434,6 +434,12 @@ local function UpdateForeverGlow()
     tex:SetBlendMode("ADD")
     tex:SetVertexColor(0.67, 0.83, 0.45)
     fglow:EnableMouse(false)
+    -- It lives on UIParent, so it can't rely on the talent window hiding it: while shown, check that
+    -- the button it marks is still on screen and hide it the moment it isn't.
+    fglow:SetScript("OnUpdate", function(self)
+      local b, t = self.btn, PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame
+      if not (b and b:IsVisible() and t and t:IsVisible()) then self:Hide() end
+    end)
   end
   fglow:Hide()
   if ns.db.talentGlow == false or not tf:IsShown() then return end
@@ -449,6 +455,7 @@ local function UpdateForeverGlow()
     fglow:SetSize(size, size)
     fglow:SetFrameStrata(tf:GetFrameStrata())
     fglow:SetFrameLevel(btn:GetFrameLevel() + 5)
+    fglow.btn = btn
     fglow:Show()
   end
 end

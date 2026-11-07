@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.11.8
+- Fixed the next-talent glow staying on screen as a small green square after closing the talent window. It now hides itself whenever its talent button isn't visible.
+
 ## v2.11.7
 - Every dropdown sizes itself to its longest choice, and labels never wrap onto two lines. If a toolbar row runs out of room, the next control moves to a new row. Buttons grow to fit their text too.
 - The Feed button grows to fit the food's name (out of combat, since it's a secure button).
