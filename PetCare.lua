@@ -125,8 +125,16 @@ function ns.CreateFeedButton(parent, name, w, h)
   b:SetSize(w or 150, h or 22)
   b:RegisterForClicks("AnyUp", "AnyDown")
   b.food = false
+  local minW = w or 150
+  if ns.OneLine then ns.OneLine(b:GetFontString()) end
   function b:UpdateLabel()
     if self.food then self:SetText(L["Feed: "] .. self.food[6]) else self:SetText(L["No food your pet eats"]) end
+    -- Grow to fit the food name. It's a secure button, so only resize out of combat.
+    if not InCombatLockdown() then
+      local fs = self:GetFontString()
+      local tw = fs and fs.GetStringWidth and fs:GetStringWidth() or 0
+      self:SetWidth(math.max(minW, math.ceil(tw) + 24))
+    end
   end
   b:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")

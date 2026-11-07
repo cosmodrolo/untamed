@@ -190,10 +190,33 @@ function ns.MakeCheck(parent, label, x, y, get, set, tip)
   return c
 end
 
+-- Labels on buttons and dropdowns stay on one line; the control grows to fit instead.
+local function OneLine(fs)
+  if not fs then return end
+  if fs.SetWordWrap then fs:SetWordWrap(false) end
+  if fs.SetMaxLines then fs:SetMaxLines(1) end
+end
+ns.OneLine = OneLine
+
+-- Width of a label in this button's font.
+local function TextWidth(b, text)
+  local fs = b.GetFontString and b:GetFontString()
+  if not fs or not fs.GetStringWidth then return #(text or "") * 7 end
+  local old = fs:GetText()
+  fs:SetText(text or "")
+  local w = fs:GetStringWidth() or 0
+  fs:SetText(old)
+  return w
+end
+ns.TextWidth = TextWidth
+
 function ns.MakeButton(parent, text, w, onClick)
   local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
   b:SetSize(w, 24)
   b:SetText(text)
+  OneLine(b.GetFontString and b:GetFontString())
+  local need = math.ceil(TextWidth(b, text)) + 24
+  if need > w then b:SetWidth(need) end
   b:SetScript("OnClick", onClick)
   return b
 end
@@ -251,7 +274,18 @@ function ns.MakeDropdown(parent, width, options, get, set, tip)
   arrow:SetSize(16, 16)
   arrow:SetPoint("RIGHT", -3, 0)
   local fs = b.GetFontString and b:GetFontString()
-  if fs then fs:ClearAllPoints(); fs:SetPoint("LEFT", 8, 0); fs:SetPoint("RIGHT", -18, 0); fs:SetJustifyH("LEFT") end
+  if fs then fs:ClearAllPoints(); fs:SetPoint("LEFT", 8, 0); fs:SetPoint("RIGHT", -18, 0); fs:SetJustifyH("LEFT"); OneLine(fs) end
+  -- Wide enough for the longest choice (8 px text inset + 18 px for the arrow + a little air).
+  function b:FitOptions()
+    local widest = 0
+    for _, o in ipairs(type(options) == "function" and options() or options) do
+      widest = math.max(widest, TextWidth(self, o[2]))
+    end
+    local need = math.ceil(widest) + 8 + 18 + 8
+    if need > self:GetWidth() then self:SetWidth(need) end
+    width = math.max(width, self:GetWidth())
+  end
+  b:FitOptions()
   function b:Update()
     local cur = get()
     for _, o in ipairs(type(options) == "function" and options() or options) do
@@ -313,7 +347,11 @@ function ns.CloseDropdown() if ddMenu then ddMenu:Hide() end end
 function ns.Toolbar(panel)
   local tb = { x = 6, row = 0 }
   local function y() return -4 - tb.row * 32 end
-  local function place(w) local x = tb.x; tb.x = tb.x + w + 12; return x end
+  local function place(w)
+    local pw = panel.GetWidth and panel:GetWidth() or 0
+    if pw > 0 and tb.x > 6 and tb.x + w > pw - 6 then tb.row = tb.row + 1; tb.x = 6 end
+    local x = tb.x; tb.x = tb.x + w + 12; return x
+  end
   function tb:Row() self.row = self.row + 1; self.x = 6 end
   function tb:Search(hint, width, onChange)
     local box = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
@@ -333,7 +371,9 @@ function ns.Toolbar(panel)
   end
   function tb:Dropdown(width, options, get, set, tip)
     local d = ns.MakeDropdown(panel, width, options, get, set, tip)
-    d:SetPoint("TOPLEFT", place(width), y())
+    local w = d:GetWidth()
+    local x = place(w)
+    d:SetPoint("TOPLEFT", x, y())
     return d
   end
   function tb:Check(label, get, set, tip)
@@ -345,7 +385,8 @@ function ns.Toolbar(panel)
   end
   function tb:Button(text, width, onClick)
     local b = ns.MakeButton(panel, text, width, onClick)
-    b:SetPoint("TOPLEFT", place(width), y())
+    local x = place(b:GetWidth())
+    b:SetPoint("TOPLEFT", x, y())
     return b
   end
   function tb:List()

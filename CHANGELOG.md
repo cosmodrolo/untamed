@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.11.7
+- Every dropdown sizes itself to its longest choice, and labels never wrap onto two lines. If a toolbar row runs out of room, the next control moves to a new row. Buttons grow to fit their text too.
+- The Feed button grows to fit the food's name (out of combat, since it's a secure button).
+
 ## v2.11.6
 - Gamepad taint fix: Untamed no longer writes its own fields onto Blizzard frames (the unit tooltip and the talent window), and the next-talent glow is no longer parented inside the talent window. One of these could get Untamed blamed for "SetPreferredGamepadInteractTarget()" when opening a controller radial menu.
 - Unit tooltips skip beasts whose identity is hidden in combat on WoW Forever.
