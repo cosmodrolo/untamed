@@ -5,6 +5,7 @@
 - Hover a pin with the controller crosshair (or the mouse) to see Untamed's info box: beast, level, what it teaches and what your pet needs. Clicking a map pin to set the arrow is gone; set it from Untamed's window instead.
 - With the controller UI on, Untamed never opens the map or changes its zone itself; it tells you which zone to open.
 - Removed Untamed's page from Blizzard's Settings window (an addon page there poisons the face buttons when Settings closes). All settings are on Untamed's own Settings tab.
+- Data update: beast spawn points refreshed from the latest QuestieDB update for Forever (47 beasts moved, none added or removed), and the item, NPC and quest search rebuilt with your latest vendor and drop recordings. Checked beastmaster.io (no new pet data) and the new game build 1.60.1.70862 (no hunter spell or pet family changes).
 
 ## v2.11.8
 - Fixed the next-talent glow staying on screen as a small green square after closing the talent window. It now hides itself whenever its talent button isn't visible.
