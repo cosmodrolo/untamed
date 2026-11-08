@@ -27,6 +27,10 @@ rows += [[l, i, -1, n, k] for l, i, n, k in NEW]
 # What a Forever hunter trainer actually sells (recorded in game, 2026-11-06: "name|rank|level|copper",
 # level 0 = already known). This list is authoritative: ranks it doesn't sell are dropped, its prices
 # and levels win. Prices are what that character paid (Forever reworked trainer prices by level).
+# That character was Honored with the trainer's city: every price in the list is 10% off (seen 2026-11-08,
+# Beast Lore 6480 there and 7200 at another trainer, Rapid Fire 6660 and 7400, Serpent Sting 4 the same).
+# The list ships full prices; Untamed never lowers one from a trainer it sees (Core.lua ApplyTrainerCosts).
+DISCOUNT = 0.9
 seen = {}
 for line in open("tools/forever_trainer_seen.txt", encoding="utf-8").read().split("\n"):
     if not line.strip(): continue
@@ -43,6 +47,7 @@ for r in rows:
     if key not in seen:
         continue                             # not sold in Forever
     lv, c = seen[key]
+    c = int(round(c / DISCOUNT))             # (the full price: see DISCOUNT)
     if key[1] == 0: r[4] = 0
     if lv > 0: r[0] = lv
     r[2] = c

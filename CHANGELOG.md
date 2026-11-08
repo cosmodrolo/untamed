@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.12.1
+- Hunter trainer prices are now the full prices. The list came from a trainer whose city you were Honored with, so every spell showed 10% less than most trainers charge (Beast Lore 64.8s instead of 72s). Untamed now ships full prices, and a cheaper price it sees at a trainer where you have a discount no longer lowers the list.
+- Data update: the item, NPC and quest search rebuilt with QuestieDB's latest Forever fixes and your newest vendor and drop recordings. No beast spawns changed; beastmaster.io and the game build (1.60.1.70862) have nothing new.
+
 ## v2.12.0
 - Controller fix (found with GamepadGuard): world map pins are rebuilt so they can't poison the face buttons. Before, Untamed added its pins through a map data provider that made pin frames inside the open map, so Blizzard's controller navigation rebuilt itself inside Untamed's code and closing the map with the controller blocked "SetPreferredGamepadInteractTarget" and killed the face buttons until /reload. Now the pins are plain images on one overlay made at login, with no hooks or data providers on the map.
 - Hover a pin with the controller crosshair (or the mouse) to see Untamed's info box: beast, level, what it teaches and what your pet needs. Clicking a map pin to set the arrow is gone; set it from Untamed's window instead.

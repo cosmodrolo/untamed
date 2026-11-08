@@ -70,7 +70,7 @@ for _, e in ipairs(ns.TrainerSpells) do
   if e[2] == 1293525 then hawk = e end
   if e[4] == "Aimed Shot" then aimed = true end
 end
-assert(hawk and hawk[1] == 36 and hawk[3] == 11700, "forever trainer has Summon Hawk rank 2 at its Forever price")
+assert(hawk and hawk[1] == 36 and hawk[3] == 13000, "forever trainer has Summon Hawk rank 2 at its full Forever price")
 for _, e in ipairs(ns.TrainerSpells) do
   assert(e[4] ~= "Wyvern Sting" and e[4] ~= "Strider Kick" and e[4] ~= "Lacerate", "only spells a Forever trainer sells")
   assert(e[3] >= 0, "every trainer spell has a cost: " .. e[4])
@@ -110,6 +110,7 @@ for _, e in ipairs(ns.TrainerSpells) do
   if e[2] == 1293525 then hawk2 = e end
   if e[2] == 1299445 then lac1 = e end
 end
-assert(hawk2[3] == 18000 and lac1[3] == 2200, "hunter trainer costs recorded and applied")
+assert(hawk2[3] == 18000, "a higher price seen at a trainer is applied")
+assert(lac1[3] > 2200, "a lower (discounted) price never lowers the list's full price")
 assert(ns.db.trainerCosts["Summon Hawk|2"][2] == 18000, "costs saved for later")
 print("DONE")

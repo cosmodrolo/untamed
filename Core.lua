@@ -268,13 +268,15 @@ function ns.ScanHunterTrainer()
   if n > 0 and ns.ApplyTrainerCosts then ns.ApplyTrainerCosts() end
 end
 
--- Fill unknown (-1) or changed costs in the spell list from what the trainer showed.
+-- Fill unknown (-1) costs in the spell list from what the trainer showed. A trainer whose city you're
+-- Honored with takes 10% off, so a price seen there never lowers the list's full price; only a higher
+-- one (a change in the game) or an unknown one is taken.
 function ns.ApplyTrainerCosts()
   local seen = ns.db and ns.db.trainerCosts
   if not seen or not ns.TrainerSpells then return end
   for _, e in ipairs(ns.TrainerSpells) do
     local v = seen[e[4] .. "|" .. e[5]]
-    if v and v[2] then e[3] = v[2]; if v[1] and v[1] > 0 then e[1] = v[1] end end
+    if v and v[2] and (e[3] < 0 or v[2] > e[3]) then e[3] = v[2]; if v[1] and v[1] > 0 then e[1] = v[1] end end
   end
 end
 
