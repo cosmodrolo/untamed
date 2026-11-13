@@ -27,23 +27,56 @@ local LEVEL = { ["Serpent Sting"] = 4, ["Hunter's Mark"] = 6, ["Arcane Shot"] = 
   ["Mend Pet"] = 12, ["Wing Clip"] = 12, ["Multi-Shot"] = 18, ["Aimed Shot"] = 20, ["Aspect of the Cheetah"] = 20, ["Summon Hawk"] = 25,
   ["Rapid Fire"] = 26, ["Frost Trap"] = 28, ["Feign Death"] = 30, ["Bestial Wrath"] = 40 }
 
--- { code, the spell it's about, what it does, body }
+-- { code, the spell it's about, what it does, body } (group = a heading). "/cast Name" with no rank
+-- always casts your best rank, so a macro on your bar upgrades itself when you train a new one.
+local function Plain(code, spell, what) return { code, spell, what, "#showtooltip\n/cast " .. spell } end
 ns.HUNTER_MACROS = {
+  { group = L["The fight"] },
   { "UT Open", "Hunter's Mark", L["Every pull: sends your pet, marks the target and starts Auto Shot."],
     "#showtooltip Hunter's Mark\n/petattack\n/cast Hunter's Mark\n/cast !Auto Shot" },
   { "UT Hawk", "Summon Hawk", L["Press on cooldown: hawk, hawk, then Arcane Shot (two hawks stay up). Arcane Shot alone before you have Summon Hawk."],
     "#showtooltip\n/castsequence [known:Summon Hawk] reset=target Summon Hawk, Summon Hawk, Arcane Shot\n/cast [noknown:Summon Hawk] Arcane Shot" },
-  { "UT Mend", "Mend Pet", L["Heals your pet, whatever you have targeted."], "#showtooltip Mend Pet\n/cast [@pet] Mend Pet" },
+  Plain("UT Sting", "Serpent Sting", L["Mobs that live a while."]),
+  Plain("UT Aimed", "Aimed Shot", L["Once your pet holds the mob."]),
+  Plain("UT Multi", "Multi-Shot", L["Two or more mobs."]),
+  Plain("UT Arcane", "Arcane Shot", L["Arcane Shot on its own (UT Hawk already mixes it in)."]),
+  Plain("UT Concussive", "Concussive Shot", L["Slows a runner."]),
   { "UT Burst", "Rapid Fire", L["Tough fights: Rapid Fire and Bestial Wrath together (each once you have it; press again if one didn't go off)."],
     "#showtooltip Rapid Fire\n/cast [known:Bestial Wrath] Bestial Wrath\n/cast Rapid Fire" },
+  Plain("UT Volley", "Volley", L["Big packs (from 40)."]),
+  { group = L["Your pet"] },
+  { "UT Mend", "Mend Pet", L["Heals your pet, whatever you have targeted."], "#showtooltip Mend Pet\n/cast [@pet] Mend Pet" },
+  Plain("UT Revive", "Revive Pet", L["Brings your pet back."]),
+  Plain("UT Call", "Call Pet", L["Calls your pet."]),
+  Plain("UT Feed", "Feed Pet", L["Feeds your pet (pick the food in your bags)."]),
+  { group = L["Up close"] },
+  Plain("UT Raptor", "Raptor Strike", L["A mob in melee."]),
+  Plain("UT Mongoose", "Mongoose Bite", L["After you dodge."]),
+  Plain("UT Wing Clip", "Wing Clip", L["Slows a mob in melee so you can back off."]),
+  Plain("UT Disengage", "Disengage", L["Drops your threat so your pet takes it (from 48)."]),
+  { group = L["Traps and escapes"] },
+  Plain("UT Feign", "Feign Death", L["Drops everything off you (from 30)."]),
+  Plain("UT Frost Trap", "Frost Trap", L["Slows everything near it."]),
+  Plain("UT Freeze", "Freezing Trap", L["Freezes one mob."]),
+  Plain("UT Immolate", "Immolation Trap", L["Fire damage over time."]),
+  Plain("UT Explosive", "Explosive Trap", L["Fire damage to a pack (from 34)."]),
+  Plain("UT Scare", "Scare Beast", L["Makes a beast flee."]),
+  { group = L["Aspects and buffs"] },
+  Plain("UT Asp Hawk", "Aspect of the Hawk", L["In fights."]),
+  Plain("UT Asp Cheetah", "Aspect of the Cheetah", L["Running between mobs (you're dazed if hit)."]),
+  Plain("UT Asp Monkey", "Aspect of the Monkey", L["More dodge, when something's hitting you."]),
+  Plain("UT Asp Pack", "Aspect of the Pack", L["Group travel (from 40)."]),
+  Plain("UT Asp Wild", "Aspect of the Wild", L["Nature resistance for your group."]),
+  Plain("UT Trueshot", "Trueshot Aura", L["Ranged Attack Power for your group."]),
 }
 
 -- the controller: Blizzard's gamepad bars, R2 + face buttons for the fight (Alejandro's own:
 -- R2 + Cross opener, Square Serpent Sting, Triangle Summon Hawk, Circle Aimed Shot)
 ns.HUNTER_PAD = {
-  { "R2 + Cross", "UT Open" }, { "R2 + Square", "Serpent Sting" }, { "R2 + Triangle", "UT Hawk" }, { "R2 + Circle", "Aimed Shot" },
-  { "R2 + D-pad Left", "Multi-Shot" }, { "R2 + D-pad Up", "UT Burst" }, { "R2 + D-pad Right", "Concussive Shot" }, { "R2 + D-pad Down", "UT Mend" },
-  { "L2 + Square", "Aspect of the Hawk" }, { "L2 + Triangle", "Aspect of the Cheetah" }, { "L2 + Circle", "Feign Death" }, { "L2 + Cross", "Frost Trap" },
+  { "R2 + Cross", "UT Open" }, { "R2 + Square", "UT Sting" }, { "R2 + Triangle", "UT Hawk" }, { "R2 + Circle", "UT Aimed" },
+  { "R2 + D-pad Left", "UT Multi" }, { "R2 + D-pad Up", "UT Burst" }, { "R2 + D-pad Right", "UT Concussive" }, { "R2 + D-pad Down", "UT Mend" },
+  { "L2 + Square", "UT Asp Hawk" }, { "L2 + Triangle", "UT Asp Cheetah" }, { "L2 + Circle", "UT Feign" }, { "L2 + Cross", "UT Frost Trap" },
+  { "L2 + D-pad Left", "UT Raptor" }, { "L2 + D-pad Up", "UT Wing Clip" }, { "L2 + D-pad Right", "UT Freeze" }, { "L2 + D-pad Down", "UT Revive" },
 }
 
 local STEPS = {
@@ -99,8 +132,9 @@ function ns.MakeHunterMacros()
   if InCombatLockdown() then ns.Print(L["Macros can be made after combat."]) return end
   local made, mine = 0, 0
   for _, m in ipairs(ns.HUNTER_MACROS) do
-    local state = MacroState(m)
-    if state == "yours" then mine = mine + 1
+    local state = not m.group and MacroState(m)
+    if not state then -- a heading
+    elseif state == "yours" then mine = mine + 1
     else
       local ok, err = MakeOne(m)
       if ok then made = made + 1 elseif err then ns.Print(string.format(L["Couldn't make %s: %s"], m[1], err)) end
@@ -135,8 +169,9 @@ do
           have and "" or (C.GREY .. L["lvl "] .. (LEVEL[st[1]] or "?") .. "|r"), nil, { st[1], st[2] })
       end
     end
-    add(0, nil, L["Macros"], C.GREY .. L["made per character; one of yours with the same name is left alone"] .. "|r", nil, nil, { header = true })
+    add(0, nil, L["Macros"], C.GREY .. L["always your best rank; one of yours with the same name is left alone"] .. "|r", nil, nil, { header = true })
     for _, m in ipairs(ns.HUNTER_MACROS) do
+     if m.group then add(6, nil, C.GOLD .. m.group .. "|r") else
       local state = MacroState(m)
       local right = state == "made" and (C.GREEN .. L["made"] .. "|r") or state == "update" and (C.GOLD .. L["click to update"] .. "|r")
         or state == "yours" and (C.GREY .. L["yours, left alone"] .. "|r") or (C.GOLD .. L["click to make"] .. "|r")
@@ -145,10 +180,13 @@ do
         if err then ns.Print(err) end
         Refresh()
       end, { m[1], m[3], C.GREY .. m[4]:gsub("\n", "\n" .. C.GREY) .. "|r" })
+     end
     end
     add(0, nil, L["On the controller"], C.GREY .. L["drag them onto Blizzard's gamepad bars from /macro and your spellbook"] .. "|r", nil, nil, { header = true })
     for _, p in ipairs(ns.HUNTER_PAD) do
-      add(14, SpellIcon(p[2]:find("^UT ") and "Hunter's Mark" or p[2]), C.GOLD .. p[1] .. "|r", C.WHITE .. p[2] .. "|r")
+      local spell = p[2]
+      for _, m in ipairs(ns.HUNTER_MACROS) do if m[1] == p[2] then spell = m[2] end end
+      add(14, SpellIcon(spell), C.GOLD .. p[1] .. "|r", C.WHITE .. p[2] .. "|r" .. C.GREY .. "  " .. spell .. "|r")
     end
     list:Set(rows)
   end

@@ -166,7 +166,10 @@ EditMacro = function(i, name, icon, body) MACROS[i].body = body return i end
 MACROS[1] = { name = "UT Mend", icon = 1, body = "/cast Mend Pet" }   -- one of his own with the same name
 ns.UI_Show("rotation")
 ns.MakeHunterMacros()
-assert(#MACROS == #ns.HUNTER_MACROS, "made the rest: " .. #MACROS)
+local want = 0
+for _, m in ipairs(ns.HUNTER_MACROS) do if not m.group then want = want + 1 end end
+assert(#MACROS == want, "made the rest: " .. #MACROS .. " of " .. want)
+for _, m in ipairs(MACROS) do assert(#m.name <= 16, "macro name too long: " .. m.name) end
 assert(MACROS[1].body == "/cast Mend Pet", "his own macro left alone")
 ns.UI_Show("rotation")
 print("ROTATION OK")
