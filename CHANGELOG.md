@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.13.0
+- New leveling talent build: Wowhead's Beast Mastery leveling build for Forever (Docoda, updated Nov 4 2026), 31/16/4, one point per level from 10 to 60. Pathfinding and Improved Revive Pet count for the 3 Endurance Training points, so the old build's picks aren't flagged.
+- The Talents tab now shows, for every step, the talent window's own text for those ranks and a line on why it's in the build (hover a step); the next one has its reason right under it.
+- Off the build: a talent with more points than the build has at your level shows at the top of the Talents tab and once in chat (at login and when you spend a point).
+- Each level from 10, chat says where your talent point goes.
+- Dungeon loot card (from Paladin Path): entering a dungeon shows each boss and the hunter gear it drops for you, upgrades marked with their gain, gear you already own greyed with a check. Fades after 45 sec or at the first pull; /ut loot keeps it up, /ut loot move places it, /ut loot size 80, /ut loot reset, /ut loot stay, /ut loot off. Needs Dungeon Journal (ForeverDungeonJournal).
+- Need alert: when an upgrade from your list comes up for a roll, a NEED banner, a sound and a chat line (/ut loot need turns it off).
+
 ## v2.12.1
 - Hunter trainer prices are now the full prices. The list came from a trainer whose city you were Honored with, so every spell showed 10% less than most trainers charge (Beast Lore 64.8s instead of 72s). Untamed now ships full prices, and a cheaper price it sees at a trainer where you have a discount no longer lowers the list.
 - Data update: the item, NPC and quest search rebuilt with QuestieDB's latest Forever fixes and your newest vendor and drop recordings. No beast spawns changed; beastmaster.io and the game build (1.60.1.70862) have nothing new.

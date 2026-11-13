@@ -113,4 +113,47 @@ end
 assert(hawk2[3] == 18000, "a higher price seen at a trainer is applied")
 assert(lac1[3] > 2200, "a lower (discounted) price never lowers the list's full price")
 assert(ns.db.trainerCosts["Summon Hawk|2"][2] == 18000, "costs saved for later")
+
+-- the talent path: the old build's Pathfinding / Improved Revive Pet count as Endurance Training's 3 points
+SPELLS[1223755] = "Focused Fire"; SPELLS[19559] = "Pathfinding"; SPELLS[24443] = "Improved Revive Pet"; SPELLS[19616] = "Unleashed Fury"; SPELLS[19596] = "Bestial Swiftness"
+TRAIT_NODES = { [101] = { spell = 19552, rank = 5, max = 5 }, [102] = { spell = 19583, rank = 0, max = 5 }, [201] = { spell = 19426, rank = 0, max = 5 },
+  [103] = { spell = 1223755, rank = 2, max = 2 }, [104] = { spell = 19559, rank = 2, max = 2 }, [105] = { spell = 24443, rank = 1, max = 2 },
+  [106] = { spell = 19616, rank = 0, max = 5 }, [107] = { spell = 19596, rank = 0, max = 1 } }
+C_Traits.GetTreeNodes = function() return { 101, 102, 103, 104, 105, 106, 107, 201 } end
+C_Traits.GetTraitDescription = function(entry, rank) return "Text for " .. entry .. " rank " .. rank end
+ns.cdb.talentBuild = "leveling"
+FIRE("TRAIT_CONFIG_UPDATED")
+local off = ns.CharacterOffPath()
+assert(off and #off == 0, "old build's filler points are fine: " .. tostring(off and #off))
+assert(ns.NextTalent() == "Bestial Swiftness", "next after 10 points: " .. tostring(ns.NextTalent()))
+TRAIT_NODES[106].rank = 1   -- a point in Unleashed Fury before Bestial Swiftness
+FIRE("TRAIT_CONFIG_UPDATED")
+off = ns.CharacterOffPath()
+assert(#off == 1 and off[1].label == "Unleashed Fury" and off[1].have == 1 and off[1].want == 0, "off the build: Unleashed Fury")
+ns.UI_Show("talents")
+assert(ns.CharacterTalentText(106, 5) == "Text for 106 rank 5", "the talent window's text")
+print("PATH OK")
+
+-- the dungeon loot card and the Need alert
+local gid, g
+for id, e in pairs(ns.GearItems) do if e[4] == 0 and e[3] > 0 then gid, g = id, e break end end
+ForeverDungeonJournal_NS = { ORDER = { "The Deadmines" }, DB = { ["The Deadmines"] = { bosses = {
+  { name = "Sneed", loot = { { gid, "Test Bow", "Ranged, Bow", 3 }, { 999999, "Plate Thing", "Chest, Plate", 3 } } },
+  { name = "Gilnid", loot = {} } } } } }
+IsInInstance = function() return true, "party" end
+GetInstanceInfo = function() return "The Deadmines", "party", 1, "", 5, 0, false, 36 end
+ns.ShowLootCard()
+assert(UntamedLootCard and UntamedLootCard:IsShown(), "loot card shows")
+assert(UntamedLootCard.rows[1].text:GetText():find("Test Bow"), "hunter loot listed: " .. tostring(UntamedLootCard.rows[1].text:GetText()))
+assert(not UntamedLootCard.rows[1].text:GetText():find("Plate Thing"), "not hunter gear: left out")
+assert(UntamedLootCard.rows[2].text:GetText():find("nothing for you"), "a boss with nothing for you")
+GetLootRollItemLink = function() return "|cff0070dd|Hitem:" .. gid .. "::|h[Test Bow]|h|r" end
+GetLootRollItemInfo = function() return 133000 end
+ns.OnLootRoll(1)
+assert(UntamedNeed:IsShown(), "Need banner for an upgrade")
+UntamedNeed:Hide()
+GetLootRollItemLink = function() return "|cff0070dd|Hitem:999999::|h[Plate Thing]|h|r" end
+ns.OnLootRoll(2)
+assert(not UntamedNeed:IsShown(), "no banner for plate")
+print("LOOT OK")
 print("DONE")

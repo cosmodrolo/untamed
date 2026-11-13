@@ -207,15 +207,17 @@ local TREE_NAME = { L["Beast Mastery"], L["Marksmanship"], L["Survival"] }
 -- Builds as steps of { tab, talent, points } in the order to take them.
 local BUILDS = {
   {
-    key = "leveling", label = L["Leveling (Beast Mastery)"], split = "31/20/0",
-    source = "Kargoz, 1-60 Beast Mastery Hunter Leveling Guide (mobalytics.gg, WoW Forever, Oct 2026)",
+    key = "leveling", label = L["Leveling (Beast Mastery)"], split = "31/16/4",
+    source = "Docoda, Beast Mastery Hunter Leveling Guide (wowhead.com, WoW Forever, updated Nov 4 2026)",
     steps = {
-      { 1, "Deadly Aspects", 5 }, { 1, "Focused Fire", 2 }, { 1, "Pathfinding", 2 }, { 1, "Improved Revive Pet", 1 },
+      { 1, "Deadly Aspects", 5 }, { 1, "Focused Fire", 2 },
+      -- Wowhead: Pathfinding, Improved Revive Pet and Endurance Training are all fine for these 3 points
+      { 1, "Endurance Training", 3, alt = { "Pathfinding", "Improved Revive Pet" } },
       { 1, "Bestial Swiftness", 1 }, { 1, "Unleashed Fury", 4 }, { 1, "Summon Hawk", 1 }, { 1, "Unleashed Fury", 1 },
-      { 1, "Ferocity", 3 }, { 1, "Intimidation", 1 }, { 1, "Ferocity", 2 }, { 1, "Bestial Discipline", 2 },
-      { 1, "Frenzy", 4 }, { 1, "Spirit Bond", 1 }, { 1, "Bestial Wrath", 1 },
-      { 2, "Lethal Attacks", 5 }, { 2, "Hawk Eye", 3 }, { 2, "Careful Aim", 5 }, { 2, "Rapid Killing", 2 },
-      { 2, "Mortal Shots", 5 },
+      { 1, "Ferocity", 3 }, { 1, "Intimidation", 1 }, { 1, "Bestial Discipline", 2 }, { 1, "Ferocity", 2 },
+      { 1, "Frenzy", 5 }, { 1, "Bestial Wrath", 1 },
+      { 2, "Lethal Attacks", 5 }, { 2, "Careful Aim", 5 }, { 2, "Improved Stings", 3 }, { 2, "Rapid Killing", 2 },
+      { 2, "Trueshot Aura", 1 }, { 3, "Improved Tracking", 4 },
     },
   },
   {
@@ -296,7 +298,7 @@ local function MapTraits()
     if tab then
       local label = spellID and ((C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(spellID)) or (GetSpellInfo and GetSpellInfo(spellID)))
       if not label or ns.IsSecret(label) then label = key end
-      map[tab][key] = { node = nodeID, maxRank = node.maxRanks, name = label }
+      map[tab][key] = { node = nodeID, entry = entry, maxRank = node.maxRanks, name = label }
       total = total + 1
     end
   end
@@ -375,8 +377,13 @@ local function BuildProgress(build)
     want[tab .. name] = (want[tab .. name] or 0) + pts
     local target = want[tab .. name]
     local rank, m = CurrentRank(tab, name)
+    for _, alt in ipairs(st.alt or {}) do
+      local r = CurrentRank(tab, alt)
+      if r then rank = (rank or 0) + r end
+    end
     local done = rank and math.max(0, math.min(pts, rank - (target - pts))) or 0
-    out[i] = { tab = tab, name = name, pts = pts, done = done, label = m and m.name or name, index = m and m.index, node = m and m.node }
+    out[i] = { tab = tab, name = name, pts = pts, done = done, label = m and m.name or name, index = m and m.index, node = m and m.node,
+      entry = m and m.entry, alt = st.alt, first = target - pts + 1 }
     if not nextStep and done < pts then nextStep = out[i] end
   end
   return out, nextStep
@@ -464,6 +471,115 @@ local function RefreshGlow()
   if ERA then UpdateGlow() else pcall(UpdateForeverGlow) end
 end
 
+-- Why each talent is in the build, in a line (numbers come from the talent window itself).
+local WHY = {
+  ["Deadly Aspects"] = L["Bursts of faster Auto Shots while Aspect of the Hawk is up."],
+  ["Focused Fire"] = L["More damage from you and your pet, as long as the pet is out."],
+  ["Endurance Training"] = L["Your pet gets more health and armor, so it holds mobs longer."],
+  ["Pathfinding"] = L["Faster Aspect of the Cheetah: quicker travel between quests."],
+  ["Improved Revive Pet"] = L["Revive Pet casts faster and the pet comes back healthier."],
+  ["Bestial Swiftness"] = L["Your pet runs faster: it reaches mobs first and keeps up."],
+  ["Unleashed Fury"] = L["More damage from your pet and your hawks."],
+  ["Summon Hawk"] = L["A hawk dive-bombs your target and keeps attacking. Use it instead of most Arcane Shots."],
+  ["Ferocity"] = L["Your pet and hawks crit more often (and crits trigger Frenzy)."],
+  ["Intimidation"] = L["Your pet stuns the target: an emergency stop for a runner or a caster."],
+  ["Bestial Discipline"] = L["Your pet gets Focus back much faster, so it uses its abilities more."],
+  ["Frenzy"] = L["After a crit, your pet attacks much faster for a few seconds."],
+  ["Bestial Wrath"] = L["Your pet goes berserk: much more damage and nothing stops it. Use it on tough fights."],
+  ["Lethal Attacks"] = L["More critical strikes for you."],
+  ["Careful Aim"] = L["Your Intellect also gives you Attack Power."],
+  ["Improved Stings"] = L["Serpent Sting hits harder."],
+  ["Rapid Killing"] = L["Rapid Fire comes back sooner, and a kill makes your next shot hit harder."],
+  ["Trueshot Aura"] = L["More ranged Attack Power for you and your group."],
+  ["Improved Tracking"] = L["More damage to the creature type you're tracking."],
+}
+ns.TalentWhy = WHY
+
+-- The talent window's own text for one rank of a talent, as the game shows it.
+local function TalentText(entry, rank)
+  if not (entry and C_Traits and C_Traits.GetTraitDescription) then return nil end
+  local ok, d = pcall(C_Traits.GetTraitDescription, entry, rank)
+  if ok and type(d) == "string" and d ~= "" and not ns.IsSecret(d) then return d end
+end
+ns.CharacterTalentText = TalentText
+
+-- One entry per talent point, in the build's order: { tab, name, rank, alt }.
+local function Expanded(build)
+  local out, n = {}, {}
+  for _, st in ipairs(build.steps) do
+    for _ = 1, st[3] do
+      n[st[2]] = (n[st[2]] or 0) + 1
+      out[#out + 1] = { tab = st[1], name = st[2], rank = n[st[2]], alt = st.alt }
+    end
+  end
+  return out
+end
+
+-- Talents with more points than the build has by now (how many points you've spent):
+-- { { label, have, want } }. Points in a step's alternatives count as that step.
+local function OffPath(build)
+  local map = MapTalents()
+  if not map[1]["Deadly Aspects"] then return nil end
+  local have, spent = {}, 0
+  for tab = 1, 3 do
+    for name, m in pairs(map[tab]) do
+      local ok, r = pcall(TraitRank, m.node)
+      r = ok and r or 0
+      if r > 0 then have[name] = { r = r, label = m.name, tab = tab } spent = spent + r end
+    end
+  end
+  local want, group = {}, {}
+  for i, e in ipairs(Expanded(build)) do
+    if i > spent then break end
+    local key = e.name
+    if e.alt then
+      key = "group:" .. e.name
+      group[e.name] = true
+      for _, a in ipairs(e.alt) do group[a] = e.name end
+    end
+    want[key] = (want[key] or 0) + 1
+  end
+  local out, pooled = {}, {}
+  for name, h in pairs(have) do
+    local g = group[name]
+    if g then
+      local k = "group:" .. (g == true and name or g)
+      pooled[k] = (pooled[k] or 0) + h.r
+    elseif h.r > (want[name] or 0) then
+      out[#out + 1] = { label = h.label, have = h.r, want = want[name] or 0 }
+    end
+  end
+  for k, r in pairs(pooled) do
+    if r > (want[k] or 0) then out[#out + 1] = { label = k:sub(7) .. " " .. L["(or its alternatives)"], have = r, want = want[k] or 0 } end
+  end
+  table.sort(out, function(a, b) return a.label < b.label end)
+  return out, spent
+end
+ns.CharacterOffPath = function() return OffPath(SelectedBuild()) end
+
+-- Chat: a warning when a point goes off the build, and what's next at each level.
+local lastWarn
+local function CheckPath(force)
+  if ns.db.talentPath == false then return end
+  local ok, off = pcall(OffPath, SelectedBuild())
+  if not ok or not off then return end
+  local key = {}
+  for _, o in ipairs(off) do key[#key + 1] = o.label .. o.have end
+  key = table.concat(key, ",")
+  if key == lastWarn and not force then return end
+  lastWarn = key
+  for _, o in ipairs(off) do
+    ns.Print(C.ORANGE .. string.format(L["Off the build: %s has %d points, the build has %d by now."], o.label, o.have, o.want) .. "|r")
+  end
+end
+ns.CharacterCheckPath = CheckPath
+
+local function NextLine()
+  local _, nxt = BuildProgress(SelectedBuild())
+  if not nxt then return nil end
+  return string.format(L["%s, rank %d"], nxt.label, nxt.first + nxt.done)
+end
+
 -- Hooked-already flags live here, not on Blizzard's frames (writing fields onto them taints them).
 local hooked = {}
 
@@ -487,17 +603,32 @@ end
 
 do
   local ev = CreateFrame("Frame")
-  for _, e in ipairs({ "ADDON_LOADED", "CHARACTER_POINTS_CHANGED", "PLAYER_TALENT_UPDATE", "SPELLS_CHANGED",
+  for _, e in ipairs({ "ADDON_LOADED", "PLAYER_ENTERING_WORLD", "CHARACTER_POINTS_CHANGED", "PLAYER_TALENT_UPDATE", "SPELLS_CHANGED",
                        "TRAIT_CONFIG_UPDATED", "TRAIT_NODE_CHANGED", "TRAIT_TREE_CURRENCY_INFO_UPDATED", "PLAYER_LEVEL_UP" }) do
     pcall(ev.RegisterEvent, ev, e)
   end
   ev:SetScript("OnEvent", function(_, event, arg)
+    if event == "PLAYER_ENTERING_WORLD" then
+      if not ns.pathChecked then
+        ns.pathChecked = true
+        C_Timer.After(8, function() talentMap = nil CheckPath(true) end)
+      end
+      return
+    end
     if event == "ADDON_LOADED" then
       if arg == "Blizzard_TalentUI" then HookTalentFrame() end
       if arg == "Blizzard_PlayerSpells" then HookTraitFrame() end
     else
       talentMap = nil
       RefreshGlow()
+      if event == "PLAYER_LEVEL_UP" and (tonumber(arg) or 0) >= 10 and ns.db.talentPath ~= false then
+        C_Timer.After(1, function()
+          local line = NextLine()
+          if line then ns.Print(string.format(L["Level %d: your talent point goes to %s."], tonumber(arg), C.GOLD .. line .. "|r")) end
+        end)
+      elseif event == "TRAIT_CONFIG_UPDATED" or event == "TRAIT_NODE_CHANGED" then
+        C_Timer.After(0.5, function() CheckPath() end)
+      end
     end
   end)
 end
@@ -530,6 +661,14 @@ do
       if ns.talentError then add(0, nil, C.RED .. L["Couldn't read your talents: "] .. tostring(ns.talentError) .. "|r") end
       add(0, nil, C.GREY .. L["Still empty? Type /ut talents and send me what it prints."] .. "|r")
     end
+    local okOff, off = pcall(OffPath, build)
+    if okOff and off and #off > 0 then
+      add(0, nil, C.ORANGE .. L["Off the build"] .. "|r", "", nil,
+        { L["Off the build"], L["These have more points than the build has at your level. Respec at your class trainer, or keep going: the build still works from here."] }, { header = true })
+      for _, o in ipairs(off) do
+        add(14, nil, C.ORANGE .. o.label .. "|r", C.GREY .. string.format(L["%d points, the build has %d"], o.have, o.want) .. "|r")
+      end
+    end
     local level = 9
     for i, st in ipairs(steps) do
       local first = level + 1
@@ -537,9 +676,18 @@ do
       local isNext = st == nextStep
       local color = st.done >= st.pts and C.GREEN or (isNext and C.GOLD or C.WHITE)
       local lvlText = st.pts > 1 and (first .. "-" .. level) or tostring(first)
-      add(14, nil, string.format("%s%s|r  %s%d/%d|r", color, st.label, C.GREY, st.done, st.pts),
-        TREE_NAME[st.tab] .. (isNext and (C.GOLD .. "   " .. L["next"] .. "|r") or ""), nil, nil,
+      local label = st.label
+      if st.alt then label = label .. C.GREY .. " " .. L["(or "] .. table.concat(st.alt, ", ") .. ")|r" end
+      -- the tooltip: the talent window's own text for the ranks this step takes, and why
+      local tip = { st.label, string.format(L["Levels %s, %s tree"], lvlText, TREE_NAME[st.tab]) }
+      local last = st.first + st.pts - 1
+      local text = TalentText(st.entry, last)
+      if text then tip[#tip + 1] = (st.pts > 1 and string.format(L["At rank %d: "], last) or "") .. C.WHITE .. text .. "|r" end
+      if WHY[st.name] then tip[#tip + 1] = C.GREEN .. WHY[st.name] .. "|r" end
+      add(14, nil, string.format("%s%s|r  %s%d/%d|r", color, label, C.GREY, st.done, st.pts),
+        TREE_NAME[st.tab] .. (isNext and (C.GOLD .. "   " .. L["next"] .. "|r") or ""), nil, tip,
         { mid = C.GREY .. L["lvl "] .. lvlText .. "|r" })
+      if isNext and WHY[st.name] then add(28, nil, C.GREY .. WHY[st.name] .. "|r") end
     end
     add(0, nil, C.GREY .. L["Builds are common community picks. Swap points to suit your pet and playstyle."] .. "|r")
     list:Set(rows)

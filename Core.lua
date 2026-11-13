@@ -63,7 +63,7 @@ local defaultsDB = {
   zoneAlerts = true, autoPins = true, hideTooHigh = false, minimapAngle = 200, showMinimap = true,
   tooltipInfo = true, targetAlert = true, targetSound = true, minimapPins = true, feedReminder = true,
   arrowScale = 1, arrowNextSpot = true, autoShotBar = true, growlWarning = true, aspectReminder = true, markReminder = true, resistAlerts = true,
-  gearTooltip = true, talentGlow = true, gearAlerts = true, recordData = true, ahHelper = true, openHome = true,
+  gearTooltip = true, talentGlow = true, talentPath = true, gearAlerts = true, recordData = true, ahHelper = true, openHome = true,
 }
 local function InitDB()
   UntamedDB = UntamedDB or {}
@@ -573,6 +573,8 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Arrow_NextSpot()
   elseif msg == "talents" then
     if ns.TalentDebug then ns.TalentDebug() end
+  elseif msg == "loot" or msg:match("^loot ") then
+    if ns.LootCommand then ns.LootCommand(msg:match("^loot%s*(.*)$")) end
   elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" or msg == "builds" or msg == "search"
     or msg == "supplies" or msg == "spells" or msg == "talents" or msg == "gear" or msg == "quests" then
     if ns.UI_Show then ns.UI_Show(msg) end
@@ -583,6 +585,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed ammo, trainer, pettrainer, stable  arrow to the nearest one   |  /untamed rare  arrow to the last rare seen")
     ns.Print("/untamed clear  clear map focus and the navigation arrow   |  /untamed spot  arrow to the next spawn spot")
     ns.Print("/untamed alerts  toggle zone alerts   |  /untamed minimap  toggle the minimap button")
+    ns.Print("/untamed loot  the dungeon loot card (move, lock, size 80, reset, stay, need, off, on)")
   else
     if ns.UI_Toggle then ns.UI_Toggle() end
   end

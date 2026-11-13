@@ -5,7 +5,7 @@
 ## Version: @project-version@
 ## SavedVariables: UntamedDB
 ## SavedVariablesPerCharacter: UntamedCharDB
-## OptionalDeps: LibStub, LibDataBroker-1.1, LibDBIcon-1.0
+## OptionalDeps: LibStub, LibDataBroker-1.1, LibDBIcon-1.0, ForeverDungeonJournal
 ## IconTexture: Interface\AddOns\Untamed\Media\Icon
 ## Category: Hunter
 ## X-License: GPL-3.0
@@ -52,6 +52,7 @@ Restock.lua
 Wishlist.lua
 Character.lua
 Dungeons.lua
+LootCard.lua
 Reputation.lua
 Auction.lua
 Home.lua
