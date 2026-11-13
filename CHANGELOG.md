@@ -1,7 +1,7 @@
 # Changelog
 
 ## v2.14.1
-- Macros for every ability you put on a bar (31, in groups: the fight, your pet, up close, traps and escapes, aspects and buffs). "/cast" with no rank always casts your best rank, so they upgrade themselves when you train a new one. The controller layout now uses them and covers L2 + D-pad too.
+- Macros for every ability you put on a bar (29, in groups: the fight, your pet, up close, traps and escapes, aspects and buffs). "/cast" with no rank always casts your best rank, so they upgrade themselves when you train a new one. The controller layout now uses them and covers L2 + D-pad too.
 
 ## v2.14.0
 - New leveling build, Untamed's own pick for the strongest pet (31/20/0): Endurance Training 5, Focused Fire 2, Deadly Aspects 3, Unleashed Fury 5, Summon Hawk, Ferocity 5, Bestial Discipline 2, Spirit Bond 2, Frenzy 5, Bestial Wrath, then Lethal Attacks 5, Efficiency 5, Careful Aim 5, Improved Stings 3, Rapid Killing 2. Worked out from the Forever talent numbers and the Nov 10 hotfixes (pet health back to 115%, hawks +80% melee damage, Summon Hawk and Arcane Shot 11% of base mana).
