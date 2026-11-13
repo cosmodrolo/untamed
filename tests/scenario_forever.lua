@@ -162,14 +162,18 @@ GetMacroIndexByName = function(n) for i, m in ipairs(MACROS) do if m.name == n t
 GetMacroInfo = function(i) local m = MACROS[i] return m.name, m.icon, m.body end
 GetNumMacros = function() return 0, #MACROS end
 CreateMacro = function(name, icon, body) MACROS[#MACROS + 1] = { name = name, icon = icon, body = body } return #MACROS end
-EditMacro = function(i, name, icon, body) MACROS[i].body = body return i end
-MACROS[1] = { name = "UT Mend", icon = 1, body = "/cast Mend Pet" }   -- one of his own with the same name
+EditMacro = function(i, name, icon, body) MACROS[i].body = body if name then MACROS[i].name = name end return i end
+MACROS[1] = { name = "Mend", icon = 1, body = "/cast Mend Pet" }   -- one of his own with the same name
+MACROS[2] = { name = "UT Hawk", icon = 1, body = "old" }   -- one Untamed made before 2.14.2
+ns.cdb.macros = { ["UT Hawk"] = true }
 ns.UI_Show("rotation")
 ns.MakeHunterMacros()
 local want = 0
 for _, m in ipairs(ns.HUNTER_MACROS) do if not m.group then want = want + 1 end end
-assert(#MACROS == want, "made the rest: " .. #MACROS .. " of " .. want)
-for _, m in ipairs(MACROS) do assert(#m.name <= 16, "macro name too long: " .. m.name) end
+local names = {} for _, m in ipairs(MACROS) do names[#names + 1] = m.name end
+assert(#MACROS == want, "made the rest: " .. #MACROS .. " of " .. want .. ": " .. table.concat(names, ","))
+for _, m in ipairs(MACROS) do assert(#m.name <= 4, "macro name too long: " .. m.name) end
+assert(MACROS[2].name == "Hawk" and MACROS[2].body:find("castsequence"), "old macro renamed in place")
 assert(MACROS[1].body == "/cast Mend Pet", "his own macro left alone")
 ns.UI_Show("rotation")
 print("ROTATION OK")

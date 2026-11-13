@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.14.2
+- Macro names are 4 letters or less so they read on the controller layout: Open, Hawk, Serp, Aim, Mult, Arc, Conc, Brst, Vol, Mend, Rev, Call, Feed, Rapt, Mong, Wing, Dis, FD, Frst, Frz, Imm, Expl, Scar, AspH, AspC, AspM, AspP, AspW, TSA. Macros made with the old "UT ..." names are renamed in place the next time you press Make the macros, so they stay on your bars.
+
 ## v2.14.1
 - Macros for every ability you put on a bar (29, in groups: the fight, your pet, up close, traps and escapes, aspects and buffs). "/cast" with no rank always casts your best rank, so they upgrade themselves when you train a new one. The controller layout now uses them and covers L2 + D-pad too.
 
