@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.14.0
+- New leveling build, Untamed's own pick for the strongest pet (31/20/0): Endurance Training 5, Focused Fire 2, Deadly Aspects 3, Unleashed Fury 5, Summon Hawk, Ferocity 5, Bestial Discipline 2, Spirit Bond 2, Frenzy 5, Bestial Wrath, then Lethal Attacks 5, Efficiency 5, Careful Aim 5, Improved Stings 3, Rapid Killing 2. Worked out from the Forever talent numbers and the Nov 10 hotfixes (pet health back to 115%, hawks +80% melee damage, Summon Hawk and Arcane Shot 11% of base mana).
+- Rotation tab: what to press in a fight (pull, packs, keeping your pet up, between fights), spells you don't have yet dimmed with their level; macros UT Open (pet attack, Hunter's Mark, Auto Shot), UT Hawk (hawk, hawk, Arcane Shot), UT Mend (Mend Pet on your pet), UT Burst (Rapid Fire and Bestial Wrath), made per character with one click (a macro of yours with the same name is left alone); and where each goes on the controller.
+
 ## v2.13.0
 - New leveling talent build: Wowhead's Beast Mastery leveling build for Forever (Docoda, updated Nov 4 2026), 31/16/4, one point per level from 10 to 60. Pathfinding and Improved Revive Pet count for the 3 Endurance Training points, so the old build's picks aren't flagged.
 - The Talents tab now shows, for every step, the talent window's own text for those ranks and a line on why it's in the build (hover a step); the next one has its reason right under it.

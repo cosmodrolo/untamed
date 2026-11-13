@@ -53,6 +53,7 @@ Wishlist.lua
 Character.lua
 Dungeons.lua
 LootCard.lua
+Rotation.lua
 Reputation.lua
 Auction.lua
 Home.lua

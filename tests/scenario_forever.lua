@@ -114,22 +114,21 @@ assert(hawk2[3] == 18000, "a higher price seen at a trainer is applied")
 assert(lac1[3] > 2200, "a lower (discounted) price never lowers the list's full price")
 assert(ns.db.trainerCosts["Summon Hawk|2"][2] == 18000, "costs saved for later")
 
--- the talent path: the old build's Pathfinding / Improved Revive Pet count as Endurance Training's 3 points
-SPELLS[1223755] = "Focused Fire"; SPELLS[19559] = "Pathfinding"; SPELLS[24443] = "Improved Revive Pet"; SPELLS[19616] = "Unleashed Fury"; SPELLS[19596] = "Bestial Swiftness"
-TRAIT_NODES = { [101] = { spell = 19552, rank = 5, max = 5 }, [102] = { spell = 19583, rank = 0, max = 5 }, [201] = { spell = 19426, rank = 0, max = 5 },
-  [103] = { spell = 1223755, rank = 2, max = 2 }, [104] = { spell = 19559, rank = 2, max = 2 }, [105] = { spell = 24443, rank = 1, max = 2 },
-  [106] = { spell = 19616, rank = 0, max = 5 }, [107] = { spell = 19596, rank = 0, max = 1 } }
-C_Traits.GetTreeNodes = function() return { 101, 102, 103, 104, 105, 106, 107, 201 } end
+-- the talent path: Endurance Training first; Deadly Aspects past 3 by level 19 is off the build
+SPELLS[1223755] = "Focused Fire"; SPELLS[19616] = "Unleashed Fury"
+TRAIT_NODES = { [101] = { spell = 19552, rank = 3, max = 5 }, [102] = { spell = 19583, rank = 5, max = 5 }, [201] = { spell = 19426, rank = 0, max = 5 },
+  [103] = { spell = 1223755, rank = 2, max = 2 }, [106] = { spell = 19616, rank = 0, max = 5 } }
+C_Traits.GetTreeNodes = function() return { 101, 102, 103, 106, 201 } end
 C_Traits.GetTraitDescription = function(entry, rank) return "Text for " .. entry .. " rank " .. rank end
 ns.cdb.talentBuild = "leveling"
 FIRE("TRAIT_CONFIG_UPDATED")
 local off = ns.CharacterOffPath()
-assert(off and #off == 0, "old build's filler points are fine: " .. tostring(off and #off))
-assert(ns.NextTalent() == "Bestial Swiftness", "next after 10 points: " .. tostring(ns.NextTalent()))
-TRAIT_NODES[106].rank = 1   -- a point in Unleashed Fury before Bestial Swiftness
+assert(off and #off == 0, "on the build: " .. tostring(off and #off))
+assert(ns.NextTalent() == "Unleashed Fury", "next after 10 points: " .. tostring(ns.NextTalent()))
+TRAIT_NODES[101].rank = 5   -- Deadly Aspects 5 (the old build) instead of Unleashed Fury
 FIRE("TRAIT_CONFIG_UPDATED")
 off = ns.CharacterOffPath()
-assert(#off == 1 and off[1].label == "Unleashed Fury" and off[1].have == 1 and off[1].want == 0, "off the build: Unleashed Fury")
+assert(#off == 1 and off[1].label == "Deadly Aspects" and off[1].have == 5 and off[1].want == 3, "off the build: Deadly Aspects")
 ns.UI_Show("talents")
 assert(ns.CharacterTalentText(106, 5) == "Text for 106 rank 5", "the talent window's text")
 print("PATH OK")
@@ -156,4 +155,19 @@ GetLootRollItemLink = function() return "|cff0070dd|Hitem:999999::|h[Plate Thing
 ns.OnLootRoll(2)
 assert(not UntamedNeed:IsShown(), "no banner for plate")
 print("LOOT OK")
+
+-- the Rotation tab and its macros
+MACROS = {}
+GetMacroIndexByName = function(n) for i, m in ipairs(MACROS) do if m.name == n then return i end end return 0 end
+GetMacroInfo = function(i) local m = MACROS[i] return m.name, m.icon, m.body end
+GetNumMacros = function() return 0, #MACROS end
+CreateMacro = function(name, icon, body) MACROS[#MACROS + 1] = { name = name, icon = icon, body = body } return #MACROS end
+EditMacro = function(i, name, icon, body) MACROS[i].body = body return i end
+MACROS[1] = { name = "UT Mend", icon = 1, body = "/cast Mend Pet" }   -- one of his own with the same name
+ns.UI_Show("rotation")
+ns.MakeHunterMacros()
+assert(#MACROS == #ns.HUNTER_MACROS, "made the rest: " .. #MACROS)
+assert(MACROS[1].body == "/cast Mend Pet", "his own macro left alone")
+ns.UI_Show("rotation")
+print("ROTATION OK")
 print("DONE")

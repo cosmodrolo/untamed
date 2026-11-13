@@ -207,17 +207,21 @@ local TREE_NAME = { L["Beast Mastery"], L["Marksmanship"], L["Survival"] }
 -- Builds as steps of { tab, talent, points } in the order to take them.
 local BUILDS = {
   {
-    key = "leveling", label = L["Leveling (Beast Mastery)"], split = "31/16/4",
-    source = "Docoda, Beast Mastery Hunter Leveling Guide (wowhead.com, WoW Forever, updated Nov 4 2026)",
+    key = "leveling", label = L["Leveling (Beast Mastery)"], split = "31/20/0",
+    source = "Untamed's own pick for the strongest pet (Nov 13 2026), from the Forever talent numbers on wowhead.com's talent changes page and the Nov 10 hotfixes",
+    -- Points, by what they do per point: Ferocity with Frenzy about 4% pet damage, Frenzy about 3%,
+    -- Unleashed Fury 3% (pet and hawks), Bestial Wrath 50% for 18 sec every 2 min (about 7.5% on
+    -- average from 1 point), Endurance Training 3% pet health and armor (pets tank; Nov 10 cut their
+    -- health back to 115%), Spirit Bond and Bestial Discipline less downtime (health, pet Focus and
+    -- your mana while casting), Deadly Aspects about 2% more Auto Shot a point. Marksmanship after
+    -- 40: your crit, mana (Summon Hawk and Arcane Shot cost 11% of base mana each since Nov 10) and
+    -- Attack Power. Skipped: Intimidation, Bestial Swiftness, Pathfinding, Improved Revive Pet.
     steps = {
-      { 1, "Deadly Aspects", 5 }, { 1, "Focused Fire", 2 },
-      -- Wowhead: Pathfinding, Improved Revive Pet and Endurance Training are all fine for these 3 points
-      { 1, "Endurance Training", 3, alt = { "Pathfinding", "Improved Revive Pet" } },
-      { 1, "Bestial Swiftness", 1 }, { 1, "Unleashed Fury", 4 }, { 1, "Summon Hawk", 1 }, { 1, "Unleashed Fury", 1 },
-      { 1, "Ferocity", 3 }, { 1, "Intimidation", 1 }, { 1, "Bestial Discipline", 2 }, { 1, "Ferocity", 2 },
-      { 1, "Frenzy", 5 }, { 1, "Bestial Wrath", 1 },
-      { 2, "Lethal Attacks", 5 }, { 2, "Careful Aim", 5 }, { 2, "Improved Stings", 3 }, { 2, "Rapid Killing", 2 },
-      { 2, "Trueshot Aura", 1 }, { 3, "Improved Tracking", 4 },
+      { 1, "Endurance Training", 5 }, { 1, "Focused Fire", 2 }, { 1, "Deadly Aspects", 3 },
+      { 1, "Unleashed Fury", 5 }, { 1, "Summon Hawk", 1 }, { 1, "Ferocity", 5 },
+      { 1, "Bestial Discipline", 2 }, { 1, "Spirit Bond", 2 }, { 1, "Frenzy", 5 }, { 1, "Bestial Wrath", 1 },
+      { 2, "Lethal Attacks", 5 }, { 2, "Efficiency", 5 }, { 2, "Careful Aim", 5 }, { 2, "Improved Stings", 3 },
+      { 2, "Rapid Killing", 2 },
     },
   },
   {
@@ -474,8 +478,10 @@ end
 -- Why each talent is in the build, in a line (numbers come from the talent window itself).
 local WHY = {
   ["Deadly Aspects"] = L["Bursts of faster Auto Shots while Aspect of the Hawk is up."],
+  ["Spirit Bond"] = L["You and your pet keep healing during and between fights: less eating and Mend Pet."],
+  ["Efficiency"] = L["Your shots and stings cost less mana, so you drink less."],
   ["Focused Fire"] = L["More damage from you and your pet, as long as the pet is out."],
-  ["Endurance Training"] = L["Your pet gets more health and armor, so it holds mobs longer."],
+  ["Endurance Training"] = L["Your pet gets more health and armor: it tanks longer and dies less."],
   ["Pathfinding"] = L["Faster Aspect of the Cheetah: quicker travel between quests."],
   ["Improved Revive Pet"] = L["Revive Pet casts faster and the pet comes back healthier."],
   ["Bestial Swiftness"] = L["Your pet runs faster: it reaches mobs first and keeps up."],
@@ -483,7 +489,7 @@ local WHY = {
   ["Summon Hawk"] = L["A hawk dive-bombs your target and keeps attacking. Use it instead of most Arcane Shots."],
   ["Ferocity"] = L["Your pet and hawks crit more often (and crits trigger Frenzy)."],
   ["Intimidation"] = L["Your pet stuns the target: an emergency stop for a runner or a caster."],
-  ["Bestial Discipline"] = L["Your pet gets Focus back much faster, so it uses its abilities more."],
+  ["Bestial Discipline"] = L["Your pet gets Focus back faster (more Claw and Bite), and your mana keeps coming back while you cast."],
   ["Frenzy"] = L["After a crit, your pet attacks much faster for a few seconds."],
   ["Bestial Wrath"] = L["Your pet goes berserk: much more damage and nothing stops it. Use it on tough fights."],
   ["Lethal Attacks"] = L["More critical strikes for you."],
