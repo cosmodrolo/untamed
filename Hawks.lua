@@ -13,7 +13,7 @@ local C = ns.C
 
 local HAWK_IDS = { [1293241] = true, [1293525] = true, [1293526] = true, [1293527] = true }
 local LIFE, SIZE = 18, 40
-local DEFAULT_POS = { "CENTER", 0, -105 }
+local DEFAULT_POS = { "CENTER", 0, -150 }
 
 local frame, slots, moving
 local hawks = {}   -- expiry times, oldest first
