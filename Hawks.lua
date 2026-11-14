@@ -7,7 +7,7 @@ local C = ns.C
 -- its time left as a sweep, big seconds and a bar, so you can see at a glance whether both are up.
 -- Driven by your own Summon Hawk casts (UNIT_SPELLCAST_SUCCEEDED, spell ID only when it isn't
 -- secret); a third hawk replaces the oldest. Shown in a fight (empty slots dim, so you see a
--- missing hawk) and while a hawk is still out; cleared when the fight ends.
+-- missing hawk) and while a hawk is still out, so its time carries over if you leave a fight and start another.
 -- Our own frame on UIParent (gamepad safe). /ut hawks move | lock | reset | off | on.
 ---------------------------------------------------------------------------
 
@@ -161,9 +161,6 @@ do
     if not frame or ns.db.hawkTracker == false then return end
     if event == "UNIT_SPELLCAST_SUCCEEDED" then
       if unit == "player" and not ns.IsSecret(spellID) and HAWK_IDS[spellID] then OnHawk() end
-    elseif event == "PLAYER_REGEN_ENABLED" then
-      wipe(hawks)
-      Paint()
     else
       Paint()
     end

@@ -178,7 +178,10 @@ assert(MACROS[1].body == "/cast Mend Pet", "his own macro left alone")
 ns.UI_Show("rotation")
 print("ROTATION OK")
 
--- the hawk tracker: two slots, a third hawk replaces the oldest, cleared after the fight
+-- the hawk tracker: two slots, a third hawk replaces the oldest, time kept between fights
+local clock = 1000
+local realTime = GetTime
+GetTime = function() return clock end
 UnitAffectingCombat = function() return true end
 FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1293241)
 assert(UntamedHawks:IsShown(), "hawk tracker shows")
@@ -187,6 +190,15 @@ FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1293241)
 assert(ns.HawkCount() == 2, "two hawks at most: " .. ns.HawkCount())
 UnitAffectingCombat = function() return false end
 FIRE("PLAYER_REGEN_ENABLED")
-assert(not UntamedHawks:IsShown(), "hidden after the fight")
+assert(ns.HawkCount() == 2 and UntamedHawks:IsShown(), "hawks still out after the fight keep their time")
+clock = clock + 10
+UnitAffectingCombat = function() return true end
+FIRE("PLAYER_REGEN_DISABLED")
+assert(ns.HawkCount() == 2, "next fight: same hawks, 8 seconds left")
+clock = clock + 9
+UnitAffectingCombat = function() return false end
+FIRE("PLAYER_REGEN_ENABLED")
+assert(ns.HawkCount() == 0 and not UntamedHawks:IsShown(), "gone when their time runs out")
+GetTime = realTime
 print("HAWKS OK")
 print("DONE")
