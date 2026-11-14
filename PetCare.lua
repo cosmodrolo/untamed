@@ -52,7 +52,7 @@ local function SlotItem(bag, slot)
   return id, count
 end
 
--- Food in your bags your current pet will eat, best first: { {itemID, bag, slot, count, level, name} }
+-- Food in your bags your current pet will eat, the one to feed first: { {itemID, bag, slot, count, level, name} }
 function ns.EdibleFood()
   local out = {}
   if not UnitExists("pet") then return out end
@@ -76,7 +76,22 @@ function ns.EdibleFood()
       end
     end
   end
-  table.sort(out, function(a, b) return a[5] > b[5] end)
+  -- Cheapest food that still makes your pet happy first, so your best food (and buff food) is
+  -- kept for you. Feed Pet gives full happiness for food under 10 levels below the pet and much
+  -- less for lower food, so among those the lowest level wins; if nothing is that close, the
+  -- highest level food you have.
+  local petLevel = UnitLevel("pet") or 0
+  if ns.IsSecret and ns.IsSecret(petLevel) then petLevel = 0 end
+  local function full(f) return petLevel - f[5] < 10 end
+  table.sort(out, function(a, b)
+    local fa, fb = full(a), full(b)
+    if fa ~= fb then return fa end
+    if fa then
+      if a[5] ~= b[5] then return a[5] < b[5] end
+      return a[4] > b[4]   -- same level: the bigger stack first
+    end
+    return a[5] > b[5]
+  end)
   return out
 end
 
@@ -140,7 +155,7 @@ function ns.CreateFeedButton(parent, name, w, h)
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
     if self.food then
       GameTooltip:AddLine(L["Feed "] .. self.food[6], 1, 0.82, 0)
-      GameTooltip:AddLine(L["You have "] .. self.food[4] .. ". Picks the highest level food your pet will eat.", 1, 1, 1, true)
+      GameTooltip:AddLine(L["You have "] .. self.food[4] .. ". Picks your lowest level food that still makes your pet fully happy, so your best food stays in your bags.", 1, 1, 1, true)
     else
       GameTooltip:AddLine(L["Nothing in your bags matches your pet's diet."], 1, 1, 1, true)
     end

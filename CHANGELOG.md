@@ -1,6 +1,7 @@
 # Changelog
 
 ## v2.16.0
+- Feed Pet button (and the "your pet is not happy" note) now suggests your lowest level food that still makes your pet fully happy (food under 10 levels below your pet), so your best food and buff food stay in your bags. If you have nothing that close to your pet's level, it picks your highest level food as before.
 - Beasts on your wishlist: type /ut want and a beast's name (for example /ut want broken tooth), or Alt-click a beast in the beast list. It shows at the top of the Wishlist tab (click for an arrow, right-click to remove), its spots are on your world map with a gold border, chat tells you when you enter its zone and when you reach the level to tame it, and the rare finder adds "On your wishlist!" when it spots it. /ut wishlist opens the tab.
 
 ## v2.15.1
