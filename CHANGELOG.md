@@ -2,9 +2,12 @@
 
 ## v2.15.1
 - Hawk tracker keeps a hawk's time when you leave a fight and start another (it used to clear both slots at the end of every fight). Hawks still out after a fight stay on the tracker until their 18 seconds run out.
-- Pet families from Blizzard's Nov 9 hotfix: Vulgara the Insatiable is now a Fox (was Wolf) and Shriekling Fledgling a Bird of Prey (was Raptor).
+- Pet families from Blizzard's Nov 9 hotfix: Vulgara the Insatiable is now a Fox (was Wolf) and Shriekling Fledgling and Shriekling Matriarch are Birds of Prey (were Raptors).
 - Data update: beast spawn points refreshed from QuestieDB's newest Forever recordings (46 beasts got more or corrected spots, for example the Gloomrise spiders, Highland Spider and Marsh and Elder Crocolisk), and the item, NPC and quest search rebuilt with QuestieDB's latest data and your newest vendor and drop recordings (about 1,500 more entries).
-- Rotation tab: Volley's note says moving stops it (Nov 11 hotfix). Checked the Nov 9 to Nov 13 hotfixes and game builds 70888 and 70938: no other hunter talent, spell or pet changes.
+- 18 new beasts from beastmaster.io (now 641), most of them in the Riverglades: Ombassa (rare elite cat, Dash 2), the Wildplains cats (Cower 4), Plains Coyote and Plains Prowler (Bite 5), the Paletusk boars (Charge 4, Bite 5), Freshwater Crocolisk (Dismember 3), Sand and Shore Crawler (Pinch 3 and 4), Venomweb Spitter (Web 3), the Plains Buzzards (Claw 5) and Roving Tallstrider (Dust Cloud 3); plus Crazed Sandstrider in Desolace (Dust Cloud 3) and Riding Wolf.
+- Higher ranks of the new family abilities now have teachers: Swipe 3 (Ironfur Bears), Pinch 3 (Silt Crawler), Dismember 2 and 3 (Saltwater and Young Sawtooth Crocolisk, Drywallow Vicejaw), Tendon Rip 2 and 3 (Steelsnap, Blisterpaw Hyena), Mine! 3 (Marsh Owl), Savage Rend 3 (Jungle Stalkers, Highland Fleshstalker, the Bloodfen raptors) and Web 3 (Darkmist and Darkfang spiders, Sorrow Spinner). King Bangalash teaches Prowl 2, not Dash 2.
+- Rotation tab: Volley's note says moving stops it (Nov 11 hotfix).
+- Checked game builds 70888 and 70938 in Blizzard's own tables: hunter talents unchanged; Arcane Shot and Summon Hawk cost 11% of base mana (Nov 10 hotfix); Volley no longer procs; pet Great Stamina now adds health directly (30 to 400) instead of stamina, about the same total.
 
 ## v2.15.0
 - Hawk tracker: two slots under your character for your Summon Hawk hawks, each with its seconds left (red in the last 3), a sweep and a bar. Shown in a fight, empty slots dimmed so a missing hawk stands out; a third hawk replaces the oldest; cleared when the fight ends. /ut hawks move, lock, reset, off, on.
