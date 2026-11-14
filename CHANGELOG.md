@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.15.1
+- Hawk tracker keeps a hawk's time when you leave a fight and start another (it used to clear both slots at the end of every fight). Hawks still out after a fight stay on the tracker until their 18 seconds run out.
+- Pet families from Blizzard's Nov 9 hotfix: Vulgara the Insatiable is now a Fox (was Wolf) and Shriekling Fledgling a Bird of Prey (was Raptor).
+- Data update: beast spawn points refreshed from QuestieDB's newest Forever recordings (46 beasts got more or corrected spots, for example the Gloomrise spiders, Highland Spider and Marsh and Elder Crocolisk), and the item, NPC and quest search rebuilt with QuestieDB's latest data and your newest vendor and drop recordings (about 1,500 more entries).
+- Rotation tab: Volley's note says moving stops it (Nov 11 hotfix). Checked the Nov 9 to Nov 13 hotfixes and game builds 70888 and 70938: no other hunter talent, spell or pet changes.
+
 ## v2.15.0
 - Hawk tracker: two slots under your character for your Summon Hawk hawks, each with its seconds left (red in the last 3), a sweep and a bar. Shown in a fight, empty slots dimmed so a missing hawk stands out; a third hawk replaces the oldest; cleared when the fight ends. /ut hawks move, lock, reset, off, on.
 

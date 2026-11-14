@@ -43,7 +43,7 @@ ns.HUNTER_MACROS = {
   Plain("Conc", "Concussive Shot", L["Slows a runner."]),
   { "Brst", "Rapid Fire", L["Tough fights: Rapid Fire and Bestial Wrath together (each once you have it; press again if one didn't go off)."],
     "#showtooltip Rapid Fire\n/cast [known:Bestial Wrath] Bestial Wrath\n/cast Rapid Fire" },
-  Plain("Vol", "Volley", L["Big packs (from 40)."]),
+  Plain("Vol", "Volley", L["Big packs (from 40). Stand still: moving stops it."]),
   { group = L["Your pet"] },
   { "Mend", "Mend Pet", L["Heals your pet, whatever you have targeted."], "#showtooltip Mend Pet\n/cast [@pet] Mend Pet" },
   Plain("Rev", "Revive Pet", L["Brings your pet back."]),
