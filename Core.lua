@@ -573,6 +573,8 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Arrow_NextSpot()
   elseif msg == "talents" then
     if ns.TalentDebug then ns.TalentDebug() end
+  elseif msg == "hawks" or msg:match("^hawks ") then
+    if ns.HawkCommand then ns.HawkCommand(msg:match("^hawks%s*(.*)$")) end
   elseif msg == "loot" or msg:match("^loot ") then
     if ns.LootCommand then ns.LootCommand(msg:match("^loot%s*(.*)$")) end
   elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" or msg == "builds" or msg == "search"
@@ -586,6 +588,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed clear  clear map focus and the navigation arrow   |  /untamed spot  arrow to the next spawn spot")
     ns.Print("/untamed alerts  toggle zone alerts   |  /untamed minimap  toggle the minimap button")
     ns.Print("/untamed loot  the dungeon loot card (move, lock, size 80, reset, stay, need, off, on)")
+    ns.Print("/untamed hawks  the hawk tracker (move, lock, reset, off, on)")
   else
     if ns.UI_Toggle then ns.UI_Toggle() end
   end

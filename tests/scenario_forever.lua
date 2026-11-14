@@ -177,4 +177,16 @@ assert(MACROS[2].name == "Hawk" and MACROS[2].body:find("castsequence"), "old ma
 assert(MACROS[1].body == "/cast Mend Pet", "his own macro left alone")
 ns.UI_Show("rotation")
 print("ROTATION OK")
+
+-- the hawk tracker: two slots, a third hawk replaces the oldest, cleared after the fight
+UnitAffectingCombat = function() return true end
+FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1293241)
+assert(UntamedHawks:IsShown(), "hawk tracker shows")
+FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1293241)
+FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1293241)
+assert(ns.HawkCount() == 2, "two hawks at most: " .. ns.HawkCount())
+UnitAffectingCombat = function() return false end
+FIRE("PLAYER_REGEN_ENABLED")
+assert(not UntamedHawks:IsShown(), "hidden after the fight")
+print("HAWKS OK")
 print("DONE")

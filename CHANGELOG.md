@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.15.0
+- Hawk tracker: two slots under your character for your Summon Hawk hawks, each with its seconds left (red in the last 3), a sweep and a bar. Shown in a fight, empty slots dimmed so a missing hawk stands out; a third hawk replaces the oldest; cleared when the fight ends. /ut hawks move, lock, reset, off, on.
+
 ## v2.14.2
 - Macro names are 4 letters or less so they read on the controller layout: Open, Hawk, Serp, Aim, Mult, Arc, Conc, Brst, Vol, Mend, Rev, Call, Feed, Rapt, Mong, Wing, Dis, FD, Frst, Frz, Imm, Expl, Scar, AspH, AspC, AspM, AspP, AspW, TSA. Macros made with the old "UT ..." names are renamed in place the next time you press Make the macros, so they stay on your bars.
 
