@@ -201,4 +201,16 @@ FIRE("PLAYER_REGEN_ENABLED")
 assert(ns.HawkCount() == 0 and not UntamedHawks:IsShown(), "gone when their time runs out")
 GetTime = realTime
 print("HAWKS OK")
+-- beast wishlist
+ns.WishBeast_ByName("broken tooth")
+assert(ns.BeastWished(2850), "Broken Tooth on the wishlist")
+local pts = 0
+for _, src in ipairs(ns.PinSources) do local ok, p = pcall(src); if ok and p then for _, q in ipairs(p) do if q.name == "Broken Tooth" then pts = pts + 1 end end end end
+assert(pts > 0, "Broken Tooth spots on the map")
+ns.UI_Show("wishlist")
+ns.WishBeast_ByName("mountain lion")   -- several match: nothing toggled
+assert(not ns.BeastWished(2384), "ambiguous name does nothing")
+ns.WishBeast_ByName("Broken Tooth")
+assert(not ns.BeastWished(2850), "again takes it off")
+print("WISH OK")
 print("DONE")

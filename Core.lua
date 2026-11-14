@@ -565,6 +565,10 @@ SlashCmdList.UNTAMED = function(msg)
     ns.NavigateService("P", L["Pet trainer"])
   elseif msg == "stable" then
     ns.NavigateService("S", L["Stable master"])
+  elseif msg == "want" or msg:match("^want ") then
+    if ns.WishBeast_ByName then ns.WishBeast_ByName(msg:match("^want%s*(.*)$")) end
+  elseif msg == "wishlist" then
+    if ns.UI_Show then ns.UI_Show("wishlist") end
   elseif msg == "rare" then
     ns.NavigateLastRare()
   elseif msg == "next" then
@@ -589,6 +593,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed alerts  toggle zone alerts   |  /untamed minimap  toggle the minimap button")
     ns.Print("/untamed loot  the dungeon loot card (move, lock, size 80, reset, stay, need, off, on)")
     ns.Print("/untamed hawks  the hawk tracker (move, lock, reset, off, on)")
+    ns.Print("/untamed want <beast name>  put a beast on your wishlist (again to take it off)   |  /untamed wishlist  open it")
   else
     if ns.UI_Toggle then ns.UI_Toggle() end
   end

@@ -439,6 +439,7 @@ end
 function ns.BeastClick(npcId)
   return function(_, button)
     if IsShiftKeyDown() then ns.Waypoint(npcId) return end
+    if IsAltKeyDown() and ns.WishBeast_Toggle then ns.WishBeast_Toggle(npcId) return end
     local b = ns.Beasts[npcId]
     if button == "RightButton" then
       ns.Pins_Focus({ npcId }, b[1], true)

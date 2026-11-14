@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.16.0
+- Beasts on your wishlist: type /ut want and a beast's name (for example /ut want broken tooth), or Alt-click a beast in the beast list. It shows at the top of the Wishlist tab (click for an arrow, right-click to remove), its spots are on your world map with a gold border, chat tells you when you enter its zone and when you reach the level to tame it, and the rare finder adds "On your wishlist!" when it spots it. /ut wishlist opens the tab.
+
 ## v2.15.1
 - Hawk tracker keeps a hawk's time when you leave a fight and start another (it used to clear both slots at the end of every fight). Hawks still out after a fight stay on the tracker until their 18 seconds run out.
 - Pet families from Blizzard's Nov 9 hotfix: Vulgara the Insatiable is now a Fox (was Wolf) and Shriekling Fledgling and Shriekling Matriarch are Birds of Prey (were Raptors).

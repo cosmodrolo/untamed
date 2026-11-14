@@ -163,6 +163,7 @@ local function Announce(npcId, name, level, classification, unit)
   else
     what = kind
   end
+  if npcId and ns.BeastWished and ns.BeastWished(npcId) then what = C.GOLD .. L["On your wishlist!"] .. "|r  " .. what end
   local msg = string.format("%s%s|r  %s%s %s|r", tameable and C.HUNTER or C.ORANGE, name, C.GREY, L["level"], lvl)
   if ns.Alert then ns.Alert(msg .. "  " .. what, ns.db.targetSound) end
   ns.Print(name .. " (" .. L["level"] .. " " .. lvl .. "): " .. what .. ". " .. L["Type /ut rare for an arrow."])
