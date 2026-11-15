@@ -190,7 +190,7 @@ ns.OpenMapTo(1424)
 check(WorldMapFrame:GetMapID() == 1429, "controller UI: Untamed never changes the map's zone")
 InputUtil = nil
 WorldMapFrame._shown = false
-local pins = ns.PinSources[1]()
+local pins = ns.WishlistPins()
 check(pins and #pins > 0, "wishlist sources become map pins (" .. (pins and #pins or 0) .. ")")
 ns.UI_Show("wishlist")
 
@@ -245,4 +245,59 @@ ns.UI_Show("home")
 for _, k in ipairs({ "home", "abilities", "builds", "care", "stable", "recommend", "browse", "plan", "rares", "search", "wishlist", "gear",
   "dungeons", "supplies", "spells", "talents", "reputation", "quests", "settings" }) do ns.UI_Show(k) end
 check(true, "every page opens")
+-- Library books: names, bags, hand-ins, map, page
+check(ns.BookFor("Archmage Antonidas") and ns.BookFor("Archmage Antonidas").name:find("Autobiography"), "quest title finds its book")
+check(ns.BookFor("Tough Jerky") == nil, "food is not a book")
+local oldInfo = C_Container.GetContainerItemInfo
+C_Container.GetContainerItemInfo = function(bag, slot)
+  if bag == 0 and slot == 1 then return { itemID = 999001, stackCount = 1, hyperlink = "|cffffffff|Hitem:999001|h[Goaz Scrolls]|h|r" } end
+  return oldInfo(bag, slot)
+end
+FIRE("BAG_UPDATE_DELAYED")
+local goaz
+for _, b in ipairs(ns.Books) do if b.name == "Goaz Scrolls" then goaz = b end end
+check(ns.BookStatus(goaz) == "bags", "book in your bags")
+C_QuestLog.GetTitleForQuestID = function(id) if id == 78146 then return "Goaz Scrolls" end end
+FIRE("QUEST_TURNED_IN", 78146)
+check(ns.BookStatus(goaz) == "done", "book handed in")
+C_Container.GetContainerItemInfo = oldInfo
+local nbook = 0
+for _, src in ipairs(ns.PinSources) do local ok, p = pcall(src, 1429); if ok and p then for _, q in ipairs(p) do if q.icon and q.icon:find("Book_09") then nbook = nbook + 1 end end end end
+check(nbook > 10, "books you still need are on the map (" .. nbook .. ")")
+ns.UI_Show("books")
+ns.BookArrow(); ns.LibrarianArrow()
+
+-- Chest spots: world positions turned into map spots
+local function origin(id) local k = id - 1411; return (k % 8) * 4000, math.floor(k / 8) * 4000 end
+C_Map.GetMapPosFromWorldPos = function(cont, v, id)
+  local ox, oy = origin(id)
+  return id, CreateVector2D((-v.y - ox) / 4000, (-v.x - oy) / 4000)
+end
+local ox, oy = origin(1429)
+ns.ChestWorld[1] = { 1, -(oy + 2000), -(ox + 1000), 2, -(oy + 100), -(ox + 3900), 1, -(oy + 9999), -(ox + 1000) }
+ns.ChestCacheClear()
+local spots = ns.ChestSpotsOn(1429)
+check(#spots == 6 and math.floor(spots[1]) == 25 and math.floor(spots[2]) == 50, "chest spots on the map (" .. #spots / 3 .. ")")
+ns.ScanReport()
+C_VignetteInfo = { GetVignettes = function() return { "v1" } end,
+  GetVignetteInfo = function() return { name = "Battered Chest", atlasName = "VignetteLoot", objectGUID = "GameObject-0-1-1-1-2843-0000ABCD" } end }
+local said
+local oldAlert = ns.Alert
+ns.Alert = function(m) said = m end
+FIRE("VIGNETTES_UPDATED")
+check(said and said:find("Battered Chest"), "chest marked on the minimap: alert")
+ns.Alert = oldAlert
+
+-- Recorder: beasts and rares you see, books, minimap marks
+UnitIsPlayer = function() return false end
+UnitGUID = function(u) return "Creature-0-1-1-1-2850-0000ABCD" end
+UnitClassification = function() return "rare" end
+UnitCreatureFamily = function() return "Cat" end
+ns.RecorderTest.RecordUnit("target", true)
+local r = ns.db.recorded[ns.FLAVOR]
+check(r.beasts[2850] and r.rares[2850] and #r.beasts[2850].spots == 3, "a rare cat you target is noted with its spot")
+check(r.books["Goaz Scrolls"] and r.books["Goaz Scrolls"].quest == 78146, "book quest ID noted")
+check(next(r.marks) ~= nil, "minimap marks noted")
+local v, d, n, x = ns.RecordedCounts()
+check(x and x.beasts >= 1, "counts include sightings")
 print("DONE")

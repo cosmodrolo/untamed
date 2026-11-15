@@ -28,3 +28,8 @@ python tools/emit_forever_gear.py                # GearItems: tools/forever_gear
 python tools/emit_forever_spells.py              # TrainerSpells: tools/era_spells.lua + Forever changes (wago.tools)
 ```
 Run them in this order: build_hunter rewrites the file, then gear, then spells.
+
+## Chests, books and what the recorder notes (v2.19.0)
+- `python3 tools/build_chests.py SRC Data/Chests_Forever.lua`: random world chest spots from cmangos classic-db (world positions; the addon turns them into map spots in game).
+- `Data/Books_Forever.lua` is kept by hand from public guides (the Library Books addon is All Rights Reserved: nothing copied from it).
+- `python3 tools/recorded_report.py <Untamed.lua> [<Untamed.lua> ...]`: reads the account SavedVariables from both computers and lists what the recorder saw that the data doesn't know yet (new beasts and spots, rares, book IDs and spots, minimap marks, chests opened). Run it during data updates.

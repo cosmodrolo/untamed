@@ -12,6 +12,7 @@ local MAX_PINS = 40
 local pins = {}
 local candidates = {}   -- { {cont, east, north, beast, npcId, focus}, ... } for the current zone
 local candidateMap, candidateStamp
+ns.MinimapSources = ns.MinimapSources or {}
 
 local function GetPin(i)
   local p = pins[i]
@@ -28,7 +29,14 @@ local function GetPin(i)
   p:EnableMouse(true)
   p:SetScript("OnEnter", function(self)
     local b = self.beast
-    if not b then return end
+    if not b then
+      if self.label then
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine(self.label, 1, 0.82, 0)
+        GameTooltip:Show()
+      end
+      return
+    end
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
     GameTooltip:AddLine(b[1], 1, 0.82, 0)
     GameTooltip:AddLine(L["Level "] .. ns.LevelText(b) .. " " .. b[4], 1, 1, 1)
@@ -58,13 +66,24 @@ local function RebuildCandidates(mapID)
       end
     end
   end
+  -- other features' points (library books, chest spots ...): { {x, y, icon, label, r, g, b}, ... }
+  for _, src in ipairs(ns.MinimapSources) do
+    local ok, pts = pcall(src, mapID)
+    if ok and pts then
+      for _, p in ipairs(pts) do
+        local c, e, n = ns.ToWorld(mapID, p[1], p[2])
+        if c then candidates[#candidates + 1] = { c, e, n, nil, nil, false, p } end
+      end
+    end
+  end
   candidateStamp = GetTime()
 end
+ns.MinimapRebuild = function() candidateMap = nil end
 ns.On("REFRESH", function() candidateMap = nil end)
 
 local function Update()
   local shown = 0
-  if ns.db.minimapPins or (ns.Pins_GetFocus and ns.Pins_GetFocus()) then
+  if ns.db.minimapPins or (ns.Pins_GetFocus and ns.Pins_GetFocus()) or #ns.MinimapSources > 0 then
     local pc, pe, pn, mapID = ns.PlayerWorld()
     if pc then
       if mapID ~= candidateMap or GetTime() - (candidateStamp or 0) > 10 then RebuildCandidates(mapID) end
@@ -85,8 +104,16 @@ local function Update()
             shown = shown + 1
             local p = GetPin(shown)
             p.beast = c[4]
-            p.icon:SetTexture("Interface\\Icons\\" .. (ns.FamilyIcons[c[4][4]] or "Ability_Hunter_BeastTaming"))
-            p.border:SetColorTexture(c[6] and 1 or 0, c[6] and 0.82 or 0, 0, 0.9)
+            local extra = c[7]
+            if extra then
+              p.label = extra[4]
+              p.icon:SetTexture(extra[3])
+              p.border:SetColorTexture(extra[5] or 0, extra[6] or 0, extra[7] or 0, 0.9)
+            else
+              p.label = nil
+              p.icon:SetTexture("Interface\\Icons\\" .. (ns.FamilyIcons[c[4][4]] or "Ability_Hunter_BeastTaming"))
+              p.border:SetColorTexture(c[6] and 1 or 0, c[6] and 0.82 or 0, 0, 0.9)
+            end
             p:ClearAllPoints()
             p:SetPoint("CENTER", Minimap, "CENTER", x / radiusYd * radiusPx, y / radiusYd * radiusPx)
             p:Show()

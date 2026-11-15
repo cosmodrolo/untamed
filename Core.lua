@@ -543,8 +543,21 @@ SlashCmdList.UNTAMED = function(msg)
   if searchText then
     ns.SearchFor(searchText)
   elseif msg == "recorded" then
-    local v, d, n = ns.RecordedCounts()
+    local v, d, n, x = ns.RecordedCounts()
     ns.Print(string.format(L["Recorded so far: %d vendors (%d items) and %d loot sources. Thanks for helping fix the data!"], v, n, d))
+    if x then
+      ns.Print(string.format(L["Also: %d beasts and %d rares you've seen, %d things marked on your minimap, %d library books."], x.beasts, x.rares, x.marks, x.books))
+    end
+  elseif msg == "books" then
+    if ns.UI_Show then ns.UI_Show("books") end
+  elseif msg == "book" then
+    if ns.BookArrow then ns.BookArrow() end
+  elseif msg == "librarian" then
+    if ns.LibrarianArrow then ns.LibrarianArrow() end
+  elseif msg == "scan" then
+    if ns.ScanReport then ns.ScanReport() end
+  elseif msg == "chests" or msg:match("^chests ") then
+    if ns.ChestCommand then ns.ChestCommand(msg:match("^chests%s*(.*)$")) end
   elseif msg == "zone" then
     ns.ZoneAlert(true)
   elseif msg == "alerts" then
@@ -598,6 +611,9 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed loot  the dungeon loot card (move, lock, size 80, reset, stay, need, off, on)")
     ns.Print("/untamed hud  the hunter display under your character (move, lock, reset, scale 1.2, off, on, always)")
     ns.Print("/untamed hawks  the hawk tracker (off, on)")
+    ns.Print("/untamed books  library books   |  /untamed book  arrow to the nearest one you need   |  /untamed librarian  arrow to yours")
+    ns.Print("/untamed chests  chest spots on the map (on, off, minimap)   |  /untamed scan  what the game marks on your minimap")
+    ns.Print("/untamed recorded  what Untamed has noted for future data updates")
     ns.Print("/untamed range  the range meter and pet watch (off, on, alerts, always, pet off, pet on, leash 30)")
     ns.Print("/untamed want <beast name>  put a beast on your wishlist (again to take it off)   |  /untamed wishlist  open it")
   else

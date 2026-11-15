@@ -85,7 +85,7 @@ function ns.Wishlist_Toggle(id)
 end
 
 -- Map pins for every wishlist source with a known spot.
-table.insert(ns.PinSources, function()
+ns.WishlistPins = function()
   if not ns.db.wishPins or not next(List()) then return nil end
   local out = {}
   for id in pairs(List()) do
@@ -101,7 +101,8 @@ table.insert(ns.PinSources, function()
     end
   end
   return out
-end)
+end
+table.insert(ns.PinSources, ns.WishlistPins)
 
 -- Map pins for wished beasts' spawn spots.
 table.insert(ns.PinSources, function()

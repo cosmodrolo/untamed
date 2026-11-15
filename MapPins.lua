@@ -112,14 +112,30 @@ local function Refresh()
       AddServicePins(mapID)
     end
     -- Other features add their own points (wishlist sources, ...): { {map, x, y, name, icon, lines, border}, ... }
+    -- OpenMap's stitched map: points on other maps are drawn too, placed through its API
+    local api = _G.OpenMapAPI
+    local stitched = api and api.IsStitched and api.IsStitched() and api.WorldFromMap and api.MapFromWorld
     for _, src in ipairs(ns.PinSources) do
-      local ok, pts = pcall(src)
+      local ok, pts = pcall(src, mapID)
       if ok and pts then
         for _, p in ipairs(pts) do
-          if p.map == mapID and p.x and p.x ~= 0 then
-            local c = p.border or { 0.64, 0.21, 0.93, 1 }
-            AddPin({ point = true, x = p.x, y = p.y, name = p.name, lines = p.lines }, p.size or 14,
-              p.icon or "Interface\\Icons\\INV_Misc_QuestionMark", c[1], c[2], c[3], c[4])
+          if p.x and p.x ~= 0 then
+            local x, y = p.x, p.y
+            if p.map ~= mapID then
+              x = nil
+              if stitched then
+                local okw, u, v = pcall(api.WorldFromMap, p.map, p.x / 100, p.y / 100)
+                if okw and u then
+                  local okm, hx, hy = pcall(api.MapFromWorld, mapID, u, v)
+                  if okm and hx and hx > -0.5 and hx < 1.5 and hy > -0.5 and hy < 1.5 then x, y = hx * 100, hy * 100 end
+                end
+              end
+            end
+            if x then
+              local c = p.border or { 0.64, 0.21, 0.93, 1 }
+              AddPin({ point = true, x = x, y = y, name = p.name, lines = p.lines }, p.size or 14,
+                p.icon or "Interface\\Icons\\INV_Misc_QuestionMark", c[1], c[2], c[3], c[4])
+            end
           end
         end
       end
@@ -233,8 +249,15 @@ local function OverlayFrameLevel()
   local m = WorldMapFrame.pinFrameLevelsManager
   local defs = type(m) == "table" and m.definitions
   local d = type(defs) == "table" and defs.PIN_FRAME_LEVEL_MAP_HIGHLIGHT
-  if type(d) == "table" and type(d.startLevel) == "number" then return d.startLevel + (d.range or 1) end
-  return FALLBACK_OVERLAY_LEVEL
+  local level = FALLBACK_OVERLAY_LEVEL
+  if type(d) == "table" and type(d.startLevel) == "number" then level = d.startLevel + (d.range or 1) end
+  -- OpenMap's stitched art can sit higher: stay above it
+  local api = _G.OpenMapAPI
+  if api and api.ArtTopLevel then
+    local ok, top = pcall(api.ArtTopLevel)
+    if ok and type(top) == "number" and top + 5 > level then level = top + 5 end
+  end
+  return level
 end
 
 -- Must run while the world map is closed.

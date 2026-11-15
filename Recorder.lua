@@ -4,7 +4,11 @@ local C = ns.C
 
 -- Recorder: notes what the game tells us as you play, so the data fixes itself.
 --   Vendors: who sells what, where, and for how much (when you open a vendor).
---   Loot: what dropped from which creature or chest, and where (when you loot).
+--   Loot: what dropped from which creature or chest, and where (when you loot; every spot a
+--     chest was opened at).
+--   Beasts and rares you see (nameplates, target, mouseover): level, family and where.
+--   What the game marks on your minimap (vignettes), library books (where you found each one,
+--     its item and quest IDs). Each list is capped so the saved file stays small.
 -- Your copy uses this right away; it's also saved for sharing (Settings > Share data).
 
 local function Store()
@@ -12,6 +16,7 @@ local function Store()
   local r = ns.db.recorded[ns.FLAVOR]
   if not r then r = { vendors = {}, drops = {}, objects = {} }; ns.db.recorded[ns.FLAVOR] = r end
   r.vendors = r.vendors or {}; r.drops = r.drops or {}; r.objects = r.objects or {}
+  r.beasts = r.beasts or {}; r.rares = r.rares or {}; r.marks = r.marks or {}; r.books = r.books or {}
   return r
 end
 
@@ -167,6 +172,10 @@ local function RecordLoot()
             drops[key] = rec
           end
           rec.items[id] = (rec.items[id] or 0) + 1
+          if kind == "GameObject" and map and x then
+            rec.spots = rec.spots or {}
+            ns.RecordSpot(rec.spots, map, x, y, 60)
+          end
           if db then MergeDrop(db, key, rec) end
         end
       end
@@ -174,10 +183,109 @@ local function RecordLoot()
   end
 end
 
+---------------------------------------------------------------------------
+-- Spots: { map, x, y, map, x, y, ... }, one per ~1.5% of a map, capped
+---------------------------------------------------------------------------
+function ns.RecordSpot(list, map, x, y, cap)
+  if not (map and x and y) then return end
+  for i = 1, #list, 3 do
+    if list[i] == map and math.abs(list[i + 1] - x) < 1.5 and math.abs(list[i + 2] - y) < 1.5 then return end
+  end
+  if #list >= (cap or 30) * 3 then return end
+  list[#list + 1] = map; list[#list + 1] = x; list[#list + 1] = y
+end
+
+---------------------------------------------------------------------------
+-- Beasts and rares you see
+---------------------------------------------------------------------------
+local lastSeen = {}   -- [npcId] = time, to keep nameplate spam down
+local function RecordUnit(unit, exact)
+  if not ns.db.recordData or not unit or not UnitExists(unit) then return end
+  local okp, isPlayer = pcall(UnitIsPlayer, unit)
+  if not okp or ns.IsSecret(isPlayer) or isPlayer then return end
+  local guid = UnitGUID(unit)
+  local kind, npcId = ParseGUID(guid)
+  if kind ~= "Creature" or not npcId then return end
+  local now = GetTime()
+  if lastSeen[npcId] and now - lastSeen[npcId] < 20 then return end
+  lastSeen[npcId] = now
+  local cls = UnitClassification and UnitClassification(unit)
+  if ns.IsSecret(cls) then cls = nil end
+  local family = UnitCreatureFamily and UnitCreatureFamily(unit)
+  if ns.IsSecret(family) then family = nil end
+  local ctype = UnitCreatureType and UnitCreatureType(unit)
+  if ns.IsSecret(ctype) then ctype = nil end
+  local rare = cls == "rare" or cls == "rareelite"
+  local beast = family ~= nil or ns.Beasts[npcId] ~= nil
+  if not rare and not beast then return end
+  local name = UnitName(unit)
+  if ns.IsSecret(name) then name = nil end
+  local level = UnitLevel(unit)
+  if ns.IsSecret(level) then level = nil end
+  local map, x, y = Here()
+  local store = Store()
+  local function Note(t)
+    local rec = t[npcId]
+    if not rec then rec = { spots = {} }; t[npcId] = rec end
+    rec.name = name or rec.name
+    rec.fam = family and ns.ToEnglish and ns.ToEnglish(family) or family or rec.fam
+    rec.cls = cls or rec.cls
+    if level and level > 0 then
+      rec.lo = math.min(rec.lo or level, level); rec.hi = math.max(rec.hi or level, level)
+    end
+    rec.t = time()
+    -- the player's spot: the beast is within a nameplate's range of it (exact when targeted)
+    ns.RecordSpot(rec.spots, map, x, y, exact and 40 or 25)
+  end
+  if beast then Note(store.beasts) end
+  if rare then Note(store.rares) end
+end
+
+---------------------------------------------------------------------------
+-- What the game marks on the minimap, and library books
+---------------------------------------------------------------------------
+function ns.RecordVignette(info)
+  if not ns.db.recordData or not info then return end
+  local name, atlas, og = info.name, info.atlasName, info.objectGUID
+  if ns.IsSecret(name) or ns.IsSecret(atlas) or ns.IsSecret(og) then return end
+  local kind, id = ParseGUID(og)
+  local key = (kind and id) and (kind .. ":" .. id) or (name or "?")
+  local marks = Store().marks
+  local rec = marks[key]
+  if not rec then
+    local n = 0
+    for _ in pairs(marks) do n = n + 1 end
+    if n >= 300 then return end
+    rec = { name = name, atlas = atlas, kind = kind, id = id, spots = {} }
+    marks[key] = rec
+  end
+  local map, x, y = Here()
+  ns.RecordSpot(rec.spots, map, x, y, 20)
+  rec.t = time()
+end
+
+function ns.RecordBook(name, what, value)
+  if not ns.db.recordData or not name then return end
+  local books = Store().books
+  local rec = books[name] or { spots = {} }
+  books[name] = rec
+  if what == "item" then rec.item = value
+  elseif what == "quest" then rec.quest = value
+  elseif what == "found" then
+    local map, x, y = Here()
+    ns.RecordSpot(rec.spots, map, x, y, 5)
+  end
+end
+
 local ev = CreateFrame("Frame")
-for _, e in ipairs({ "MERCHANT_SHOW", "LOOT_OPENED" }) do pcall(ev.RegisterEvent, ev, e) end
-ev:SetScript("OnEvent", function(_, event)
-  if event == "MERCHANT_SHOW" then
+for _, e in ipairs({ "MERCHANT_SHOW", "LOOT_OPENED", "NAME_PLATE_UNIT_ADDED", "PLAYER_TARGET_CHANGED", "UPDATE_MOUSEOVER_UNIT" }) do
+  pcall(ev.RegisterEvent, ev, e)
+end
+ev:SetScript("OnEvent", function(_, event, unit)
+  if event == "NAME_PLATE_UNIT_ADDED" then RecordUnit(unit, false)
+  elseif event == "PLAYER_TARGET_CHANGED" then RecordUnit("target", true)
+  elseif event == "UPDATE_MOUSEOVER_UNIT" then RecordUnit("mouseover", true)
+  elseif event == "MERCHANT_SHOW" then
     if C_Timer and C_Timer.After then C_Timer.After(0.3, RecordVendor) else RecordVendor() end
   elseif event == "LOOT_OPENED" then
     RecordLoot()
@@ -190,7 +298,13 @@ function ns.RecordedCounts()
   local v, d, items = 0, 0, 0
   for _, x in pairs(r.vendors or {}) do v = v + 1; for _ in pairs(x.items or {}) do items = items + 1 end end
   for _ in pairs(r.drops or {}) do d = d + 1 end
-  return v, d, items
+  local extra = {}
+  for _, k in ipairs({ "beasts", "rares", "marks", "books" }) do
+    local n = 0
+    for _ in pairs(r[k] or {}) do n = n + 1 end
+    extra[k] = n
+  end
+  return v, d, items, extra
 end
 
-ns.RecorderTest = { RecordVendor = RecordVendor, RecordLoot = RecordLoot, ParseGUID = ParseGUID }
+ns.RecorderTest = { RecordVendor = RecordVendor, RecordLoot = RecordLoot, ParseGUID = ParseGUID, RecordUnit = RecordUnit }

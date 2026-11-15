@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.19.0
+- Library books (replaces the Library Books addon): a Library books tab with every book, where it is and whether it's in your bags or handed in, your count toward the 10, 20 and 25 book rewards, and an arrow to any of them (or to your librarian). Books you still need are on the world map, OpenMap and the minimap (purple). When you come within 300 yards of one you still need, you get a heads-up with the distance and direction. Picking one up and handing it in are noted automatically; right-click a book to mark one you handed in before. /ut books, /ut book (arrow to the nearest), /ut librarian.
+- Treasure chests (replaces RareScanner's chest part): every spot a Battered, Solid or other random world chest or footlocker can appear, on the world map, OpenMap and the minimap (small orange icons; a chest is up at only some of them at a time). If the game marks a chest on your minimap, you get a heads-up. /ut chests off hides the spots, /ut chests minimap toggles them on the minimap, /ut scan lists what the game marks around you.
+- Rares on the map: every rare in the zone you're looking at (red, tameable ones green), at the spot you last saw it if you have.
+- OpenMap: Untamed's icons show on its stitched map, and OpenMap's menu gets switches for library books, chest spots, rares and wishlist.
+- The recorder notes more for future data updates: beasts and rares you see (level, family, where), every spot you open a chest at, what the game marks on your minimap, and library books (where you found each, its item and quest IDs). /ut recorded shows the counts.
+
 ## v2.18.0
 - The hunter display: everything you need in a fight in one block under your character, so you can turn ForeverAuras off for your hunter. Top to bottom: the range meter and pet watch; Serpent Sting timer, hawk tracker and Hunter's Mark (a red ! when your target has no Mark in a fight); your fight cooldowns (Summon Hawk, Aimed Shot, Multi-Shot, Rapid Fire, Bestial Wrath, Concussive Shot) and escapes (Feign Death, Frost Trap, Freezing Trap, Disengage), only the ones you know, with the seconds left on each; and reminders that pop in to the right only when something's missing (Well Fed food out of fights, Aspect of the Hawk in a fight, your pet). Cooldowns use the game's own timers, so they keep working with Forever's hidden combat numbers.
 - One command moves it all: /ut hud move, then /ut hud lock. Also /ut hud scale 1.2, reset, off, on, and always (cooldowns outside fights too). /ut range move and /ut hawks move now move the whole display.

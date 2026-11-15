@@ -318,4 +318,30 @@ do
   ns.RegisterTab("rares", L["Rares"], Build, Refresh)
 end
 
+-- world map: the shown zone's rares (red; tameable ones green), from the search data and your sightings
+table.insert(ns.PinSources, function(mapID)
+  if ns.db.rarePins == false or not mapID then return nil end
+  local db = ns.SearchDB and ns.SearchDB()
+  if not db then return nil end
+  local seen = Seen()
+  local out = {}
+  for id, n in pairs(db.N) do
+    if (n[9] == 2 or n[9] == 4) and n[10] == "" then
+      local s = seen[id]
+      local map, x, y = n[5], n[6], n[7]
+      if s and s.map and s.x then map, x, y = s.map, s.x, s.y end
+      if map == mapID and x and x ~= 0 then
+        local beast = ns.Beasts[id]
+        local lvl = n[2] == n[3] and tostring(n[2]) or (n[2] .. "-" .. n[3])
+        out[#out + 1] = { map = map, x = x, y = y, name = n[1], size = 13,
+          border = beast and { 0.39, 0.75, 0.2, 1 } or { 0.89, 0.29, 0.29, 1 },
+          icon = beast and ("Interface\\Icons\\" .. (ns.FamilyIcons[beast[4]] or "Ability_Hunter_BeastTaming")) or "Interface\\Icons\\Ability_Hunter_SniperShot",
+          lines = { n[1], L["Rare"] .. ", " .. L["level"] .. " " .. lvl .. (beast and (", " .. L["tameable"]) or ""),
+            s and (L["You saw it "] .. Ago(s.t)) or nil } }
+      end
+    end
+  end
+  return out
+end)
+
 ns.RareTest = { Announce = Announce, CheckVignettes = CheckVignettes }

@@ -472,6 +472,7 @@ local TAB_META = {
   talents   = { group = 4, order = 2, icon = "Ability_Hunter_SniperShot", sub = L["Talent builds, with the next point highlighted"] },
   rotation  = { group = 4, order = 3, icon = "Ability_Hunter_RunningShot", sub = L["What to press in a fight, macros and where they go on the controller"] },
   gear      = { group = 3, order = 3, icon = "INV_Weapon_Bow_07", sub = L["Your next upgrades, and how to get them"] },
+  books     = { group = 2, order = 5, icon = "INV_Misc_Book_09", sub = L["Library books: where they are, and which you've handed in"] },
   wishlist  = { group = 3, order = 2, icon = "INV_Misc_Note_01", sub = L["Items you want, with their sources on your map"] },
   dungeons  = { group = 3, order = 4, icon = "INV_Misc_Key_03", sub = L["Hunter loot, bosses and beasts in each dungeon"] },
   reputation = { group = 4, order = 4, icon = "INV_Misc_Token_ArgentDawn", sub = L["Reputation you need for rewards you want"] },
