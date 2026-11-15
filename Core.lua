@@ -548,6 +548,8 @@ SlashCmdList.UNTAMED = function(msg)
     if x then
       ns.Print(string.format(L["Also: %d beasts and %d rares you've seen, %d things marked on your minimap, %d library books."], x.beasts, x.rares, x.marks, x.books))
     end
+  elseif msg == "books scan" then
+    if ns.BooksScanCompleted then ns.BooksScanCompleted(true) end
   elseif msg == "books" then
     if ns.UI_Show then ns.UI_Show("books") end
   elseif msg == "book" then

@@ -267,6 +267,20 @@ check(nbook > 10, "books you still need are on the map (" .. nbook .. ")")
 ns.UI_Show("books")
 ns.BookArrow(); ns.LibrarianArrow()
 
+-- books handed in before: found among your completed quests
+C_QuestLog.GetAllCompletedQuestIDs = function() return { 3108, 79092, 5 } end
+local loaded = false
+C_QuestLog.GetTitleForQuestID = function(id)
+  if id == 79092 then if loaded then return "Fury of the Land" end return nil end
+  if id == 3108 then return "Etched Sigil" end
+end
+C_QuestLog.RequestLoadQuestByID = function() loaded = true end
+ns.BooksScanCompleted(true)
+TICK(40)
+local fury
+for _, b in ipairs(ns.Books) do if b.name == "Fury of the Land" then fury = b end end
+check(ns.BookStatus(fury) == "done", "a book handed in before is found among completed quests")
+
 -- Chest spots: world positions turned into map spots
 local function origin(id) local k = id - 1411; return (k % 8) * 4000, math.floor(k / 8) * 4000 end
 C_Map.GetMapPosFromWorldPos = function(cont, v, id)

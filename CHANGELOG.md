@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.2
+- Library books you handed in before are counted now: a few seconds after login Untamed goes through the quests the game says you've completed and marks the books among them. "Find handed-in books" on the Library books tab (or /ut books scan) runs it again and says what it found.
+
 ## v2.19.1
 - Fixed an error flood from the pet watch in fights (Range.lua:327): Forever hides whether your pet's target is your target during combat, and the check compared that hidden answer. Hidden answers are now skipped everywhere in the range meter and hunter display, and if the display ever errors again it reports once and rests 10 seconds instead of flooding.
 

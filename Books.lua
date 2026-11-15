@@ -169,6 +169,97 @@ local function OnTurnedIn(questID)
   if ns.Pins_Refresh then ns.Pins_Refresh() end
 end
 
+-- Books handed in before Untamed was watching: go through the quests the game says you've
+-- completed and match their titles to the books. Titles load a few at a time, so this runs
+-- in small steps after login (and with /ut books scan).
+local scan
+local function TitleOf(id)
+  local t
+  if C_QuestLog and C_QuestLog.GetTitleForQuestID then
+    local ok, v = pcall(C_QuestLog.GetTitleForQuestID, id)
+    if ok then t = v end
+  end
+  if not t and C_QuestLog and C_QuestLog.GetQuestInfo then
+    local ok, v = pcall(C_QuestLog.GetQuestInfo, id)
+    if ok then t = v end
+  end
+  if t and not ns.IsSecret(t) and t ~= "" then return t end
+end
+
+local function ScanCheck(id)
+  local title = TitleOf(id)
+  if not title then return false end
+  local b = BookFor(title)
+  if b and not Done()[b.name] then
+    Done()[b.name] = id
+    scan.found = scan.found + 1
+    if ns.RecordBook then ns.RecordBook(b.name, "quest", id) end
+  end
+  return true
+end
+
+local function ScanFinish()
+  local found, loud = scan.found, scan.loud
+  scan = nil
+  ns.cdb.booksScanned = time()
+  if found > 0 or loud then
+    local done = ns.BooksCount()
+    ns.Print(string.format(L["Library books: found %d you handed in before. %d handed in so far."], found, done))
+  end
+  if ns.Pins_Refresh then ns.Pins_Refresh() end
+  if ns.MinimapRebuild then ns.MinimapRebuild() end
+  ns.UI_Refresh()
+end
+
+function ns.BooksScanCompleted(loud)
+  if scan then return end
+  local ids
+  if C_QuestLog and C_QuestLog.GetAllCompletedQuestIDs then
+    local ok, v = pcall(C_QuestLog.GetAllCompletedQuestIDs)
+    if ok and type(v) == "table" then ids = v end
+  end
+  if not ids and GetQuestsCompleted then
+    local ok, v = pcall(GetQuestsCompleted)
+    if ok and type(v) == "table" then
+      ids = {}
+      for id in pairs(v) do ids[#ids + 1] = id end
+    end
+  end
+  if not ids or #ids == 0 then
+    if loud then ns.Print(L["The game didn't give a list of your completed quests. Right-click a book in the list to mark it handed in."]) end
+    return
+  end
+  scan = { ids = ids, i = 0, waiting = {}, nwait = 0, found = 0, loud = loud, pass = 1 }
+  if loud then ns.Print(string.format(L["Checking your %d completed quests for library books..."], #ids)) end
+  local driver = CreateFrame("Frame")
+  local t = 0
+  driver:SetScript("OnUpdate", function(self, e)
+    t = t + e
+    if t < 0.1 then return end
+    t = 0
+    if not scan then self:SetScript("OnUpdate", nil) return end
+    for _ = 1, 40 do
+      scan.i = scan.i + 1
+      local id = scan.ids[scan.i]
+      if not id then break end
+      if not ScanCheck(id) then
+        scan.waiting[#scan.waiting + 1] = id
+        if C_QuestLog and C_QuestLog.RequestLoadQuestByID then pcall(C_QuestLog.RequestLoadQuestByID, id) end
+      end
+    end
+    if scan.i >= #scan.ids then
+      -- titles that weren't loaded yet: two more passes, a few seconds apart
+      if #scan.waiting > 0 and scan.pass < 3 then
+        scan.ids, scan.waiting, scan.i, scan.pass = scan.waiting, {}, 0, scan.pass + 1
+        t = -3
+      else
+        self:SetScript("OnUpdate", nil)
+        ScanFinish()
+      end
+    end
+  end)
+end
+
 -- map pins: books you still need
 table.insert(ns.PinSources, function()
   if ns.db.bookPins == false then return nil end
@@ -212,6 +303,8 @@ do
     local tb = ns.Toolbar(panel)
     tb:Dropdown(150, SHOW, function() return opt.show end, function(v) opt.show = v end)
     tb:Check(L["Alert when one is near"], function() return ns.db.bookAlerts ~= false end, function(v) ns.db.bookAlerts = v end)
+    tb:Button(L["Find handed-in books"], 150, function() ns.BooksScanCompleted(true) end,
+      { L["Find handed-in books"], L["Goes through the quests you've completed and marks the library books you already handed in."] })
     tb:Check(L["Show on the map"], function() return ns.db.bookPins ~= false end,
       function(v) ns.db.bookPins = v; if ns.Pins_Refresh then ns.Pins_Refresh() end end)
     list = tb:List()
@@ -286,6 +379,7 @@ do
   ev:SetScript("OnEvent", function(_, event, a1)
     if event == "PLAYER_LOGIN" then
       ScanBags()
+      C_Timer.After(8, function() ns.BooksScanCompleted(false) end)
       ev:SetScript("OnUpdate", function(_, e)
         tick = tick + e
         if tick < 3 then return end
