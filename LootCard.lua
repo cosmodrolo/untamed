@@ -64,6 +64,9 @@ local function ForMe(id)
   if not g then return nil end
   if g[4] == 1 and (UnitLevel("player") or 1) < 40 then return nil end
   local worn = ns.GearWornScore and ns.GearWornScore(g[1]) or 0
+  -- items scored in game (not in the shipped list) count only when they're an upgrade, so
+  -- caster cloth and the like stay off the card
+  if g.live and g[3] - worn <= 0 then return nil end
   return g[3] - worn, g
 end
 ns.LootForMe = ForMe
@@ -285,6 +288,12 @@ local function BuildBanner()
     if left <= 0 then self:Hide() return end
     self:SetAlpha(math.min(1, left))
   end)
+end
+
+function ns.LootCardRefresh()
+  if not card or not card:IsShown() or moving then return end
+  local name, d = Here()
+  if name then Fill(name, d) end
 end
 
 function ns.OnLootRoll(rollID)

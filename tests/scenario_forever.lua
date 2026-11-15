@@ -268,4 +268,25 @@ ns.HUD_Paint()
 ns.HUDCommand("move"); ns.HUDCommand("lock"); ns.HUDCommand("scale 1.2"); ns.HUDCommand("reset")
 C_Spell.GetSpellInfo = old2
 print("HUD OK")
+-- gear the shipped list doesn't know is scored in game (new dungeon loot)
+local oldInstant, oldStats, oldGI = C_Item.GetItemInfoInstant, C_Item.GetItemStats, C_Item.GetItemInfo
+C_Item.GetItemInfoInstant = function(id)
+  if id == 273033 then return id, "Weapon", "Crossbows", "INVTYPE_RANGEDRIGHT", 0, 2, 18 end
+  if id == 273036 then return id, "Armor", "Cloth", "INVTYPE_WRIST", 0, 4, 1 end
+  if id == 273055 then return id, "Armor", "Shields", "INVTYPE_SHIELD", 0, 4, 6 end
+end
+C_Item.GetItemStats = function(link)
+  if link == "item:273033" then return { ITEM_MOD_AGILITY_SHORT = 5, ITEM_MOD_DAMAGE_PER_SECOND_SHORT = 20 } end
+  if link == "item:273036" then return { ITEM_MOD_INTELLECT_SHORT = 10 } end
+end
+C_Item.GetItemInfo = function(id) if id == 273033 or id == 273036 then return "x", nil, 3, 40, 34 end return oldGI(id) end
+local g = ns.GearItems[273033]
+assert(g and g[1] == "RANGED" and g[3] == 292 and g[2] == 34, "crossbow scored in game: " .. tostring(g and g[3]))
+assert(ns.GearItems[273055] == nil, "a shield is not hunter gear")
+assert(ns.GearItems[273036] and ns.GearItems[273036][3] == 3, "cloth bracers: usable, low score")
+assert(ns.LootForMe(273033), "the loot card sees it")
+local n = 0 for id in pairs(ns.GearItems) do if id == 273033 then n = n + 1 end end
+assert(n == 0, "the shipped list itself is unchanged")
+C_Item.GetItemInfoInstant, C_Item.GetItemStats, C_Item.GetItemInfo = oldInstant, oldStats, oldGI
+print("GEARLIVE OK")
 print("DONE")

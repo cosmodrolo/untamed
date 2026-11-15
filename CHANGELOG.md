@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.3
+- The loot card said "nothing for you" on every boss in the City of Dalaran (and would in the other new Forever dungeons): the shipped gear list was built from an older game build and didn't know those items. Gear the list doesn't know is now scored in game from the item itself (same weights), so the loot card, the Need alert, tooltips and the score of what you're wearing all cover new items, including ones added in future patches.
+
 ## v2.19.2
 - Library books you handed in before are counted now: a few seconds after login Untamed goes through the quests the game says you've completed and marks the books among them. "Find handed-in books" on the Library books tab (or /ut books scan) runs it again and says what it found.
 

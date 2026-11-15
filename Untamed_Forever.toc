@@ -16,6 +16,7 @@ Data\Forever.lua
 Data\Names_Forever.lua
 Data\Search_Forever.lua
 Data\Hunter_Forever.lua
+GearLive.lua
 Data\Books_Forever.lua
 Data\Chests_Forever.lua
 Abilities.lua
