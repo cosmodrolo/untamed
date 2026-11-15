@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.8
+- New macro Eye (Eagle Eye) in the Rotation tab under Scouting: press it again while you're looking to jump further from where your view is now.
+
 ## v2.19.7
 - Chest alerts that work on Forever. The game doesn't mark chests on the minimap (the recorder saw none), so the old alert never fired. Now: "Chest spot nearby" when you come within 60 yards of a spot a chest can appear at, with the distance and direction (once per spot every 20 minutes, not in fights or on flights; /ut chests near turns it off, /ut chests radius 80 changes the distance), and "Chest right here" with a sound when a chest becomes your interact target (the thing Square would use), which is certain.
 
