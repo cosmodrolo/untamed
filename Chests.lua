@@ -137,17 +137,89 @@ function ns.ChestCommand(arg)
     ns.Print(ns.db.chestPins and L["Chest spots are on the map again."] or L["Chest spots are off the map (/ut chests on brings them back)."])
     if ns.Pins_Refresh then ns.Pins_Refresh() end
     if ns.MinimapRebuild then ns.MinimapRebuild() end
+  elseif arg == "near" then
+    ns.db.chestNear = ns.db.chestNear == false
+    ns.Print(ns.db.chestNear and L["You'll get a heads-up near a chest spot."] or L["No more heads-up near chest spots (a chest right in front of you still alerts)."])
+  elseif arg and arg:match("^radius %d+$") then
+    ns.db.chestRadius = tonumber(arg:match("%d+"))
+    ns.Print(string.format(L["Chest spots alert within %d yards."], ns.db.chestRadius))
   elseif arg == "minimap" then
     ns.db.chestMinimap = ns.db.chestMinimap == false
     ns.Print(ns.db.chestMinimap and L["Chest spots show on the minimap."] or L["Chest spots are off the minimap."])
     if ns.MinimapRebuild then ns.MinimapRebuild() end
   else
-    ns.Print(L["/ut chests on, off, minimap (spots on the minimap too)   |   /ut scan  what the game marks around you"])
+    ns.Print(L["/ut chests on, off, minimap (spots on the minimap too), near (heads-up near a spot on/off), radius 60   |   /ut scan"])
   end
 end
 
+-- Forever doesn't mark chests on the minimap, so two more ways to notice one:
+--  * A chest right in front of you: the gamepad's interact target (what Square would use) is a
+--    chest. This one is certain: the chest is there.
+--  * A chest spot nearby: you're within ns.db.chestRadius yards (60) of a spot a chest can
+--    appear at. Not certain (only some spots have a chest up), so it says "may be", once per
+--    spot every 20 minutes, out of fights and not on a flight.
+local nearWarned, softWarned = {}, {}
+local DIRS = { "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest" }
+
+local function CheckSoftInteract()
+  if ns.db.chestAlerts == false then return end
+  local okE, exists = pcall(UnitExists, "softinteract")
+  if not okE or ns.IsSecret(exists) or not exists then return end
+  local guid = Plain(UnitGUID("softinteract"))
+  if not guid or not guid:match("^GameObject") or softWarned[guid] then return end
+  local id = tonumber(guid:match("^GameObject%-%d+%-%d+%-%d+%-%d+%-(%d+)"))
+  local name = Plain(UnitName("softinteract"))
+  local isChest = (id and ns.ChestIds and ns.ChestIds[id]) ~= nil
+  if not isChest and name then
+    for _, k in ipairs(ns.ChestKinds or {}) do if k == name then isChest = true break end end
+  end
+  if not isChest then return end
+  softWarned[guid] = true
+  ns.Alert(C.GOLD .. L["Chest right here: "] .. "|r" .. (name or L["Chest"]), true)
+  ns.Print(string.format(L["Chest right here: %s. It's your interact target."], name or L["Chest"]))
+end
+
+local function CheckNearSpots()
+  if ns.db.chestAlerts == false or ns.db.chestNear == false or InCombatLockdown() then return end
+  if UnitOnTaxi and UnitOnTaxi("player") then return end
+  if IsInInstance and IsInInstance() then return end
+  local map = C_Map.GetBestMapForUnit("player")
+  local spots = map and ns.ChestSpotsOn(map)
+  if not spots or #spots == 0 then return end
+  local pc, pe, pn = ns.PlayerWorld()
+  if not pc then return end
+  local radius = ns.db.chestRadius or 60
+  local best, bd, be, bn
+  for i = 1, #spots, 3 do
+    local c, e, n = ns.ToWorld(map, spots[i], spots[i + 1])
+    local d = ns.Distance(pc, pe, pn, c, e, n)
+    if d and d <= radius and (not bd or d < bd) then best, bd, be, bn = i, d, e, n end
+  end
+  if not best then return end
+  local key = map .. ":" .. best
+  local now = GetTime()
+  if nearWarned[key] and now - nearWarned[key] < 1200 then return end
+  nearWarned[key] = now
+  local ang = math.atan2(be - pe, bn - pn)
+  local dir = L[DIRS[math.floor((ang / (2 * math.pi) * 8) + 0.5) % 8 + 1]]
+  local kind = KindName(spots[best + 2])
+  ns.Alert(C.GOLD .. L["Chest spot nearby: "] .. "|r" .. kind .. C.GREY .. string.format("  %d %s %s", bd, L["yd"], dir) .. "|r", false)
+  ns.Print(string.format(L["Chest spot nearby: a %s may be up %d yards %s. It's on your minimap (orange)."], kind, bd, dir))
+end
+ns.ChestTest = { CheckNearSpots = CheckNearSpots, CheckSoftInteract = CheckSoftInteract }
+
 do
   local ev = CreateFrame("Frame")
-  for _, e in ipairs({ "VIGNETTE_MINIMAP_UPDATED", "VIGNETTES_UPDATED" }) do pcall(ev.RegisterEvent, ev, e) end
-  ev:SetScript("OnEvent", function() CheckVignettes() end)
+  for _, e in ipairs({ "VIGNETTE_MINIMAP_UPDATED", "VIGNETTES_UPDATED", "PLAYER_SOFT_INTERACT_CHANGED" }) do pcall(ev.RegisterEvent, ev, e) end
+  ev:SetScript("OnEvent", function(_, event)
+    if event == "PLAYER_SOFT_INTERACT_CHANGED" then CheckSoftInteract() else CheckVignettes() end
+  end)
+  local t = 0
+  ev:SetScript("OnUpdate", function(_, e)
+    t = t + e
+    if t < 2 then return end
+    t = 0
+    local ok, err = pcall(CheckNearSpots)
+    if not ok then t = -30; if geterrorhandler then geterrorhandler()(err) end end
+  end)
 end

@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.7
+- Chest alerts that work on Forever. The game doesn't mark chests on the minimap (the recorder saw none), so the old alert never fired. Now: "Chest spot nearby" when you come within 60 yards of a spot a chest can appear at, with the distance and direction (once per spot every 20 minutes, not in fights or on flights; /ut chests near turns it off, /ut chests radius 80 changes the distance), and "Chest right here" with a sound when a chest becomes your interact target (the thing Square would use), which is certain.
+
 ## v2.19.6
 - Open really sets your pet back to Defensive now. Forever has no working slash command for it (/petdefensive does nothing with its Passive, Defensive and Assist modes, and there is no /petdefensiveassist), so the macro clicks the Defensive button of the pet bar instead; Untamed reads which slot that is from your pet bar and keeps the macro's text right.
 

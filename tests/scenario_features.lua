@@ -293,6 +293,26 @@ ns.ChestCacheClear()
 local spots = ns.ChestSpotsOn(1429)
 check(#spots == 6 and math.floor(spots[1]) == 25 and math.floor(spots[2]) == 50, "chest spots on the map (" .. #spots / 3 .. ")")
 ns.ScanReport()
+-- near a chest spot, and a chest as the interact target
+local heard = {}
+local keepAlert = ns.Alert
+ns.Alert = function(m) heard[#heard + 1] = m end
+local realToWorld, realPW = ns.ToWorld, ns.PlayerWorld
+ns.ToWorld = function(map, x, y) return 0, x * 10, y * 10 end
+ns.PlayerWorld = function() return 0, spots[1] * 10 + 30, spots[2] * 10 end
+ns.ChestTest.CheckNearSpots()
+check(heard[1] and heard[1]:find("Chest spot nearby") and heard[1]:find("30 yd"), "near a chest spot: " .. tostring(heard[1]))
+ns.ChestTest.CheckNearSpots()
+check(#heard == 1, "the same spot doesn't nag")
+ns.ToWorld, ns.PlayerWorld = realToWorld, realPW
+local oldExists, oldGUID, oldName = UnitExists, UnitGUID, UnitName
+UnitExists = function(u) return u == "softinteract" or oldExists(u) end
+UnitGUID = function(u) if u == "softinteract" then return "GameObject-0-1-1-1-2855-0000ABCD" end return oldGUID(u) end
+UnitName = function(u) if u == "softinteract" then return "Solid Chest" end return oldName(u) end
+FIRE("PLAYER_SOFT_INTERACT_CHANGED")
+check(heard[2] and heard[2]:find("Chest right here"), "chest as the interact target")
+UnitExists, UnitGUID, UnitName = oldExists, oldGUID, oldName
+ns.Alert = keepAlert
 C_VignetteInfo = { GetVignettes = function() return { "v1" } end,
   GetVignetteInfo = function() return { name = "Battered Chest", atlasName = "VignetteLoot", objectGUID = "GameObject-0-1-1-1-2843-0000ABCD" } end }
 local said
