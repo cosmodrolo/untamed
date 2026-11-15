@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.5
+- Open didn't put your pet back to defensive after Back: Forever's pet modes are Passive, Defensive (assist) and Assist, and the plain /petdefensive does nothing there. Open now uses /petdefensiveassist (the Defensive button on Forever's pet flyout). The macro updates itself after login.
+
 ## v2.19.4
 - Macros Untamed made update themselves: when a macro's text changes in an update (like Open, which now sets your pet back to defensive), it's rewritten where it is a few seconds after login, so you don't have to press "Make the macros" again. Macros you wrote yourself are left alone.
 

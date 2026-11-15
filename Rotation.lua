@@ -33,7 +33,7 @@ local function Plain(code, spell, what) return { code, spell, what, "#showtoolti
 ns.HUNTER_MACROS = {
   { group = L["The fight"] },
   { "Open", "Hunter's Mark", L["Every pull: sends your pet, marks the target and starts Auto Shot."],
-    "#showtooltip Hunter's Mark\n/petdefensive\n/petattack\n/cast Hunter's Mark\n/cast !Auto Shot" },
+    "#showtooltip Hunter's Mark\n/petdefensiveassist\n/petdefensive\n/petattack\n/cast Hunter's Mark\n/cast !Auto Shot" },
   { "Hawk", "Summon Hawk", L["Press on cooldown: hawk, hawk, then Arcane Shot (two hawks stay up). Arcane Shot alone before you have Summon Hawk."],
     "#showtooltip\n/castsequence [known:Summon Hawk] reset=target Summon Hawk, Summon Hawk, Arcane Shot\n/cast [noknown:Summon Hawk] Arcane Shot" },
   Plain("Serp", "Serpent Sting", L["Mobs that live a while."]),
