@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.18.0
+- The hunter display: everything you need in a fight in one block under your character, so you can turn ForeverAuras off for your hunter. Top to bottom: the range meter and pet watch; Serpent Sting timer, hawk tracker and Hunter's Mark (a red ! when your target has no Mark in a fight); your fight cooldowns (Summon Hawk, Aimed Shot, Multi-Shot, Rapid Fire, Bestial Wrath, Concussive Shot) and escapes (Feign Death, Frost Trap, Freezing Trap, Disengage), only the ones you know, with the seconds left on each; and reminders that pop in to the right only when something's missing (Well Fed food out of fights, Aspect of the Hawk in a fight, your pet). Cooldowns use the game's own timers, so they keep working with Forever's hidden combat numbers.
+- One command moves it all: /ut hud move, then /ut hud lock. Also /ut hud scale 1.2, reset, off, on, and always (cooldowns outside fights too). /ut range move and /ut hawks move now move the whole display.
+
 ## v2.17.0
 - Range meter above your character while you target an enemy: Melee (red), Dead zone (orange, too close for Auto Shot: step back or Disengage), In range (green) or Too far (grey), with the distance in yards as a band (for example 15-35 yd). WoW doesn't tell addons the exact distance to an enemy, so the band comes from the game's own range checks on every hunter spell you know, plus the 10, 11 and 28 yard checks outside combat. /ut range move, lock, reset, off, on; /ut range alerts shows it only when you're too close or too far.
 - Pet watch under it in fights: your pet's health bar (works with Forever's hidden combat numbers) with "Mend Pet" when it's low, the exact distance to your pet, a warning with sound when it's more than 30 yards away (it ran off chasing something; /ut range leash 25 to change), and a note when it fights a different mob than your target. /ut range pet off turns it off.

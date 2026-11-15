@@ -8,7 +8,7 @@ local C = ns.C
 -- Driven by your own Summon Hawk casts (UNIT_SPELLCAST_SUCCEEDED, spell ID only when it isn't
 -- secret); a third hawk replaces the oldest. Shown in a fight (empty slots dim, so you see a
 -- missing hawk) and while a hawk is still out, so its time carries over if you leave a fight and start another.
--- Our own frame on UIParent (gamepad safe). /ut hawks move | lock | reset | off | on.
+-- Sits between the Serpent Sting and Hunter's Mark timers in the hunter display (HUD.lua). /ut hawks off | on.
 ---------------------------------------------------------------------------
 
 local HAWK_IDS = { [1293241] = true, [1293525] = true, [1293526] = true, [1293527] = true }
@@ -26,9 +26,15 @@ local function Text(parent, size)
 end
 
 local function Place()
-  local p = ns.db.hawkPos or DEFAULT_POS
   frame:ClearAllPoints()
-  frame:SetPoint(p[1], UIParent, p[1], p[2], p[3])
+  local slot = ns.HUD_Slot and ns.HUD_Slot("mid")
+  if slot then
+    frame:SetParent(slot)
+    frame:SetPoint("TOP", slot, "TOP", 0, 0)
+  else
+    local p = ns.db.hawkPos or DEFAULT_POS
+    frame:SetPoint(p[1], UIParent, p[1], p[2], p[3])
+  end
 end
 
 local function Build()
@@ -82,6 +88,7 @@ local function Build()
 end
 
 local function Paint()
+  local moving = moving or (ns.HUD_Moving and ns.HUD_Moving())
   local now = GetTime()
   for i = #hawks, 1, -1 do if hawks[i] <= now then table.remove(hawks, i) end end
   local fight = (UnitAffectingCombat and UnitAffectingCombat("player")) or false
@@ -117,11 +124,14 @@ local function OnHawk()
   Paint()
 end
 ns.HawkCast = OnHawk   -- for tests
+ns.HawkPaint = function() if frame then Paint() end end
 ns.HawkCount = function() return #hawks end
 
 function ns.HawkCommand(arg)
   if not frame then return end
-  if arg == "move" or arg == "lock" then
+  if (arg == "move" or arg == "lock") and ns.HUDCommand and ns.HUD_Slot("mid") then
+    ns.HUDCommand(arg)
+  elseif arg == "move" or arg == "lock" then
     moving = arg == "move" and not moving
     frame:EnableMouse(moving)
     frame.hint:SetShown(moving)

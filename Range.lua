@@ -3,7 +3,7 @@ local L = ns.L
 local C = ns.C
 
 ---------------------------------------------------------------------------
--- Range meter and pet watch: a small display above your character.
+-- Range meter and pet watch: the top of the hunter display under your character (HUD.lua).
 --  * Range: melee, dead zone (too close for Auto Shot), in range, too far, plus the distance as a
 --    band in yards. WoW doesn't give addons the exact distance to an enemy, so the band comes from
 --    the game's own range checks on your spells (each spell has its own min and max range) and,
@@ -12,7 +12,7 @@ local C = ns.C
 --    exact distance to your pet, and a warning when it runs off chasing something or fights a
 --    different mob than your target. The Back macro (Rotation tab) calls it back.
 --  * Feign Death: says whether it dropped you out of combat.
--- Our own frame on UIParent (gamepad safe). /ut range move | lock | reset | off | on | alerts | always.
+-- Our own frame (gamepad safe). /ut range off | on | alerts | always | pet off | pet on | leash 30; /ut hud move moves it.
 ---------------------------------------------------------------------------
 
 local DEFAULT_POS = { "CENTER", 0, 120 }
@@ -139,9 +139,15 @@ end
 ns.RangeYards = Yards
 
 local function Place()
-  local p = ns.db.rangePos or DEFAULT_POS
   frame:ClearAllPoints()
-  frame:SetPoint(p[1], UIParent, p[1], p[2], p[3])
+  local slot = ns.HUD_Slot and ns.HUD_Slot("top")
+  if slot then
+    frame:SetParent(slot)
+    frame:SetPoint("TOP", slot, "TOP")
+  else
+    local p = ns.db.rangePos or DEFAULT_POS
+    frame:SetPoint(p[1], UIParent, p[1], p[2], p[3])
+  end
 end
 
 -- pet health: a status bar takes Forever's hidden numbers directly, and curves turn the hidden
@@ -239,6 +245,7 @@ ns.PetDistance = PetDistance
 
 local function Paint()
   if not frame then return end
+  local moving = moving or (ns.HUD_Moving and ns.HUD_Moving())
   local fight = UnitAffectingCombat("player")
   if ns.IsSecret(fight) then fight = true end
 
@@ -328,7 +335,9 @@ ns.RangePaint = Paint
 
 function ns.RangeCommand(arg)
   if not frame then return end
-  if arg == "move" or arg == "lock" then
+  if (arg == "move" or arg == "lock") and ns.HUDCommand and ns.HUD_Slot("top") then
+    ns.HUDCommand(arg)
+  elseif arg == "move" or arg == "lock" then
     moving = arg == "move" and not moving
     frame:EnableMouse(moving)
     frame.hint:SetShown(moving)
@@ -354,7 +363,7 @@ function ns.RangeCommand(arg)
     ns.db.petLeash = tonumber(arg:match("%d+"))
     ns.Print(string.format(L["You'll be warned when your pet is more than %d yards away in a fight."], ns.db.petLeash))
   else
-    ns.Print(L["/ut range move, lock, reset, off, on, alerts (only when too close or too far), always, pet off, pet on, leash 30"])
+    ns.Print(L["/ut range off, on, alerts (only when too close or too far), always, pet off, pet on, leash 30  (/ut hud move moves it)"])
   end
 end
 

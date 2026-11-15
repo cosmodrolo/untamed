@@ -239,4 +239,25 @@ assert(warned and warned:find("42 yd"), "pet too far warning: " .. tostring(warn
 ns.Alert = oldAlert
 C_Spell.GetSpellInfo = oldInfo
 print("RANGE OK")
+-- hunter display: rows of known spells, Sting timer from your cast, reminders
+local KNOWN = { ["Summon Hawk"] = 1293241, ["Aimed Shot"] = 19434, ["Feign Death"] = 5384, ["Serpent Sting"] = 1978,
+  ["Hunter's Mark"] = 1130, ["Aspect of the Hawk"] = 13165, ["Call Pet"] = 883 }
+local old2 = C_Spell.GetSpellInfo
+C_Spell.GetSpellInfo = function(x) if KNOWN[x] then return { name = x, spellID = KNOWN[x] } end return old2(x) end
+IsPlayerSpell = function(id) return true end
+C_Spell.GetSpellCooldown = function(x) if x == "Aimed Shot" then return { startTime = GetTime(), duration = 6 } end return { startTime = 0, duration = 0 } end
+FIRE("SPELLS_CHANGED")
+assert(UntamedHUD, "hunter display built")
+local rows = ns.HUD_Slot("rows") or {}
+UnitAffectingCombat = function() return true end
+FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1978)
+assert(ns.HUD_Timer("sting"), "Serpent Sting timer started")
+FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 5118)
+assert(ns.HUD_Aspect() == "other", "Cheetah seen")
+FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 13165)
+assert(ns.HUD_Aspect() == "hawk", "Hawk seen")
+ns.HUD_Paint()
+ns.HUDCommand("move"); ns.HUDCommand("lock"); ns.HUDCommand("scale 1.2"); ns.HUDCommand("reset")
+C_Spell.GetSpellInfo = old2
+print("HUD OK")
 print("DONE")

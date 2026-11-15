@@ -54,6 +54,7 @@ Character.lua
 Dungeons.lua
 LootCard.lua
 Rotation.lua
+HUD.lua
 Hawks.lua
 Range.lua
 Reputation.lua

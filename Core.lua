@@ -577,6 +577,8 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Arrow_NextSpot()
   elseif msg == "talents" then
     if ns.TalentDebug then ns.TalentDebug() end
+  elseif msg == "hud" or msg:match("^hud ") then
+    if ns.HUDCommand then ns.HUDCommand(msg:match("^hud%s*(.*)$")) end
   elseif msg == "range" or msg:match("^range ") then
     if ns.RangeCommand then ns.RangeCommand(msg:match("^range%s*(.*)$")) end
   elseif msg == "hawks" or msg:match("^hawks ") then
@@ -594,8 +596,9 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed clear  clear map focus and the navigation arrow   |  /untamed spot  arrow to the next spawn spot")
     ns.Print("/untamed alerts  toggle zone alerts   |  /untamed minimap  toggle the minimap button")
     ns.Print("/untamed loot  the dungeon loot card (move, lock, size 80, reset, stay, need, off, on)")
-    ns.Print("/untamed hawks  the hawk tracker (move, lock, reset, off, on)")
-    ns.Print("/untamed range  the range meter and pet watch (move, lock, reset, off, on, alerts, always, pet off, pet on, leash 30)")
+    ns.Print("/untamed hud  the hunter display under your character (move, lock, reset, scale 1.2, off, on, always)")
+    ns.Print("/untamed hawks  the hawk tracker (off, on)")
+    ns.Print("/untamed range  the range meter and pet watch (off, on, alerts, always, pet off, pet on, leash 30)")
     ns.Print("/untamed want <beast name>  put a beast on your wishlist (again to take it off)   |  /untamed wishlist  open it")
   else
     if ns.UI_Toggle then ns.UI_Toggle() end
