@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.4
+- Macros Untamed made update themselves: when a macro's text changes in an update (like Open, which now sets your pet back to defensive), it's rewritten where it is a few seconds after login, so you don't have to press "Make the macros" again. Macros you wrote yourself are left alone.
+
 ## v2.19.3
 - The loot card said "nothing for you" on every boss in the City of Dalaran (and would in the other new Forever dungeons): the shipped gear list was built from an older game build and didn't know those items. Gear the list doesn't know is now scored in game from the item itself (same weights), so the loot card, the Need alert, tooltips and the score of what you're wearing all cover new items, including ones added in future patches.
 

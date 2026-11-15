@@ -644,6 +644,7 @@ L["Untamed: library books"] = true
 L["Untamed: rares"] = true
 L["Untamed: wishlist"] = true
 L["Up close"] = true
+L["Updated your macros to the newest version: %s."] = true
 L["Upgrade for your %s sold nearby: %s. %s"] = true
 L["Upgrades you can buy or get from a quest now: %s."] = true
 L["Usable by me"] = true

@@ -227,3 +227,20 @@ do
   end
   ns.RegisterTab("rotation", L["Rotation"], Build, Refresh)
 end
+
+-- Macros Untamed made are kept current: when a macro's text changes in an update, it's rewritten
+-- where it is (out of combat, a few seconds after login). Macros you made or edited under the
+-- same name (not by Untamed's button) are yours and stay as they are.
+ns.On("LOGIN", function()
+  if select(2, UnitClass("player")) ~= "HUNTER" then return end
+  C_Timer.After(5, function()
+    if InCombatLockdown() or not GetMacroIndexByName then return end
+    local names = {}
+    for _, m in ipairs(ns.HUNTER_MACROS) do
+      if not m.group and MacroState(m) == "update" then
+        if pcall(EditMacro, GetMacroIndexByName(m[1]), m[1], nil, m[4]) then names[#names + 1] = m[1] end
+      end
+    end
+    if #names > 0 then ns.Print(string.format(L["Updated your macros to the newest version: %s."], table.concat(names, ", "))) end
+  end)
+end)
