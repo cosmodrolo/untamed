@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.17.0
+- Range meter above your character while you target an enemy: Melee (red), Dead zone (orange, too close for Auto Shot: step back or Disengage), In range (green) or Too far (grey), with the distance in yards as a band (for example 15-35 yd). WoW doesn't tell addons the exact distance to an enemy, so the band comes from the game's own range checks on every hunter spell you know, plus the 10, 11 and 28 yard checks outside combat. /ut range move, lock, reset, off, on; /ut range alerts shows it only when you're too close or too far.
+- Pet watch under it in fights: your pet's health bar (works with Forever's hidden combat numbers) with "Mend Pet" when it's low, the exact distance to your pet, a warning with sound when it's more than 30 yards away (it ran off chasing something; /ut range leash 25 to change), and a note when it fights a different mob than your target. /ut range pet off turns it off.
+- New macro Back (Rotation tab, "Make the macros"): calls your pet off a chase (passive and follow). Open now sets it back to defensive before sending it in.
+- Feign Death says whether it dropped you out of combat.
+
 ## v2.16.0
 - Feed Pet button (and the "your pet is not happy" note) now suggests your lowest level food that still makes your pet fully happy (food under 10 levels below your pet), so your best food and buff food stay in your bags. If you have nothing that close to your pet's level, it picks your highest level food as before.
 - Beasts on your wishlist: type /ut want and a beast's name (for example /ut want broken tooth), or Alt-click a beast in the beast list. It shows at the top of the Wishlist tab (click for an arrow, right-click to remove), its spots are on your world map with a gold border, chat tells you when you enter its zone and when you reach the level to tame it, and the rare finder adds "On your wishlist!" when it spots it. /ut wishlist opens the tab.

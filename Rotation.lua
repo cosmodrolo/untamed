@@ -33,7 +33,7 @@ local function Plain(code, spell, what) return { code, spell, what, "#showtoolti
 ns.HUNTER_MACROS = {
   { group = L["The fight"] },
   { "Open", "Hunter's Mark", L["Every pull: sends your pet, marks the target and starts Auto Shot."],
-    "#showtooltip Hunter's Mark\n/petattack\n/cast Hunter's Mark\n/cast !Auto Shot" },
+    "#showtooltip Hunter's Mark\n/petdefensive\n/petattack\n/cast Hunter's Mark\n/cast !Auto Shot" },
   { "Hawk", "Summon Hawk", L["Press on cooldown: hawk, hawk, then Arcane Shot (two hawks stay up). Arcane Shot alone before you have Summon Hawk."],
     "#showtooltip\n/castsequence [known:Summon Hawk] reset=target Summon Hawk, Summon Hawk, Arcane Shot\n/cast [noknown:Summon Hawk] Arcane Shot" },
   Plain("Serp", "Serpent Sting", L["Mobs that live a while."]),
@@ -48,6 +48,8 @@ ns.HUNTER_MACROS = {
   { "Mend", "Mend Pet", L["Heals your pet, whatever you have targeted."], "#showtooltip Mend Pet\n/cast [@pet] Mend Pet" },
   Plain("Rev", "Revive Pet", L["Brings your pet back."]),
   Plain("Call", "Call Pet", L["Calls your pet."]),
+  { "Back", "Call Pet", L["Calls your pet off a chase: it stops attacking and runs back to you. Open sends it in again."],
+    "#showtooltip Call Pet\n/petpassive\n/petfollow" },
   Plain("Feed", "Feed Pet", L["Feeds your pet (pick the food in your bags)."]),
   { group = L["Up close"] },
   Plain("Rapt", "Raptor Strike", L["A mob in melee."]),
@@ -92,6 +94,7 @@ local STEPS = {
   } },
   { L["Keep your pet up"], {
     { "Mend Pet", L["Mend when your pet drops under half health; keep Growl on autocast when you're solo."] },
+    { "Call Pet", L["Pet chasing something or too far (the range meter warns you): Back calls it off before it pulls more."] },
     { "Rapid Fire", L["Tough mob or an add: Brst (Rapid Fire, and Bestial Wrath from 40)."] },
     { "Feign Death", L["Something goes wrong: Feign Death drops everything off you (from 30)."] },
   } },

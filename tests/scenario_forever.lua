@@ -213,4 +213,30 @@ assert(not ns.BeastWished(2384), "ambiguous name does nothing")
 ns.WishBeast_ByName("Broken Tooth")
 assert(not ns.BeastWished(2850), "again takes it off")
 print("WISH OK")
+-- range meter: zones from the game's own range checks
+local DIST = 20
+local RANGES = { ["Raptor Strike"] = { 0, 5 }, ["Auto Shot"] = { 8, 35 }, ["Hunter's Mark"] = { 0, 100 }, ["Scatter Shot"] = { 0, 15 } }
+local oldInfo = C_Spell.GetSpellInfo
+C_Spell.GetSpellInfo = function(x) local r = RANGES[x]; if r then return { name = x, minRange = r[1], maxRange = r[2] } end return oldInfo(x) end
+C_Spell.IsSpellInRange = function(name) local r = RANGES[name]; if not r then return nil end return DIST >= r[1] and DIST <= r[2] end
+UnitCanAttack = function() return true end
+FIRE("SPELLS_CHANGED")
+local z, lo, hi = ns.RangeToTarget()
+assert(z == "range" and lo == 15 and hi == 35, "20 yd: in range 15-35 (" .. tostring(z) .. " " .. tostring(lo) .. "-" .. tostring(hi) .. ")")
+DIST = 3; z = ns.RangeToTarget(); assert(z == "melee", "3 yd: melee")
+DIST = 6; z, lo, hi = ns.RangeToTarget(); assert(z == "dead", "6 yd: dead zone (" .. tostring(z) .. ")")
+DIST = 50; z, lo, hi = ns.RangeToTarget(); assert(z == "far" and lo == 35, "50 yd: too far")
+assert(ns.RangeYards(35, math.huge) == "35+ yd", "yards text")
+-- pet watch: distance and the run-off warning
+UnitDistanceSquared = function(u) if u == "pet" then return 42 * 42, true end end
+assert(math.floor(ns.PetDistance()) == 42, "pet distance")
+local warned
+local oldAlert = ns.Alert
+ns.Alert = function(msg) warned = msg end
+UnitAffectingCombat = function() return true end
+ns.RangePaint()
+assert(warned and warned:find("42 yd"), "pet too far warning: " .. tostring(warned))
+ns.Alert = oldAlert
+C_Spell.GetSpellInfo = oldInfo
+print("RANGE OK")
 print("DONE")
