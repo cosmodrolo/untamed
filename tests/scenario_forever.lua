@@ -289,4 +289,13 @@ local n = 0 for id in pairs(ns.GearItems) do if id == 273033 then n = n + 1 end 
 assert(n == 0, "the shipped list itself is unchanged")
 C_Item.GetItemInfoInstant, C_Item.GetItemStats, C_Item.GetItemInfo = oldInstant, oldStats, oldGI
 print("GEARLIVE OK")
+-- Open clicks the pet bar's Defensive button, wherever it is on your pet bar
+GetPetActionInfo = function(i) if i == 6 then return "PET_MODE_DEFENSIVEASSIST" end if i == 5 then return "PET_MODE_PASSIVE" end end
+UnitAffectingCombat = function() return false end
+ns.UpdateHunterMacros(true)
+local open
+for _, m in ipairs(ns.HUNTER_MACROS) do if m[1] == "Open" then open = m end end
+assert(open[4]:find("/click PetActionButton6\n/petattack", 1, true), "Open clicks the Defensive slot: " .. open[4])
+assert(ns.cdb.petDefSlot == 6, "slot remembered")
+print("OPEN OK")
 print("DONE")

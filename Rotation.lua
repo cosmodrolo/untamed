@@ -33,7 +33,7 @@ local function Plain(code, spell, what) return { code, spell, what, "#showtoolti
 ns.HUNTER_MACROS = {
   { group = L["The fight"] },
   { "Open", "Hunter's Mark", L["Every pull: sends your pet, marks the target and starts Auto Shot."],
-    "#showtooltip Hunter's Mark\n/petdefensiveassist\n/petdefensive\n/petattack\n/cast Hunter's Mark\n/cast !Auto Shot" },
+    "#showtooltip Hunter's Mark\n/click PetActionButton9\n/petattack\n/cast Hunter's Mark\n/cast !Auto Shot" },
   { "Hawk", "Summon Hawk", L["Press on cooldown: hawk, hawk, then Arcane Shot (two hawks stay up). Arcane Shot alone before you have Summon Hawk."],
     "#showtooltip\n/castsequence [known:Summon Hawk] reset=target Summon Hawk, Summon Hawk, Arcane Shot\n/cast [noknown:Summon Hawk] Arcane Shot" },
   Plain("Serp", "Serpent Sting", L["Mobs that live a while."]),
@@ -228,19 +228,60 @@ do
   ns.RegisterTab("rotation", L["Rotation"], Build, Refresh)
 end
 
--- Macros Untamed made are kept current: when a macro's text changes in an update, it's rewritten
--- where it is (out of combat, a few seconds after login). Macros you made or edited under the
--- same name (not by Untamed's button) are yours and stay as they are.
-ns.On("LOGIN", function()
-  if select(2, UnitClass("player")) ~= "HUNTER" then return end
-  C_Timer.After(5, function()
-    if InCombatLockdown() or not GetMacroIndexByName then return end
-    local names = {}
-    for _, m in ipairs(ns.HUNTER_MACROS) do
-      if not m.group and MacroState(m) == "update" then
+-- Open sets your pet back to Defensive. Forever has no working slash command for that
+-- (/petdefensive does nothing with its Passive / Defensive / Assist modes), so the macro clicks
+-- the pet bar's Defensive button. Which of the 10 pet bar slots that is, is read from your pet
+-- bar (and remembered for when your pet isn't out); the macro text follows.
+local function DefensiveSlot()
+  if not GetPetActionInfo then return nil end
+  local assist
+  for i = 1, (NUM_PET_ACTION_SLOTS or 10) do
+    local ok, name = pcall(GetPetActionInfo, i)
+    if ok and name and not ns.IsSecret(name) then
+      if name == "PET_MODE_DEFENSIVEASSIST" or name == "PET_MODE_DEFENSIVE" then return i end
+      if name == "PET_MODE_ASSIST" then assist = i end
+    end
+  end
+  return assist
+end
+
+local function OpenBody(slot)
+  return "#showtooltip Hunter's Mark\n/click PetActionButton" .. slot .. "\n/petattack\n/cast Hunter's Mark\n/cast !Auto Shot"
+end
+
+local function UpdateMacros(quiet)
+  if InCombatLockdown() or not GetMacroIndexByName then return end
+  local slot = DefensiveSlot()
+  if slot then ns.cdb.petDefSlot = slot end
+  slot = slot or ns.cdb.petDefSlot or 9
+  local names = {}
+  for _, m in ipairs(ns.HUNTER_MACROS) do
+    if not m.group then
+      if m[1] == "Open" then m[4] = OpenBody(slot) end
+      if MacroState(m) == "update" then
         if pcall(EditMacro, GetMacroIndexByName(m[1]), m[1], nil, m[4]) then names[#names + 1] = m[1] end
       end
     end
-    if #names > 0 then ns.Print(string.format(L["Updated your macros to the newest version: %s."], table.concat(names, ", "))) end
+  end
+  if #names > 0 and not quiet then
+    ns.Print(string.format(L["Updated your macros to the newest version: %s."], table.concat(names, ", ")))
+  end
+end
+ns.UpdateHunterMacros = UpdateMacros
+
+-- Macros Untamed made are kept current: when a macro's text changes in an update, it's rewritten
+-- where it is (out of combat, a few seconds after login, and when your pet bar changes). Macros
+-- you made yourself under the same name (not by Untamed's button) are yours and stay as they are.
+ns.On("LOGIN", function()
+  if select(2, UnitClass("player")) ~= "HUNTER" then return end
+  C_Timer.After(5, function() UpdateMacros(false) end)
+  local ev = CreateFrame("Frame")
+  pcall(ev.RegisterEvent, ev, "PET_BAR_UPDATE")
+  pcall(ev.RegisterEvent, ev, "PLAYER_REGEN_ENABLED")
+  local pending
+  ev:SetScript("OnEvent", function()
+    if pending then return end
+    pending = true
+    C_Timer.After(2, function() pending = false; UpdateMacros(false) end)
   end)
 end)
