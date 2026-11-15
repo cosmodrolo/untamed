@@ -238,6 +238,14 @@ ns.RangePaint()
 assert(warned and warned:find("42 yd"), "pet too far warning: " .. tostring(warned))
 ns.Alert = oldAlert
 C_Spell.GetSpellInfo = oldInfo
+-- Forever hides UnitIsUnit in fights: a hidden answer must not break the display
+local SECRET = setmetatable({}, { __eq = function() error("compared a secret") end })
+local oldSecret, oldIsUnit = ns.IsSecret, UnitIsUnit
+ns.IsSecret = function(v) return v == nil and false or rawequal(v, SECRET) or (oldSecret and oldSecret(v)) end
+UnitIsUnit = function() return SECRET end
+UnitAffectingCombat = function() return true end
+ns.RangePaint()
+ns.IsSecret, UnitIsUnit = oldSecret, oldIsUnit
 print("RANGE OK")
 -- hunter display: rows of known spells, Sting timer from your cast, reminders
 local KNOWN = { ["Summon Hawk"] = 1293241, ["Aimed Shot"] = 19434, ["Feign Death"] = 5384, ["Serpent Sting"] = 1978,

@@ -200,7 +200,9 @@ end
 ---------------------------------------------------------------------------
 local lastSeen = {}   -- [npcId] = time, to keep nameplate spam down
 local function RecordUnit(unit, exact)
-  if not ns.db.recordData or not unit or not UnitExists(unit) then return end
+  if not ns.db.recordData or not unit then return end
+  local exists = UnitExists(unit)
+  if ns.IsSecret(exists) or not exists then return end
   local okp, isPlayer = pcall(UnitIsPlayer, unit)
   if not okp or ns.IsSecret(isPlayer) or isPlayer then return end
   local guid = UnitGUID(unit)

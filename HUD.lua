@@ -30,6 +30,7 @@ local timers = {}   -- sting / mark: { ends, dur, guid }
 local aspect        -- "hawk", "other" or nil (unknown / none)
 
 local function Plain(v) if v == nil or ns.IsSecret(v) then return nil end return v end
+local function Bool(v, hidden) if ns.IsSecret(v) then return hidden end return v and true or false end
 
 local function Text(parent, size)
   local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -296,10 +297,8 @@ local function WellFed()
 end
 
 local function PaintReminders(fight)
-  local mounted = IsMounted and IsMounted()
-  if ns.IsSecret(mounted) then mounted = false end
-  local hasPet = UnitExists("pet") and not UnitIsDead("pet")
-  if ns.IsSecret(hasPet) then hasPet = true end
+  local mounted = Bool(IsMounted and IsMounted(), false)
+  local hasPet = Bool(UnitExists("pet"), true) and not Bool(UnitIsDead("pet"), false)
   local want = {
     food = not fight and not mounted and ns.db.hudFood ~= false and not WellFed(),
     aspect = fight and Known("Aspect of the Hawk") and aspect ~= "hawk",
@@ -325,10 +324,9 @@ local function Paint()
   if ns.db.hud == false then hud:Hide() return end
   local fight = UnitAffectingCombat("player")
   if ns.IsSecret(fight) then fight = true end
-  local hostile = UnitExists("target") and UnitCanAttack("player", "target")
-  if ns.IsSecret(hostile) then hostile = true end
-  local dead = UnitExists("target") and UnitIsDead("target")
-  if ns.IsSecret(dead) then dead = false end
+  local hasTarget = Bool(UnitExists("target"), false)
+  local hostile = hasTarget and Bool(UnitCanAttack("player", "target"), true)
+  local dead = hasTarget and Bool(UnitIsDead("target"), false)
   hud:Show()
   local showTimers = moving or (hostile and not dead and (fight or TimerFor("sting") or TimerFor("mark")))
   if showTimers then
@@ -391,7 +389,12 @@ do
         tick = tick + e
         if tick < 0.2 then return end
         tick = 0
-        Paint()
+        -- one error is reported once, then the display rests 10 seconds instead of flooding
+        local ok, err = pcall(Paint)
+        if not ok then
+          tick = -10
+          if geterrorhandler then geterrorhandler()(err) end
+        end
       end)
       return
     end

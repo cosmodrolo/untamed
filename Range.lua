@@ -27,6 +27,8 @@ local frame, moving, lastZone
 local petWarnAt, otherWarnAt, petFarSince = 0, 0, nil
 
 local function Plain(v) if v == nil or ns.IsSecret(v) then return nil end return v end
+-- a yes/no from the game that may be hidden in combat: the fallback when it is
+local function Bool(v, hidden) if ns.IsSecret(v) then return hidden end return v and true or false end
 
 local function Text(parent, size)
   local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -57,11 +59,9 @@ end
 
 -- Where the target is: zone ("melee", "dead", "range", "far") and a yard band (lo, hi).
 function ns.RangeToTarget()
-  if not UnitExists("target") then return nil end
-  local hostile = UnitCanAttack and UnitCanAttack("player", "target")
-  if ns.IsSecret(hostile) or not hostile then return nil end
-  local dead = UnitIsDead("target")
-  if dead and not ns.IsSecret(dead) then return nil end
+  if not Bool(UnitExists("target"), false) then return nil end
+  if not Bool(UnitCanAttack("player", "target"), false) then return nil end
+  if Bool(UnitIsDead("target"), false) then return nil end
 
   local facts = {}
   local melee
@@ -271,8 +271,7 @@ local function Paint()
 
   -- pet
   local p = frame.pet
-  local hasPet = UnitExists("pet") and not UnitIsDead("pet")
-  if ns.IsSecret(hasPet) then hasPet = true end
+  local hasPet = Bool(UnitExists("pet"), true) and not Bool(UnitIsDead("pet"), false)
   local petDist = hasPet and PetDistance()
   local leash = ns.db.petLeash or 30
   local far = petDist and petDist > leash
@@ -321,10 +320,11 @@ local function Paint()
     else
       petFarSince = nil
     end
-    if petFight and fight and UnitExists("pettarget") and UnitExists("target") and now > otherWarnAt then
-      local hostile = UnitCanAttack("player", "target")
+    if petFight and fight and now > otherWarnAt and Bool(UnitExists("pettarget"), false) and Bool(UnitExists("target"), false) then
+      local hostile = Bool(UnitCanAttack("player", "target"), false)
       local ok, same = pcall(UnitIsUnit, "pettarget", "target")
-      if ok and same == false and not ns.IsSecret(same) and hostile and not ns.IsSecret(hostile) then
+      -- hidden in some fights: then there's nothing to say
+      if ok and hostile and not ns.IsSecret(same) and same == false then
         otherWarnAt = now + 8
         ns.Alert(C.ORANGE .. string.format(L["%s is fighting a different mob than your target."], p.name:GetText() or L["Pet"]) .. "|r", false)
       end
@@ -382,7 +382,12 @@ do
         tick = tick + e
         if tick < 0.15 then return end
         tick = 0
-        Paint()
+        -- one error is reported once, then the display rests 10 seconds instead of flooding
+        local ok, err = pcall(Paint)
+        if not ok then
+          tick = -10
+          if geterrorhandler then geterrorhandler()(err) end
+        end
       end)
       return
     end

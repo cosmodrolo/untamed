@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.1
+- Fixed an error flood from the pet watch in fights (Range.lua:327): Forever hides whether your pet's target is your target during combat, and the check compared that hidden answer. Hidden answers are now skipped everywhere in the range meter and hunter display, and if the display ever errors again it reports once and rests 10 seconds instead of flooding.
+
 ## v2.19.0
 - Library books (replaces the Library Books addon): a Library books tab with every book, where it is and whether it's in your bags or handed in, your count toward the 10, 20 and 25 book rewards, and an arrow to any of them (or to your librarian). Books you still need are on the world map, OpenMap and the minimap (purple). When you come within 300 yards of one you still need, you get a heads-up with the distance and direction. Picking one up and handing it in are noted automatically; right-click a book to mark one you handed in before. /ut books, /ut book (arrow to the nearest), /ut librarian.
 - Treasure chests (replaces RareScanner's chest part): every spot a Battered, Solid or other random world chest or footlocker can appear, on the world map, OpenMap and the minimap (small orange icons; a chest is up at only some of them at a time). If the game marks a chest on your minimap, you get a heads-up. /ut chests off hides the spots, /ut chests minimap toggles them on the minimap, /ut scan lists what the game marks around you.
