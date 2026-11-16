@@ -1,19 +1,11 @@
 local _, ns = ...
-local FOREVER = ns.FLAVOR == "forever"
 
 local function set(...) local t = {} for i = 1, select("#", ...) do t[select(i, ...)] = true end return t end
 
-if FOREVER then
-  ns.Families = {
-    "Bat", "Bear", "Bird of Prey", "Boar", "Carrion Bird", "Cat", "Crab", "Crocolisk", "Fox", "Gorilla",
-    "Hyena", "Raptor", "Scorpid", "Spider", "Tallstrider", "Turtle", "Wind Serpent", "Wolf",
-  }
-else
-  ns.Families = {
-    "Bat", "Bear", "Boar", "Carrion Bird", "Cat", "Crab", "Crocolisk", "Gorilla", "Hyena",
-    "Owl", "Raptor", "Scorpid", "Spider", "Tallstrider", "Turtle", "Wind Serpent", "Wolf",
-  }
-end
+ns.Families = {
+  "Bat", "Bear", "Bird of Prey", "Boar", "Carrion Bird", "Cat", "Crab", "Crocolisk", "Fox", "Gorilla",
+  "Hyena", "Raptor", "Scorpid", "Spider", "Tallstrider", "Turtle", "Wind Serpent", "Wolf",
+}
 local ALL = {}
 for _, f in ipairs(ns.Families) do ALL[f] = true end
 
@@ -35,7 +27,7 @@ ns.AbilityIcons = {
   ["Cower"] = "Ability_Druid_Cower", ["Growl"] = "Ability_Physical_Taunt",
 }
 
--- Classic Era: which families can use each beast-taught ability.
+-- Which families can use each beast-taught ability (the base table; the Forever data file below overrides it).
 ns.AbilityFamilies = {
   ["Bite"] = set("Bat", "Bear", "Boar", "Carrion Bird", "Cat", "Crocolisk", "Gorilla", "Hyena", "Raptor", "Spider", "Tallstrider", "Turtle", "Wind Serpent", "Wolf"),
   ["Claw"] = set("Bear", "Carrion Bird", "Cat", "Crab", "Owl", "Raptor", "Scorpid"),
@@ -104,7 +96,7 @@ ns.TrainerAbilities = {
 }
 
 -- Forever overrides come from the data file (built from public Forever pet guides).
-if FOREVER and ns.ForeverAbilities then
+if ns.ForeverAbilities then
   for ability, info in pairs(ns.ForeverAbilities) do
     if info.families then ns.AbilityFamilies[ability] = set(unpack(info.families)) end
     if info.levels then ns.RankLevels[ability] = info.levels end
@@ -128,4 +120,4 @@ do
   for _, a in ipairs(order) do if ns.AbilityFamilies[a] then ns.AbilityOrder[#ns.AbilityOrder + 1] = a end end
 end
 
--- Pet food types: Foods.lua (every item, from the Classic database). Forever asks the game directly.
+-- Pet food types: Foods.lua (every item's food type).

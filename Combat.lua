@@ -2,7 +2,7 @@ local _, ns = ...
 local L = ns.L
 local C = ns.C
 
--- Combat helpers: Auto Shot timer, Growl warning, aspect and Hunter's Mark reminders, resist alerts.
+-- Combat helpers: Auto Shot timer, Growl warning, aspect and Hunter's Mark reminders.
 
 local function IsHunter()
   local _, class = UnitClass("player")
@@ -240,34 +240,12 @@ local function CheckMark()
 end
 
 ---------------------------------------------------------------------------
--- Resist alerts (traps, Feign Death, Scatter Shot, Tranquilizing Shot, ...)
----------------------------------------------------------------------------
-local WATCH = { 5384, 3355, 14308, 14309, 19503, 1513, 14326, 14327, 19386, 24132, 24133, 19801, 1499, 14310, 14311 }
-local watchNames
-local function WatchNames()
-  if watchNames then return watchNames end
-  watchNames = {}
-  for _, id in ipairs(WATCH) do local n = Name(id); if n then watchNames[n] = true end end
-  return watchNames
-end
-
-local function OnCombatLog()
-  if not ns.db.resistAlerts or not CombatLogGetCurrentEventInfo then return end
-  local _, sub, _, srcGUID, _, _, _, _, destName, _, _, _, spellName, _, missType = CombatLogGetCurrentEventInfo()
-  if sub ~= "SPELL_MISSED" or srcGUID ~= UnitGUID("player") then return end
-  if not spellName or ns.IsSecret(spellName) or not WatchNames()[spellName] then return end
-  local how = (missType == "RESIST" or missType == "IMMUNE") and (missType == "IMMUNE" and L["IMMUNE"] or L["RESISTED"]) or tostring(missType or L["MISSED"])
-  Alert(C.RED .. spellName .. " " .. how .. "|r" .. (destName and (C.GREY .. "  (" .. destName .. ")|r") or ""), true)
-end
-
----------------------------------------------------------------------------
 -- Events
 ---------------------------------------------------------------------------
 local ev = CreateFrame("Frame")
 local function Reg(e) pcall(ev.RegisterEvent, ev, e) end
 for _, e in ipairs({ "START_AUTOREPEAT_SPELL", "STOP_AUTOREPEAT_SPELL", "UNIT_SPELLCAST_SUCCEEDED", "PET_BAR_UPDATE",
   "GROUP_ROSTER_UPDATE", "UNIT_PET", "PLAYER_REGEN_DISABLED", "PLAYER_TARGET_CHANGED", "UNIT_RANGEDDAMAGE" }) do Reg(e) end
-if ns.FLAVOR ~= "forever" then Reg("COMBAT_LOG_EVENT_UNFILTERED") end
 
 ev:SetScript("OnEvent", function(_, event, unit, _, spellID)
   if event == "START_AUTOREPEAT_SPELL" then
@@ -293,8 +271,6 @@ ev:SetScript("OnEvent", function(_, event, unit, _, spellID)
     CheckMark()
   elseif event == "PLAYER_TARGET_CHANGED" then
     if UnitAffectingCombat("player") then CheckMark() end
-  elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
-    OnCombatLog()
   end
 end)
 

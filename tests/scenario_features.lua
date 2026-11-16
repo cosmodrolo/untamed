@@ -320,32 +320,10 @@ check(rw[889] == nil and rw[890] ~= nil, "only your side's battleground faction 
 local outrunnerHorde = false
 for _, ids in pairs(rw[890] or {}) do for _, id in ipairs(ids) do if ns.SearchDB().I[id][1] == "Outrider's Bow" then outrunnerHorde = true end end end
 print("  Alliance sees Outrider's Bow:", outrunnerHorde)
-NUM_BROWSE_TO_DISPLAY = 2
-BrowseScrollFrame = CreateFrame("Frame")
-FauxScrollFrame_GetOffset = function() return 0 end
-for i = 1, 2 do local b = CreateFrame("Button", "BrowseButton" .. i); b.GetName = function() return "BrowseButton" .. i end; b:Show() end
-GetAuctionItemInfo = function(_, i) local id = ({ 3021, 2504 })[i]; return "x", nil, 1, 2, true, 1, nil, 1, 1, 1, 0, nil, nil, nil, nil, 0, id, true end
-ns.AuctionTest.Update()
 
 -- Character planning
 for _, k in ipairs({ "spells", "talents", "gear", "quests" }) do ns.UI_Show(k) end
 local T = ns.CharacterTest
-if ns.FLAVOR ~= "forever" then
-  local steps, nxt = T.BuildProgress(T.SelectedBuild())
-  check(steps[1].done == 5 and nxt and nxt.name == "Improved Revive Pet" and nxt.done == 1, "talent build progress, next is Improved Revive Pet")
-  check(T.Money(12345):find("1g") ~= nil, "money format")
-  local lines = {}
-  local tt = { AddLine = function(_, l) lines[#lines + 1] = l end }
-  local best, bestId = 0
-  for id, g in pairs(ns.GearItems) do if g[1] == "RANGED" and g[2] <= 30 and g[3] > best then best, bestId = g[3], id end end
-  T.OnItemTooltip(tt, bestId)
-  ns.GearAlertTest.AlertNewLevel(20)
-  ns.GearAlertTest.AlertZone()
-  local id = ns.GearBestFor("RANGED", 1, 20, 0, "easy", false)
-  print("  best easy ranged by 20:", id, id and ns.SearchDB().I[id][1])
-  check(id ~= nil, "easy ranged upgrade found")
-  check(#lines == 1, "gear tooltip line for item " .. tostring(bestId) .. ": " .. tostring(lines[1]))
-end
 -- Layout pass: every page builds and refreshes, and the new filters work
 local bf = ns.BrowserFilter()
 bf.teaches = "Bite"; bf.where = "near"; bf.family = "Wolf"

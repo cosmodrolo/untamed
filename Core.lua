@@ -4,10 +4,9 @@ local L = ns.L
 local PREFIX = "|cffabd473Untamed|r: "
 function ns.Print(msg) DEFAULT_CHAT_FRAME:AddMessage(PREFIX .. msg) end
 
-local FOREVER = ns.FLAVOR == "forever"
 
 ---------------------------------------------------------------------------
--- Small API shims (Classic Era and Forever clients differ)
+-- Small helpers
 ---------------------------------------------------------------------------
 function ns.SpellName(id)
   if C_Spell and C_Spell.GetSpellInfo then
@@ -62,8 +61,8 @@ end
 local defaultsDB = {
   zoneAlerts = true, autoPins = true, hideTooHigh = false, minimapAngle = 200, showMinimap = true,
   tooltipInfo = true, targetAlert = true, targetSound = true, minimapPins = true, feedReminder = true,
-  arrowScale = 1, arrowNextSpot = true, autoShotBar = true, growlWarning = true, aspectReminder = true, markReminder = true, resistAlerts = true,
-  gearTooltip = true, talentGlow = true, talentPath = true, gearAlerts = true, recordData = true, ahHelper = true, openHome = true,
+  arrowScale = 1, arrowNextSpot = true, autoShotBar = true, growlWarning = true, aspectReminder = true, markReminder = true,
+  gearTooltip = true, talentGlow = true, talentPath = true, gearAlerts = true, recordData = true, openHome = true, wishPins = true,
 }
 local function InitDB()
   UntamedDB = UntamedDB or {}
@@ -182,7 +181,7 @@ function ns.ScanPet()
   if not UnitExists("pet") then return nil end
   local family = ns.ToEnglish(UnitCreatureFamily("pet"))
   if not family then return nil end
-  if family == "Owl" and FOREVER then family = "Bird of Prey" end
+  if family == "Owl" then family = "Bird of Prey" end
   local info = { name = UnitName("pet"), family = family, level = UnitLevel("pet"), known = {} }
   -- how many spells the pet's spellbook page has (Forever: C_SpellBook; older clients: the global)
   local num
@@ -221,7 +220,7 @@ function ns.ScanPet()
 end
 
 ---------------------------------------------------------------------------
--- Reading Beast Training (Classic Era: craft window, Forever: trainer window)
+-- Reading Beast Training (the pet trainer window)
 ---------------------------------------------------------------------------
 -- Rank from the subtext; an ability with a single rank has no rank text. Returns nil if unsure.
 local function RankOf(name, sub)
@@ -262,18 +261,6 @@ end
 local function PetRanks()
   local ok, info = pcall(ns.ScanPet)
   return ok and info and info.known or nil
-end
-
-function ns.ScanBeastTraining()
-  if not (GetCraftDisplaySkillLine and GetNumCrafts) then return end
-  local line = GetCraftDisplaySkillLine()
-  if not line or (line ~= ns.SpellName(5149) and line ~= "Beast Training") then return end
-  local count, petRanks = 0, PetRanks()
-  for i = 1, GetNumCrafts() do
-    local name, sub, kind, _, _, tp, reqLevel = GetCraftInfo(i)
-    if name and kind ~= "header" and Record(name, sub, reqLevel, tp, petRanks) then count = count + 1 end
-  end
-  if count > 0 then ns.cdb.scanned = true; ns.Refresh() end
 end
 
 -- Hunter trainer: save what each spell rank costs, so the Spells page can show real costs for
@@ -525,14 +512,10 @@ ev:SetScript("OnEvent", function(self, event, arg1, arg2, arg3, arg4)
       "UNIT_HAPPINESS", "UNIT_PET_TRAINING_POINTS", "BAG_UPDATE_DELAYED", "PLAYER_REGEN_ENABLED" }) do
       pcall(self.RegisterEvent, self, e)
     end
-    pcall(self.RegisterEvent, self, "CRAFT_SHOW")
-    pcall(self.RegisterEvent, self, "CRAFT_UPDATE")
     pcall(self.RegisterEvent, self, "TRAINER_SHOW")
     pcall(self.RegisterEvent, self, "TRAINER_UPDATE")
     if ns.ApplyTrainerCosts then pcall(ns.ApplyTrainerCosts) end
     ns.Fire("LOGIN")
-  elseif event == "CRAFT_SHOW" or event == "CRAFT_UPDATE" then
-    ns.ScanBeastTraining()
   elseif event == "TRAINER_SHOW" or event == "TRAINER_UPDATE" then
     ns.ScanPetTrainer()
     if not (C_Trainer and C_Trainer.GetTrainerType and Enum and Enum.TrainerType
@@ -587,7 +570,6 @@ end)
 
 SLASH_UNTAMED1 = "/untamed"
 SLASH_UNTAMED2 = "/ut"
-SLASH_UNTAMED3 = "/psf"
 SlashCmdList.UNTAMED = function(msg)
   msg = (msg or ""):lower():match("^%s*(.-)%s*$")
   local searchText = msg:match("^search%s+(.+)$") or msg:match("^s%s+(.+)$")
@@ -663,6 +645,15 @@ SlashCmdList.UNTAMED = function(msg)
     or msg == "supplies" or msg == "spells" or msg == "talents" or msg == "gear" or msg == "quests" then
     if ns.UI_Show then ns.UI_Show(msg) end
   elseif msg == "help" then
+    ns.Print("/ut  open Untamed   |  /ut settings  every switch, with what it does")
+    ns.Print("/ut s <name>  find any item, NPC or beast and where to get it")
+    ns.Print("/ut zone  what your pet can learn in this zone")
+    ns.Print("/ut want <beast>  put a beast on your wishlist (again to take it off)")
+    ns.Print("/ut book  arrow to the nearest library book you need")
+    ns.Print("/ut clear  clear the arrow and the map focus")
+    ns.Print("/ut hud move  drag the display under your character")
+    ns.Print("/ut help all  every command")
+  elseif msg == "help all" then
     ns.Print("/untamed  open the window   |  /untamed plan, browse, care, settings  open a tab")
     ns.Print("/untamed search <text>  (or /ut s <text>)  find any item, NPC or beast and where to get it")
     ns.Print("/untamed zone  what your pet can learn in this zone   |  /untamed next  skip to the next route stop")

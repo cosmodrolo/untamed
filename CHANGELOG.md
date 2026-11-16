@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.31.0
+Cleanup, and a Settings page a new player can read. Untamed is for WoW Forever only.
+- Settings: sections down the left (Basics, Under your character, Beasts and rares, In a fight, Map and minimap, Treasure and books, Pet care and supplies, Gear, spells and talents, Your data), the section's switches on the right, each with a line saying what it does in plain words. Basics holds the few things most people change. Switches that used to exist only as chat commands are here now: the hunter display, range meter, pet watch, hawk timers, Feign Death check, the controller, chest spots and alerts, library book alerts and map marks, the loot card and Need alert. "Move the display" and "Put it back" are buttons.
+- Removed, because they can't work on WoW Forever: the Auction House helper (it was written for the old auction window) and the resist alerts (Forever gives addons no combat log). Their switches are gone from Settings.
+- Removed what was left from Classic Era: the old talent-window glow, the old Beast Training (craft window) reader, the Era family list, and the Era-or-Forever checks around them. The /psf command (from when the addon was called PetSkillFinder) is gone; /ut and /untamed stay.
+- /ut help is eight lines now: the commands worth knowing. /ut help all lists every one (they all still work).
+
 ## v2.30.1
 - Checkboxes show their mark again (since 2.30.0 a ticked box looked empty; the settings themselves were never changed).
 

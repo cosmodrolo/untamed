@@ -1,5 +1,5 @@
 ## Interface: 16001
-## Title: |cffabd473Untamed|r (Forever)
+## Title: |cffabd473Untamed|r
 ## Notes: Hunter pet guide: what your pet can still learn, which beasts teach it, navigation, trip planner, pet browser and pet care.
 ## Author: Alejandro Angulo
 ## Version: @project-version@
@@ -66,6 +66,5 @@ HUD.lua
 Hawks.lua
 Range.lua
 Reputation.lua
-Auction.lua
 Home.lua
 Tabs.lua

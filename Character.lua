@@ -4,8 +4,6 @@ local C = ns.C
 
 -- Character planning: Spells (trainer guide), Talents, Gear and Hunter Quests.
 
-local ERA = ns.FLAVOR ~= "forever"
-
 local function Money(copper)
   copper = copper or 0
   if copper < 0 then return C.GREY .. "?|r" end
@@ -22,7 +20,7 @@ local function Known(spellID)
   return ns.SpellKnown(spellID) == true
 end
 
-local function NotForever(add, what)
+local function NoData(add, what)
   add(0, nil, C.ORANGE .. string.format(L["%s has no data loaded."], what) .. "|r")
 end
 
@@ -76,7 +74,7 @@ do
   local function Refresh()
     local rows = {}
     local function add(...) rows[#rows + 1] = { ... } end
-    if not ns.TrainerSpells then NotForever(add, L["The spell guide"]); j:SetTipRows(rows) return end
+    if not ns.TrainerSpells then NoData(add, L["The spell guide"]); j:SetTipRows(rows) return end
     local playerLevel = UnitLevel("player")
     -- Highest rank per spell name the player knows.
     local missingNow, missingNowCost, optionalCost = 0, 0, 0
@@ -415,29 +413,6 @@ local function SelectedBuild()
 end
 
 -- Glow on the next talent in the game's talent window.
-local glow
-local function UpdateGlow()
-  if not ERA or not PlayerTalentFrame then return end
-  if not glow then
-    glow = PlayerTalentFrame:CreateTexture(nil, "OVERLAY")
-    glow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
-    glow:SetBlendMode("ADD")
-    glow:SetVertexColor(0.67, 0.83, 0.45)
-    glow:SetSize(66, 66)
-  end
-  glow:Hide()
-  if ns.db.talentGlow == false then return end
-  local _, nextStep = BuildProgress(SelectedBuild())
-  if not nextStep or not nextStep.index then return end
-  local tab = PanelTemplates_GetSelectedTab and PanelTemplates_GetSelectedTab(PlayerTalentFrame)
-  if tab ~= nextStep.tab then return end
-  local btn = _G["PlayerTalentFrameTalent" .. nextStep.index]
-  if btn and btn:IsShown() then
-    glow:ClearAllPoints()
-    glow:SetPoint("CENTER", btn, "CENTER", 0, 0)
-    glow:Show()
-  end
-end
 
 -- Forever: the same glow in the trait-based talent window (all three trees on one page).
 local fglow
@@ -480,7 +455,7 @@ local function UpdateForeverGlow()
 end
 
 local function RefreshGlow()
-  if ERA then UpdateGlow() else pcall(UpdateForeverGlow) end
+  pcall(UpdateForeverGlow)
 end
 
 -- Why each talent is in the build, in a line (numbers come from the talent window itself).
@@ -597,13 +572,6 @@ end
 -- Hooked-already flags live here, not on Blizzard's frames (writing fields onto them taints them).
 local hooked = {}
 
-local function HookTalentFrame()
-  if not PlayerTalentFrame or hooked.classic then return end
-  hooked.classic = true
-  PlayerTalentFrame:HookScript("OnShow", UpdateGlow)
-  if PlayerTalentFrame_Update then hooksecurefunc("PlayerTalentFrame_Update", UpdateGlow) end
-end
-
 local function HookTraitFrame()
   local tf = PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame
   if not tf or hooked.traits then return end
@@ -630,7 +598,6 @@ do
       return
     end
     if event == "ADDON_LOADED" then
-      if arg == "Blizzard_TalentUI" then HookTalentFrame() end
       if arg == "Blizzard_PlayerSpells" then HookTraitFrame() end
     else
       talentMap = nil

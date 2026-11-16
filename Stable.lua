@@ -101,7 +101,7 @@ local function RecordActive()
   ns.cdb.hasActivePet = true
 end
 
--- Read the stable window (Classic Era: GetStablePetInfo; Forever: C_StableInfo).
+-- Read the stable window.
 local function ReadStable()
   local seen = {}
   local function add(name, level, family, isCurrent)

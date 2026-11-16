@@ -41,7 +41,7 @@ for k, v in pairs(DIET[locale] or {}) do toEnglish[k] = v end
 -- Family names straight from the game when it can tell us (works in every language).
 local FAMILY_IDS = { [1] = "Wolf", [2] = "Cat", [3] = "Spider", [4] = "Bear", [5] = "Boar", [6] = "Crocolisk",
   [7] = "Carrion Bird", [8] = "Crab", [9] = "Gorilla", [11] = "Raptor", [12] = "Tallstrider", [20] = "Scorpid",
-  [21] = "Turtle", [24] = "Bat", [25] = "Hyena", [26] = ns.FLAVOR == "forever" and "Bird of Prey" or "Owl",
+  [21] = "Turtle", [24] = "Bat", [25] = "Hyena", [26] = "Bird of Prey",
   [27] = "Wind Serpent", [46] = "Fox" }
 local familyLabel, abilityLabel = {}, {}
 if C_CreatureInfo and C_CreatureInfo.GetCreatureFamilyInfo then

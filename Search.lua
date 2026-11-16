@@ -49,7 +49,7 @@ local FACTION_SIDE = { [889] = "H", [729] = "H", [510] = "H", [76] = "H", [81] =
   [890] = "A", [730] = "A", [509] = "A", [72] = "A", [47] = "A", [69] = "A", [54] = "A" }
 local RANK_NAME = { [0] = "Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted" }
 
--- name, standing (0 hated .. 7 exalted), barMin, barMax, barValue. Classic Era: GetFactionInfoByID;
+-- name, standing (0 hated .. 7 exalted), barMin, barMax, barValue. Older function: GetFactionInfoByID;
 -- Forever: C_Reputation.GetFactionDataByID.
 function ns.FactionInfo(fac)
   if GetFactionInfoByID then
