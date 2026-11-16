@@ -72,7 +72,7 @@ ns.HUNTER_MACROS = {
   Plain("TSA", "Trueshot Aura", L["Ranged Attack Power for your group."]),
   { group = L["Scouting"] },
   { "Eye", "Eagle Eye", L["Look far ahead: it lands where the middle of your screen points. Turn the camera and press again to jump further from where your view is now."],
-    "#showtooltip Eagle Eye\n/cast [@cursor] Eagle Eye" },
+    "#showtooltip Eagle Eye\n/cast [@cursor] !Eagle Eye" },
 }
 
 -- the controller: Blizzard's gamepad bars, R2 + face buttons for the fight (Alejandro's own:
