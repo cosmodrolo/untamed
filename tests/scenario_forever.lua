@@ -217,7 +217,8 @@ print("WISH OK")
 local DIST = 20
 local RANGES = { ["Raptor Strike"] = { 0, 5 }, ["Auto Shot"] = { 8, 35 }, ["Hunter's Mark"] = { 0, 100 }, ["Scatter Shot"] = { 0, 15 } }
 local oldInfo = C_Spell.GetSpellInfo
-C_Spell.GetSpellInfo = function(x) local r = RANGES[x]; if r then return { name = x, minRange = r[1], maxRange = r[2] } end return oldInfo(x) end
+-- like the game: melee spells report a range of 0
+C_Spell.GetSpellInfo = function(x) local r = RANGES[x]; if r then return { name = x, minRange = r[1], maxRange = (x == "Raptor Strike") and 0 or r[2] } end return oldInfo(x) end
 C_Spell.IsSpellInRange = function(name) local r = RANGES[name]; if not r then return nil end return DIST >= r[1] and DIST <= r[2] end
 UnitCanAttack = function() return true end
 FIRE("SPELLS_CHANGED")

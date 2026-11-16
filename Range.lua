@@ -65,10 +65,13 @@ function ns.RangeToTarget()
 
   local facts = {}
   local melee
+  -- melee spells have no range of their own in the spell data (0), so they're asked directly,
+  -- by name and then by ID
   for _, s in ipairs(MELEE) do
-    local sp = SpellRange(s)
-    if sp then
-      local r = InRange(sp.name)
+    local info = C_Spell and C_Spell.GetSpellInfo and C_Spell.GetSpellInfo(s)
+    if info then
+      local r = InRange(Plain(info.name) or s)
+      if r == nil and Plain(info.spellID) then r = InRange(info.spellID) end
       if r ~= nil then facts[#facts + 1] = { 0, 5, r }; melee = melee or r end
     end
   end
@@ -111,9 +114,9 @@ function ns.RangeToTarget()
   if melee then zone = "melee"
   elseif auto then zone = "range"
   elseif auto == false then
-    if hi <= (autoMin or 8) + 0.5 then zone = "dead"
+    if hi <= (autoMin or 8) + 0.5 then zone = (melee == nil) and "close" or "dead"
     elseif lo >= (autoMax or 35) then zone = "far"
-    elseif lastZone == "melee" or lastZone == "dead" then zone = "dead"
+    elseif lastZone == "melee" or lastZone == "dead" or lastZone == "close" then zone = (melee == nil) and "close" or "dead"
     else zone = "far" end
   else
     zone = (hi <= 5 and "melee") or "unknown"
@@ -124,6 +127,8 @@ end
 local ZONES = {
   melee = { L["Melee"], { 0.89, 0.29, 0.29 }, L["Raptor Strike, Wing Clip"] },
   dead  = { L["Dead zone"], { 0.94, 0.62, 0.15 }, L["Step back or Disengage"] },
+  -- too close for Auto Shot, and the game won't say whether melee reaches
+  close = { L["Too close"], { 0.94, 0.62, 0.15 }, L["Melee it or step back"] },
   range = { L["In range"], { 0.39, 0.6, 0.13 }, nil },
   far   = { L["Too far"], { 0.53, 0.53, 0.5 }, L["Move closer"] },
   unknown = { L["Target"], { 0.53, 0.53, 0.5 }, nil },
@@ -254,7 +259,7 @@ local function Paint()
   local zone, lo, hi
   if ns.db.rangeMeter ~= false then zone, lo, hi = ns.RangeToTarget() end
   if zone then lastZone = zone end
-  local showRange = zone and (moving or ns.db.rangeMode ~= "alerts" or zone == "dead" or zone == "far" or zone == "melee")
+  local showRange = zone and (moving or ns.db.rangeMode ~= "alerts" or zone == "dead" or zone == "close" or zone == "far" or zone == "melee")
   if moving and not zone then zone, lo, hi = "range", 8, 35 end
   if showRange or moving then
     local z = ZONES[zone]

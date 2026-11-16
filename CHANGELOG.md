@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.19.9
+- Range meter: Melee works now. Melee spells report no range of their own, and the meter skipped them, so point-blank showed "Dead zone". If the game ever won't say whether melee reaches, it shows "Too close" instead of guessing.
+- Eye macro: casts Eagle Eye where the middle of your screen points ([@cursor]) instead of waiting for a click, so pressing it again while looking jumps further instead of dropping back to you.
+
 ## v2.19.8
 - New macro Eye (Eagle Eye) in the Rotation tab under Scouting: press it again while you're looking to jump further from where your view is now.
 
