@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.37.1
+- Chests: Untamed now notices when you open one. The spot you opened comes off your map, your minimap and the "chest spot nearby" alert for 30 minutes, until a chest could be back, and a chat line says so. It's remembered per character, so it survives a /reload.
+- (Books already worked this way: a book in your bags or handed in is off the map and out of the alerts.)
+
 ## v2.37.0
 - Gear: the list now opens with your weakest slot: the slot where what you wear ranks lowest among everything you could wear at your level, what you wear there and its rank, and the item to go and get for it (one you can buy or quest for when there is one). Rings count by the weaker of the two; trinkets are left out, since their effects don't show up in a score.
 

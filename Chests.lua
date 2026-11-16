@@ -63,6 +63,18 @@ end
 
 ns.ChestCacheClear = function() wipe(cache) end
 
+-- Chests you opened: their spot is left off the map, the minimap and the "nearby" alert until a
+-- chest could be back. Kept per character, by map and spot, with the time you opened it.
+local RESPAWN = 30 * 60
+local function Opened(mapID, i)
+  local o = ns.cdb and ns.cdb.chestOpened
+  local t = o and o[mapID .. ":" .. i]
+  if not t then return false end
+  if time() - t >= RESPAWN then o[mapID .. ":" .. i] = nil return false end
+  return true
+end
+ns.ChestOpened = Opened
+
 local function KindName(k) return ns.ChestKinds and ns.ChestKinds[k] or L["Chest"] end
 
 -- world map: the shown zone's chest spots
@@ -72,9 +84,11 @@ table.insert(ns.PinSources, function(mapID)
   if not spots or #spots == 0 then return nil end
   local out = {}
   for i = 1, #spots, 3 do
-    out[#out + 1] = { map = mapID, x = spots[i], y = spots[i + 1], name = KindName(spots[i + 2]), size = 10,
-      border = { 0.94, 0.62, 0.15, 1 }, icon = CHEST_ICON,
-      lines = { KindName(spots[i + 2]), L["A chest can appear here (not always one up)"] } }
+    if not Opened(mapID, i) then
+      out[#out + 1] = { map = mapID, x = spots[i], y = spots[i + 1], name = KindName(spots[i + 2]), size = 10,
+        border = { 0.94, 0.62, 0.15, 1 }, icon = CHEST_ICON,
+        lines = { KindName(spots[i + 2]), L["A chest can appear here (not always one up)"] } }
+    end
   end
   return out
 end)
@@ -85,7 +99,9 @@ table.insert(ns.MinimapSources, function(mapID)
   local spots = ns.ChestSpotsOn(mapID)
   if not spots then return nil end
   local out = {}
-  for i = 1, #spots, 3 do out[#out + 1] = { spots[i], spots[i + 1], CHEST_ICON, KindName(spots[i + 2]), 0.94, 0.62, 0.15 } end
+  for i = 1, #spots, 3 do
+    if not Opened(mapID, i) then out[#out + 1] = { spots[i], spots[i + 1], CHEST_ICON, KindName(spots[i + 2]), 0.94, 0.62, 0.15 } end
+  end
   return out
 end)
 
@@ -175,6 +191,7 @@ local function CheckSoftInteract()
   end
   if not isChest then return end
   softWarned[guid] = true
+  ns.chestSeenAt = GetTime()      -- a chest was your interact target just now (see ChestLooted)
   ns.Alert(C.GOLD .. L["Chest right here: "] .. "|r" .. (name or L["Chest"]), true)
   ns.Print(string.format(L["Chest right here: %s. It's your interact target."], name or L["Chest"]))
 end
@@ -193,7 +210,7 @@ local function CheckNearSpots()
   for i = 1, #spots, 3 do
     local c, e, n = ns.ToWorld(map, spots[i], spots[i + 1])
     local d = ns.Distance(pc, pe, pn, c, e, n)
-    if d and d <= radius and (not bd or d < bd) then best, bd, be, bn = i, d, e, n end
+    if d and d <= radius and (not bd or d < bd) and not Opened(map, i) then best, bd, be, bn = i, d, e, n end
   end
   if not best then return end
   local key = map .. ":" .. best
@@ -206,13 +223,51 @@ local function CheckNearSpots()
   ns.Alert(C.GOLD .. L["Chest spot nearby: "] .. "|r" .. kind .. C.GREY .. string.format("  %d %s %s", bd, L["yd"], dir) .. "|r", false)
   ns.Print(string.format(L["Chest spot nearby: a %s may be up %d yards %s. It's on your minimap (orange)."], kind, bd, dir))
 end
-ns.ChestTest = { CheckNearSpots = CheckNearSpots, CheckSoftInteract = CheckSoftInteract }
+-- You opened a loot window. Was it a chest? Yes when the loot comes from a chest object, or when a
+-- chest was your interact target in the last few seconds. Then the nearest chest spot (within 40
+-- yards) is marked opened.
+local function ChestLooted()
+  local isChest = false
+  if GetNumLootItems and GetLootSourceInfo then
+    for slot = 1, (Plain(GetNumLootItems()) or 0) do
+      local ok, guid = pcall(GetLootSourceInfo, slot)
+      guid = ok and Plain(guid)
+      if type(guid) == "string" and guid:match("^GameObject") then
+        local id = tonumber(guid:match("^GameObject%-%d+%-%d+%-%d+%-%d+%-(%d+)"))
+        if id and ns.ChestIds and ns.ChestIds[id] then isChest = true break end
+      end
+    end
+  end
+  if not isChest and ns.chestSeenAt and GetTime() - ns.chestSeenAt < 8 then isChest = true end
+  if not isChest then return false end
+  local map = C_Map.GetBestMapForUnit("player")
+  local spots = map and ns.ChestSpotsOn(map)
+  local pc, pe, pn = ns.PlayerWorld()
+  if not spots or not pc then return false end
+  local best, bd
+  for i = 1, #spots, 3 do
+    local c, e, n = ns.ToWorld(map, spots[i], spots[i + 1])
+    local d = ns.Distance(pc, pe, pn, c, e, n)
+    if d and d <= 40 and (not bd or d < bd) then best, bd = i, d end
+  end
+  if not best or Opened(map, best) then return false end
+  ns.cdb.chestOpened = ns.cdb.chestOpened or {}
+  ns.cdb.chestOpened[map .. ":" .. best] = time()
+  ns.chestSeenAt = nil
+  if ns.Pins_Refresh then ns.Pins_Refresh() end
+  if ns.MinimapRebuild then ns.MinimapRebuild() end
+  ns.Print(string.format(L["Chest opened. Its spot is off your map for %d minutes, until one could be back."], RESPAWN / 60))
+  return true
+end
+
+ns.ChestTest = { CheckNearSpots = CheckNearSpots, CheckSoftInteract = CheckSoftInteract, ChestLooted = ChestLooted }
 
 do
   local ev = CreateFrame("Frame")
-  for _, e in ipairs({ "VIGNETTE_MINIMAP_UPDATED", "VIGNETTES_UPDATED", "PLAYER_SOFT_INTERACT_CHANGED" }) do pcall(ev.RegisterEvent, ev, e) end
+  for _, e in ipairs({ "VIGNETTE_MINIMAP_UPDATED", "VIGNETTES_UPDATED", "PLAYER_SOFT_INTERACT_CHANGED", "LOOT_OPENED" }) do pcall(ev.RegisterEvent, ev, e) end
   ev:SetScript("OnEvent", function(_, event)
-    if event == "PLAYER_SOFT_INTERACT_CHANGED" then CheckSoftInteract() else CheckVignettes() end
+    if event == "LOOT_OPENED" then pcall(ChestLooted)
+    elseif event == "PLAYER_SOFT_INTERACT_CHANGED" then CheckSoftInteract() else CheckVignettes() end
   end)
   local t = 0
   ev:SetScript("OnUpdate", function(_, e)

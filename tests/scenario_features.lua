@@ -400,6 +400,20 @@ UnitName = function(u) if u == "softinteract" then return "Solid Chest" end retu
 FIRE("PLAYER_SOFT_INTERACT_CHANGED")
 check(heard[2] and heard[2]:find("Chest right here"), "chest as the interact target")
 UnitExists, UnitGUID, UnitName = oldExists, oldGUID, oldName
+-- opening it: the spot goes off the map and the nearby alert for a while
+do
+  local map = C_Map.GetBestMapForUnit("player")
+  ns.ToWorld = function(m, x, y) return 0, x * 10, y * 10 end
+  ns.PlayerWorld = function() return 0, spots[1] * 10 + 30, spots[2] * 10 end
+  ns.chestSeenAt = GetTime()
+  check(ns.ChestTest.ChestLooted() == true, "opening a chest marks its spot")
+  local spots, hidden = ns.ChestSpotsOn(map), 0
+  for i = 1, #spots, 3 do if ns.ChestOpened(map, i) then hidden = hidden + 1 end end
+  check(hidden == 1, "one chest spot is marked opened")
+  check(ns.ChestTest.ChestLooted() == false, "a second loot window right after doesn't mark another")
+  ns.cdb.chestOpened = nil
+  ns.ToWorld, ns.PlayerWorld = realToWorld, realPW
+end
 ns.Alert = keepAlert
 C_VignetteInfo = { GetVignettes = function() return { "v1" } end,
   GetVignetteInfo = function() return { name = "Battered Chest", atlasName = "VignetteLoot", objectGUID = "GameObject-0-1-1-1-2843-0000ABCD" } end }

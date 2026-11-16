@@ -169,6 +169,7 @@ L["Checked every known spot for %s. Starting over from the nearest; it may still
 L["Checking your %d completed quests for library books..."] = true
 L["Cheetah to run, Hawk before the pull (you're dazed if hit in Cheetah)."] = true
 L["Chest"] = true
+L["Chest opened. Its spot is off your map for %d minutes, until one could be back."] = true
 L["Chest or node"] = true
 L["Chest right here: "] = true
 L["Chest right here: %s. It's your interact target."] = true
