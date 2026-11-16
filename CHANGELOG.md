@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.19.18
+- The hunter display sits a bit lower so it doesn't cover your character when you zoom in (if you moved it yourself it stays where you put it; /ut hud reset goes to the new spot).
+- /ut doctor shows how many points you have in Frenzy and lists your pet's buffs.
+
 ## v2.19.17
 - Untamed's map icons show on OpenMap's controller view (its Gamepad UI mode). That view is OpenMap's own map drawn over Blizzard's, which hides everything Untamed drew on Blizzard's map. OpenMap puts other addons' HereBeDragons map icons on its view, so Untamed now hands it its icons in that shape: chests, books, rares, wishlist, the beast you're hunting and beasts your pet can learn from. They appear once you zoom in to zone level (the beast you're hunting shows from further out), for the zone the map is on and the zone you're in. Put the controller's cursor on an icon for its info box. The switches in OpenMap's menu turn each group off or on.
 

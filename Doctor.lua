@@ -52,6 +52,12 @@ function ns.Doctor()
     Line(C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs and nil or false, "Pet buffs (Frenzy icon)", "no pet out or function missing")
   end
 
+  if ns.TalentRankOf then
+    local fr, frMax = ns.TalentRankOf("Frenzy")
+    local fe = ns.TalentRankOf("Ferocity")
+    Line(fr ~= nil and fr > 0 or (fr == nil and nil) or false, "Frenzy talent", fr and (fr .. " of " .. tostring(frMax or 5) .. " points (Ferocity " .. tostring(fe or "?") .. ")") or "could not read the talent tree")
+  end
+
   -- spells you know
   local known, total = 0, 0
   for _, name in ipairs({ "Auto Shot", "Serpent Sting", "Hunter's Mark", "Raptor Strike", "Aspect of the Hawk" }) do

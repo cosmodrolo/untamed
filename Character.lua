@@ -307,6 +307,20 @@ local function TraitRank(nodeID)
   return node and (node.activeRank or node.currentRank) or 0
 end
 
+-- points you have in a talent (by its English name), and its most; nil if the tree can't be read
+function ns.TalentRankOf(key)
+  local ok, map = pcall(MapTraits)
+  if not ok or not map then return nil end
+  for tab = 1, 3 do
+    local t = map[tab][key]
+    if t then
+      local okR, r = pcall(TraitRank, t.node)
+      if okR and r and not ns.IsSecret(r) then return r, t.maxRank end
+    end
+  end
+  return nil
+end
+
 -- /ut talents: what Untamed can see of your Forever talent tree (for troubleshooting).
 function ns.TalentDebug()
   local ok, cfg, tree = pcall(TraitConfig)

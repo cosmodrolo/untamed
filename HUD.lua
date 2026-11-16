@@ -14,7 +14,7 @@ local C = ns.C
 -- Our own frames on UIParent (gamepad safe).
 ---------------------------------------------------------------------------
 
-local DEFAULT_POS = { "CENTER", 0, -178 }   -- the top edge 78 below the screen center
+local DEFAULT_POS = { "CENTER", 0, -222 }   -- low enough to clear your character when zoomed in
 local ICON, SMALL = 34, 30
 
 local COOLDOWNS = { "Summon Hawk", "Aimed Shot", "Multi-Shot", "Rapid Fire", "Bestial Wrath", "Concussive Shot" }
