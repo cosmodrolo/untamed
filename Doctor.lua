@@ -75,8 +75,8 @@ function ns.Doctor()
   if ns.RangePetSeenLog then
     local log = ns.RangePetSeenLog()
     local parts = {}
-    for _, k in ipairs({ "events", "added", "showing", "idHidden", "removedHidden", "info", "addedErr", "icon", "timer" }) do
-      if log[k] ~= nil then parts[#parts + 1] = k .. "=" .. tostring(log[k]):sub(1, 60) end
+    for _, k in ipairs({ "events", "added", "showing", "listIs", "idHidden", "removedHidden", "info", "entry", "addedErr", "icon", "timer" }) do
+      if log[k] ~= nil then parts[#parts + 1] = k .. "=" .. tostring(log[k]):gsub("Interface/AddOns/Untamed/", ""):sub(1, 110) end
     end
     Line(nil, "Pet buff notices (fight icons)", table.concat(parts, "; "))
   end

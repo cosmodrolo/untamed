@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.21
+- Pet buff notices: the list of new buffs arrives hidden and can't be walked, so its entries are asked for one by one. /ut doctor says more about what came through.
+
 ## v2.19.20
 - Pet buff icons in fights, second try. /ut doctor showed that Forever refuses addons every question about buffs during a fight. What still arrives is the game's notice that something was put on your pet, so in fights the icons are now fed from those notices: the newest buff or debuff on Zabu shows first (Frenzy when it procs), and goes when the game says it ended. An experiment: the game may hide parts of those notices too, and /ut doctor's "Pet buff notices" line says what came through.
 

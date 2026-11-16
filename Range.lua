@@ -340,7 +340,14 @@ local function PetAuraEvent(info)
     end
   end)
   local okA, errA = pcall(function()
-    for _, a in ipairs(info.addedAuras or {}) do
+    local list = info.addedAuras
+    petSeenLog.listIs = (ns.IsSecret(list) and "hidden " or "") .. type(list)
+    if list == nil then return end
+    -- the list itself can be hidden (no walking it): its entries are asked for one by one
+    for i = 1, 4 do
+      local okE, a = pcall(function() return list[i] end)
+      if not okE then petSeenLog.entry = tostring(a) break end
+      if a == nil then break end
       local id = a.auraInstanceID
       if ns.IsSecret(id) then id = nil; petSeenLog.idHidden = true end
       petSeen[#petSeen + 1] = { id = id, icon = a.icon, expires = a.expirationTime, duration = a.duration, at = GetTime() }
