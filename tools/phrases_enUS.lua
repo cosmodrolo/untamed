@@ -743,6 +743,7 @@ L["available"] = true
 L["beast"] = true
 L["beasts"] = true
 L["below your level"] = true
+L["best for its level"] = true
 L["best upgrades for you first; Alt-click to add to your wishlist"] = true
 L["click a beast for an arrow"] = true
 L["click a line to go there"] = true

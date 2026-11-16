@@ -50,12 +50,62 @@ local function SpellRange(english)
   return c or nil
 end
 
+-- yes / no / nil (the game won't say), whatever shape the answer comes in (true, false, 1, 0)
+local function YesNo(r)
+  if r == nil or ns.IsSecret(r) then return nil end
+  if r == true or r == 1 then return true end
+  if r == false or r == 0 then return false end
+  return nil
+end
+
 local function InRange(name)
   if not (C_Spell and C_Spell.IsSpellInRange) then return nil end
+  -- a spell without a range of its own (melee) gets no honest answer here: skip it
+  if C_Spell.SpellHasRange then
+    local okH, has = pcall(C_Spell.SpellHasRange, name)
+    if okH and not ns.IsSecret(has) and not has then return nil end
+  end
   local ok, r = pcall(C_Spell.IsSpellInRange, name, "target")
-  if not ok or ns.IsSecret(r) then return nil end
-  return r
+  if not ok then return nil end
+  return YesNo(r)
 end
+
+-- Melee: the action bar knows (a Raptor Strike button turns red out of reach). The slots that
+-- hold a melee ability, or a macro that shows one, are found once and asked directly.
+local MELEE_SET = { ["Raptor Strike"] = true, ["Wing Clip"] = true, ["Mongoose Bite"] = true }
+local meleeSlots
+local function FindMeleeSlots()
+  meleeSlots = {}
+  if not GetActionInfo then return end
+  for slot = 1, 180 do
+    local ok, kind, id = pcall(GetActionInfo, slot)
+    if ok and kind and not ns.IsSecret(kind) and id and not ns.IsSecret(id) then
+      local spell
+      if kind == "spell" then spell = id
+      elseif kind == "macro" and GetMacroSpell then
+        local okM, sid = pcall(GetMacroSpell, id)
+        if okM and sid and not ns.IsSecret(sid) then spell = sid end
+      end
+      if spell and C_Spell and C_Spell.GetSpellName then
+        local okN, n = pcall(C_Spell.GetSpellName, spell)
+        if okN and n and not ns.IsSecret(n) and MELEE_SET[n] then meleeSlots[#meleeSlots + 1] = slot end
+      end
+    end
+  end
+end
+
+local function MeleeInRange()
+  if not meleeSlots then FindMeleeSlots() end
+  local f = (C_ActionBar and C_ActionBar.IsActionInRange) or IsActionInRange
+  if not f then return nil end
+  for _, slot in ipairs(meleeSlots) do
+    local ok, r = pcall(f, slot, "target")
+    local yn = ok and YesNo(r)
+    if yn ~= nil then return yn end
+  end
+  return nil
+end
+ns.RangeMeleeSlots = function() meleeSlots = nil end
 
 -- Where the target is: zone ("melee", "dead", "range", "far") and a yard band (lo, hi).
 function ns.RangeToTarget()
@@ -65,16 +115,15 @@ function ns.RangeToTarget()
 
   local facts = {}
   local melee
-  -- melee spells have no range of their own in the spell data (0), so they're asked directly,
-  -- by name and then by ID
-  for _, s in ipairs(MELEE) do
-    local info = C_Spell and C_Spell.GetSpellInfo and C_Spell.GetSpellInfo(s)
-    if info then
-      local r = InRange(Plain(info.name) or s)
-      if r == nil and Plain(info.spellID) then r = InRange(info.spellID) end
-      if r ~= nil then facts[#facts + 1] = { 0, 5, r }; melee = melee or r end
+  -- melee: from the spell if it has a range of its own, else from the action bar
+  for name in pairs(MELEE_SET) do
+    if C_Spell.GetSpellInfo(name) then
+      local r = InRange(name)
+      if r ~= nil then melee = melee or r end
     end
   end
+  if melee == nil then melee = MeleeInRange() end
+  if melee ~= nil then facts[#facts + 1] = { 0, 5, melee } end
   local auto, autoMin, autoMax
   for _, s in ipairs(CHECKS) do
     local sp = SpellRange(s)
@@ -376,7 +425,7 @@ do
   local ev = CreateFrame("Frame")
   local tick = 0
   for _, e in ipairs({ "PLAYER_LOGIN", "UNIT_SPELLCAST_SUCCEEDED", "PLAYER_TARGET_CHANGED", "SPELLS_CHANGED",
-    "PLAYER_REGEN_ENABLED", "PLAYER_REGEN_DISABLED", "UNIT_PET" }) do
+    "PLAYER_REGEN_ENABLED", "PLAYER_REGEN_DISABLED", "UNIT_PET", "ACTIONBAR_SLOT_CHANGED", "UPDATE_MACROS" }) do
     pcall(ev.RegisterEvent, ev, e)
   end
   ev:SetScript("OnEvent", function(_, event, unit, _, spellID)
@@ -397,7 +446,8 @@ do
       return
     end
     if not frame then return end
-    if event == "SPELLS_CHANGED" then wipe(spellCache)
+    if event == "SPELLS_CHANGED" then wipe(spellCache); meleeSlots = nil
+    elseif event == "ACTIONBAR_SLOT_CHANGED" or event == "UPDATE_MACROS" then meleeSlots = nil
     elseif event == "PLAYER_TARGET_CHANGED" then lastZone = nil; Paint()
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
       if unit == "player" and not ns.IsSecret(spellID) and FEIGN[spellID] and ns.db.feignHelper ~= false then

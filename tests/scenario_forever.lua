@@ -228,6 +228,22 @@ DIST = 3; z = ns.RangeToTarget(); assert(z == "melee", "3 yd: melee")
 DIST = 6; z, lo, hi = ns.RangeToTarget(); assert(z == "dead", "6 yd: dead zone (" .. tostring(z) .. ")")
 DIST = 50; z, lo, hi = ns.RangeToTarget(); assert(z == "far" and lo == 35, "50 yd: too far")
 assert(ns.RangeYards(35, math.huge) == "35+ yd", "yards text")
+-- like Forever: a melee spell has no range of its own and the spell check lies (always yes);
+-- the action bar slot with Raptor Strike gives the real answer
+C_Spell.SpellHasRange = function(name) return name ~= "Raptor Strike" end
+local honest = C_Spell.IsSpellInRange
+C_Spell.IsSpellInRange = function(name, unit) if name == "Raptor Strike" then return true end return honest(name, unit) end
+GetActionInfo = function(slot) if slot == 7 then return "macro", 3 end end
+GetMacroSpell = function(id) if id == 3 then return 2973 end end
+C_Spell.GetSpellName = function(id) if id == 2973 then return "Raptor Strike" end end
+IsActionInRange = function(slot) if slot == 7 then return DIST <= 5 end end
+ns.RangeMeleeSlots()
+DIST = 30; z = ns.RangeToTarget(); assert(z == "range", "30 yd: not melee when the spell check lies (" .. tostring(z) .. ")")
+DIST = 3; z = ns.RangeToTarget(); assert(z == "melee", "3 yd: melee from the action bar")
+IsActionInRange = function() return nil end
+DIST = 6; z = ns.RangeToTarget(); assert(z == "close", "6 yd, melee unknown: too close (" .. tostring(z) .. ")")
+C_Spell.SpellHasRange, C_Spell.IsSpellInRange = nil, honest
+ns.RangeMeleeSlots()
 -- pet watch: distance and the run-off warning
 UnitDistanceSquared = function(u) if u == "pet" then return 42 * 42, true end end
 assert(math.floor(ns.PetDistance()) == 42, "pet distance")

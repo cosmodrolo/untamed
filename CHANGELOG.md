@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.19.13
+- Range meter: no more "Melee 5 yd" stuck on a far target. For melee abilities Forever's spell range check answers "yes" at any distance, so melee is now read from your action bar instead (the button with Raptor Strike, Wing Clip or Mongoose Bite, or a macro that shows one, like Rapt). If none of them is on your bars, point-blank shows "Too close" instead of guessing.
+- Abilities page with "Hide ranks above my pet's level" checked: an ability your pet has at the best rank for its level said "nothing usable yet"; it now says "pet has Rank 5, best for its level".
+
 ## v2.19.12
 - Untamed reads your pet's own abilities again. On Forever the number of spells on the pet's spellbook page comes from a newer game function; Untamed asked the old one, got nothing, and so every ability said "pet does not know it" and the plan started from rank 1. The pet's ranks are now read from its spellbook (with the rank text asked for again if it hasn't arrived yet), so the Abilities page, the plan, zone alerts and the training point math all start from what your pet really has.
 

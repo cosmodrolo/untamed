@@ -942,7 +942,9 @@ do
         local maxR = ns.MaxRank[ab] or 0
         local rightTxt
         if #e.ranks == 0 then
-          rightTxt = (e.current >= maxR) and (C.GREEN .. "maxed|r") or (C.GREY .. "nothing usable yet|r")
+          if e.current >= maxR then rightTxt = C.GREEN .. "maxed|r"
+          elseif e.current > 0 then rightTxt = C.GREY .. "pet has Rank " .. e.current .. "|r" .. C.GREEN .. "  " .. L["best for its level"] .. "|r"
+          else rightTxt = C.GREY .. "nothing usable yet|r" end
         else
           rightTxt = C.GREY .. (e.current > 0 and ("pet has Rank " .. e.current) or "pet does not know it") .. "|r"
         end
