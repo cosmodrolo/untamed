@@ -395,6 +395,10 @@ function ns.ItemPageSetup(j)
     if #lines == 0 then lines[1] = C.GREY .. (w.world and L["World drop"] or L["crafted or unknown"]) .. "|r" end
     sources:SetText(table.concat(lines, "\n"))
     local n = {}
+    do
+      local okR, rankText = pcall(ns.GearRankText, id)
+      if okR and rankText then n[#n + 1] = rankText end
+    end
     if w.world and it then n[#n + 1] = string.format(L["World drop: drops from %d different creatures."], it[8]) end
     if w.trash and it then n[#n + 1] = string.format(L["Dropped by the ordinary mobs of %s (%d different creatures), not by a boss. A rare drop."], w.trash, it[8]) end
     if w.ah then n[#n + 1] = L["Not bound when picked up, so you can often buy it on the Auction House."] end

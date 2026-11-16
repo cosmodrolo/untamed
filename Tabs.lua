@@ -238,6 +238,7 @@ local SECTIONS = {
       { "check", L["Upgrade arrows in your bags"], "bagUp", L["A green arrow on gear in your bags that beats what you wear."], on = true },
       { "check", L["Locks on soulbound items"], "bagLock", L["A small lock on bag items that are bound to you: they can't be traded or auctioned."], on = true },
       { "check", L["Coins on items you can sell"], "bagCoin", L["A small coin on unbound gear, bags, trade goods and recipes: the things worth trading or putting on the Auction House. Ammo, food and potions get none."], on = true },
+      { "check", L["Quest reward advice"], "questAdvice", L["When a quest lets you pick a reward, a small box beside the quest window says which one to take: the biggest upgrade, or the one that sells for most."], on = true },
       { "check", L["Loot card in dungeons"], "lootCard", L["Targeting a boss shows which of its drops are upgrades for you."], on = true },
       { "check", L["Tell me when to roll Need"], "needAlert", L["When an upgrade for you drops in a group, Untamed says so."], on = true },
       { "check", L["Remind me to train on level up"], "trainerReminder", L["A chat line listing the new spell ranks your level unlocked."] },

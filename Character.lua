@@ -740,6 +740,52 @@ local function CanWear(g, level)
   return true
 end
 
+-- Where an item stands among everything you can wear in its slot right now: rank (1 = best),
+-- how many there are, and the best one. Only the shipped list is ranked against (items that exist
+-- for everyone), at your level, mail from 40.
+local rankPool = {}
+function ns.GearRank(id, link)
+  if not ns.GearScoreOf then return nil end
+  local score, g = ns.GearScoreOf(id, link)
+  if not g then return nil end
+  local level = UnitLevel("player") or 1
+  local key = g[1] .. ":" .. level
+  local pool = rankPool[key]
+  if not pool then
+    pool = { scores = {}, best = nil, bestScore = 0 }
+    local db = ns.SearchDB and ns.SearchDB()
+    for iid, gg in pairs(ns.GearItems) do
+      if gg[1] == g[1] and gg[2] <= level and (gg[4] == 0 or level >= 40) and (not db or db.I[iid]) then
+        pool.scores[#pool.scores + 1] = gg[3]
+        if gg[3] > pool.bestScore then pool.best, pool.bestScore = iid, gg[3] end
+      end
+    end
+    table.sort(pool.scores, function(a, b) return a > b end)
+    rankPool = { [key] = pool }      -- one slot at a time is enough to keep
+  end
+  local rank = 1
+  for _, s in ipairs(pool.scores) do if s > score then rank = rank + 1 else break end end
+  return rank, math.max(#pool.scores, rank), pool.best, score
+end
+
+-- "Rank 3 of 41 shoulders you can wear at level 38."
+function ns.GearRankText(id, link, short)
+  local rank, total, best = ns.GearRank(id, link)
+  if not rank then return nil end
+  local g = ns.GearItems[tonumber(id)]
+  local slot = (SLOT_LABEL[g[1]] or g[1]):lower()
+  local level = UnitLevel("player") or 1
+  if g[2] > level then return nil end
+  if short then return string.format(L["rank %d of %d for %s"], rank, total, slot) end
+  local text = string.format(L["Rank %d of %d for %s among what you can wear at level %d."], rank, total, slot, level)
+  if rank > 1 and best then
+    local db = ns.SearchDB and ns.SearchDB()
+    local name = db and db.I[best] and db.I[best][1]
+    if name then text = text .. " " .. string.format(L["The best is %s."], name) end
+  end
+  return text
+end
+
 -- How to get an item, as a short line: "Buy 1g 20s from X, Zone", "Quest: Y", "Dungeon: Z", ...
 local function HowText(id)
   local db = ns.SearchDB and ns.SearchDB()
@@ -927,6 +973,8 @@ local function OnItemTooltip(tt, id)
   elseif diff < 0 then
     tt:AddLine(string.format("|cffabd473Untamed:|r %s%d %s|r", C.GREY, diff, L["vs what you wear"]))
   end
+  local okR, rankText = pcall(ns.GearRankText, id, link, true)
+  if okR and rankText then tt:AddLine("|cffabd473Untamed:|r " .. C.GREY .. rankText .. "|r") end
 end
 
 do

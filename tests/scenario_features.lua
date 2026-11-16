@@ -506,4 +506,25 @@ do
   local srcs = ns.ItemSources(7755)
   check(srcs[1] and srcs[1].kind == "dungeon" and srcs[1].inst == "Scarlet Monastery", "trash loot has the dungeon as its source")
 end
+-- Gear rank, and quest reward advice
+do
+  local up
+  for id, g in pairs(ns.GearItems) do if g[1] == "HEAD" and g[2] <= 10 and g[4] == 0 and g[3] > 5 then up = id break end end
+  local rank, total, best = ns.GearRank(up)
+  check(rank and rank >= 1 and total >= rank and best, "gear rank: an item has a place among its slot")
+  local r1 = ns.GearRank(best)
+  check(r1 == 1, "gear rank: the best item is rank 1")
+  local judged = ns.QuestAdviceJudge({ { id = up, name = "Hat" }, { id = 117, name = "Jerky" } })
+  check(judged[1].pick == "wear" and judged[1].gain > 0 and not judged[2].pick, "quest advice: the upgrade is the pick")
+  local keepInfo = C_Item.GetItemInfo
+  C_Item.GetItemInfo = function(id) return "x", nil, 1, nil, nil, nil, nil, nil, nil, nil, id == 117 and 50 or 20 end
+  judged = ns.QuestAdviceJudge({ { id = 4540, name = "Bread" }, { id = 117, name = "Jerky" } })
+  check(judged[2].pick == "sell" and not judged[1].pick, "quest advice: nothing to wear, take the one that sells for most")
+  C_Item.GetItemInfo = keepInfo
+  GetNumQuestChoices = function() return 2 end
+  GetQuestItemInfo = function(_, i) return i == 1 and "Hat" or "Jerky", 134400, 1, 2, true, i == 1 and up or 117 end
+  GetQuestItemLink = function() return nil end
+  ns.QuestAdviceTest.Fill("complete")
+  ns.QuestAdviceTest.Close()
+end
 print("DONE")

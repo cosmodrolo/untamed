@@ -64,6 +64,7 @@ Character.lua
 Dungeons.lua
 LootCard.lua
 Bags.lua
+QuestAdvice.lua
 Rotation.lua
 HUD.lua
 Hawks.lua

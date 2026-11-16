@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.36.0
+Two steps toward not needing a second gear addon.
+- Rank: every piece of hunter gear now has a place among everything you can wear in its slot at your level. Item tooltips get a line ("rank 3 of 41 for shoulders"), and an item's page in Gear says it in full under Good to know, with the name of the best one.
+- Quest reward advice: when a quest lets you pick a reward, a small box beside the quest window lists the choices and marks the one to take: the biggest upgrade over what you wear (with its rank), or, when nothing is an upgrade, the one that sells for most. It shows when you read the quest and again when you hand it in. Switch: Settings, Gear, spells and talents.
+- How the box stays safe on a controller: it is Untamed's own frame with no buttons, made at login. Nothing is drawn on, attached to or written to the quest window; Untamed only reads where that window is, to stand beside it.
+
 ## v2.35.0
 - Gear and Search: items dropped by more than ten creatures were all called "World drop", even when nearly all of those creatures live in one dungeon. 330 such items now say which dungeon instead (Flintrock Shoulders: the ordinary mobs of Scarlet Monastery, not a boss), count as a dungeon source in the "Dungeons only" and "No dungeons" filters, and "Go get it" points at the dungeon. True world drops are unchanged.
 
