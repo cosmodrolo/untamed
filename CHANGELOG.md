@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.34.5
+- Looks: at a small window the tiles ran out of the bottom and right of the window. The gallery now works out the largest tile that fits the space it has (trying every number of columns), shrinks the tiles as far as needed, lays them out again when you resize the window, and can no longer draw outside the window.
+
 ## v2.34.4
 - The window can no longer be made bigger than the screen (which put the resize corner out of reach), and a window saved too big is brought back inside the screen when you log in.
 - /ut window reset puts the window back to its starting size in the middle of the screen. Settings, Basics has a button for it too.

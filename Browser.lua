@@ -252,12 +252,18 @@ local function FillLooks(b)
   local width, height = g:GetWidth(), g:GetHeight()
   if type(width) ~= "number" or width < TILE then width = 6 * (TILE + TILE_GAP) end
   if type(height) ~= "number" or height < 100 then height = 300 end
-  -- the biggest tile whose rows still fit above the notes
-  local size, cols = TILE, 1
-  for _, s in ipairs({ 120, 108, 96, 86, TILE }) do
-    local c = math.max(1, math.floor((width - 12 + TILE_GAP) / (s + TILE_GAP)))
-    size, cols = s, c
-    if math.ceil(#list / c) * (s + 30 + TILE_GAP) + 110 <= height then break end
+  -- the biggest tile whose rows still fit between the heading and the notes: try every number of
+  -- columns and keep the one that gives the largest tile
+  local usable, room = width - 24, height - 30 - 74
+  local size, cols
+  for c = 1, math.max(1, #list) do
+    local s = math.min(120, math.floor((usable + TILE_GAP) / c) - TILE_GAP)
+    if s >= 40 and math.ceil(#list / c) * (s + 30 + TILE_GAP) <= room and (not size or s > size) then size, cols = s, c end
+  end
+  if not size then
+    -- nothing fits (a very small window): the smallest tiles, as many to a row as there's room for
+    size = 40
+    cols = math.max(1, math.floor((usable + TILE_GAP) / (size + TILE_GAP)))
   end
   local current
   for i, e in ipairs(list) do
@@ -291,8 +297,10 @@ local function FillLooks(b)
     ns.Skin(t.box, ns.Theme.deep, 1, on and ns.Theme.accent or ns.Theme.line, 1, -0.55)
     local tame = false
     for _, id in ipairs(e.ids) do if ns.Beasts[id][2] <= level then tame = true end end
-    t.text:SetText((on and C.GOLD or (tame and C.WHITE or C.GREY)) .. ns.Count(#e.ids, L["beast"], L["beasts"]) .. "|r\n"
-      .. C.GREY .. L["lvl "] .. (e.lo == e.hi and e.lo or (e.lo .. "-" .. e.hi)) .. "|r")
+    -- small tiles have no room for words: just the count and the levels
+    local small = size < 64
+    t.text:SetText((on and C.GOLD or (tame and C.WHITE or C.GREY)) .. (small and #e.ids or ns.Count(#e.ids, L["beast"], L["beasts"])) .. "|r\n"
+      .. C.GREY .. (small and "" or L["lvl "]) .. (e.lo == e.hi and e.lo or (e.lo .. "-" .. e.hi)) .. "|r")
     t:Show()
   end
   for i = #list + 1, #g.tiles do g.tiles[i]:Hide() end
@@ -582,6 +590,14 @@ local function BuildPage(panel)
   looks:SetPoint("TOPLEFT", page.hunt, "BOTTOMLEFT", 0, -4)
   looks:SetPoint("BOTTOMRIGHT", body, "BOTTOMRIGHT", 0, 0)
   looks:Hide()
+  if looks.SetClipsChildren then looks:SetClipsChildren(true) end     -- never spill out of the window
+  -- our own frame: when the window is resized, the tiles are laid out again for the new space
+  local pendingSize
+  looks:SetScript("OnSizeChanged", function()
+    if pendingSize or not lookMode then return end
+    pendingSize = true
+    C_Timer.After(0.1, function() pendingSize = false; if lookMode and page.looks:IsShown() then FillPage() end end)
+  end)
   looks.tiles = {}
   looks.head = Heading(looks, "")
   looks.head:SetPoint("TOPLEFT", page.hunt, "BOTTOMLEFT", 0, -18)
