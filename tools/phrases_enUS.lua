@@ -69,7 +69,6 @@ L["After you dodge."] = true
 L["Alert when I target a beast my pet needs"] = true
 L["Alert when a rare is nearby"] = true
 L["Alert when one is near"] = true
-L["Alerts, pins and data sharing"] = true
 L["All books"] = true
 L["All caught up. Nice hunting!"] = true
 L["All factions"] = true
@@ -535,6 +534,7 @@ L["Pets enjoy food that is no more than about 20 levels below them. Much lower f
 L["Pets gain training points as they level and as their loyalty grows."] = true
 L["Pick a beast on the left."] = true
 L["Pick a role and get the best family and beasts for it"] = true
+L["Pick a section on the left. Every switch says what it does."] = true
 L["Pick an ability to see every beast that teaches it."] = true
 L["Pin All Stops"] = true
 L["Pins set. Open your map after combat."] = true

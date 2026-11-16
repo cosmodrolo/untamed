@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.31.1
+- Settings: the line under the page title now says how the page works instead of the old "Alerts, pins and data sharing".
+
 ## v2.31.0
 Cleanup, and a Settings page a new player can read. Untamed is for WoW Forever only.
 - Settings: sections down the left (Basics, Under your character, Beasts and rares, In a fight, Map and minimap, Treasure and books, Pet care and supplies, Gear, spells and talents, Your data), the section's switches on the right, each with a line saying what it does in plain words. Basics holds the few things most people change. Switches that used to exist only as chat commands are here now: the hunter display, range meter, pet watch, hawk timers, Feign Death check, the controller, chest spots and alerts, library book alerts and map marks, the loot card and Need alert. "Move the display" and "Put it back" are buttons.

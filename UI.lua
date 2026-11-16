@@ -933,7 +933,7 @@ local TAB_META = {
   reputation = { icon = "INV_Misc_Token_ArgentDawn", sub = L["Reputation you need for rewards you want"] },
   quests    = { icon = "INV_Misc_Note_02", sub = L["Class quests only hunters can do"] },
   home      = { icon = "Interface\\AddOns\\Untamed\\Media\\Icon", sub = L["What's worth doing right now"] },
-  settings  = { icon = "INV_Misc_Gear_01", sub = L["Alerts, pins and data sharing"] },
+  settings  = { icon = "INV_Misc_Gear_01", sub = L["Pick a section on the left. Every switch says what it does."] },
 }
 -- Six sections along the top; each page lives in one of them (the list on the left shows the
 -- pages of the section you're in). Settings is the gear at the right end.
