@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.35.0
+- Gear and Search: items dropped by more than ten creatures were all called "World drop", even when nearly all of those creatures live in one dungeon. 330 such items now say which dungeon instead (Flintrock Shoulders: the ordinary mobs of Scarlet Monastery, not a boss), count as a dungeon source in the "Dungeons only" and "No dungeons" filters, and "Go get it" points at the dungeon. True world drops are unchanged.
+
 ## v2.34.6
 - Looks: the size correction from 2.34.3 made the models less even, not more (the model view already allows for a display's size), so it's gone: every look is drawn from the same distance again.
 - Looks: a wide window now uses its width (the same tile size in fewer rows), and at the smallest window the note under the tiles is one line instead of being cut in half.

@@ -499,4 +499,11 @@ do
   ns.BestiaryLooks(false)
   check(ns.BestiarySelected() == list[2].ids[1], "looks: the gallery opens and closes on a beast's page")
 end
+-- Dungeon trash loot isn't called a world drop
+do
+  local w = ns.ItemWays(7755)
+  check(w.trash == "Scarlet Monastery" and w.dungeon and not w.world, "Flintrock Shoulders: Scarlet Monastery trash, not a world drop")
+  local srcs = ns.ItemSources(7755)
+  check(srcs[1] and srcs[1].kind == "dungeon" and srcs[1].inst == "Scarlet Monastery", "trash loot has the dungeon as its source")
+end
 print("DONE")

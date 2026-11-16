@@ -138,6 +138,21 @@ end
 
 -- Every source of an item, nearest first. Each: { kind, name, map, x, y, inst, dist, ... }
 -- kinds: vendor, quest, drop, dungeon, chest, inside, crafted, fishing
+-- Where a dungeon is on the map: borrowed from any creature we know inside it (they all carry the
+-- dungeon's entrance as their spot).
+local instSpot = {}
+local function InstanceSpot(db, name)
+  local hit = instSpot[name]
+  if hit == nil then
+    hit = false
+    for _, n in pairs(db.N) do
+      if n[10] == name and n[5] and n[5] ~= 0 then hit = { n[5], n[6], n[7] } break end
+    end
+    instSpot[name] = hit
+  end
+  return hit or nil
+end
+
 function ns.ItemSources(id)
   local db = ns.SearchDB()
   local it = db and db.I[id]
@@ -171,6 +186,13 @@ function ns.ItemSources(id)
       out[#out + 1] = { kind = "quest", name = qq[1], giver = n and n[1], map = n and n[5], x = n and n[6], y = n and n[7],
         inst = n and n[10] ~= "" and n[10] or nil, dist = n and DistTo(n[5], n[6], n[7], pc, pe, pn), level = qq[2] }
     end
+  end
+  -- dropped by too many creatures to list, but most of them live in one dungeon: its trash loot
+  local trash = ns.TrashDrop and ns.TrashDrop[id]
+  if trash and it[8] > #(it[7] or {}) then
+    local sp = InstanceSpot(db, trash)
+    out[#out + 1] = { kind = "dungeon", name = L["Ordinary mobs (not a boss)"], inst = trash, map = sp and sp[1], x = sp and sp[2], y = sp and sp[3],
+      dist = sp and DistTo(sp[1], sp[2], sp[3], pc, pe, pn) or nil }
   end
   for _, c in ipairs(it[17] or {}) do out[#out + 1] = { kind = "inside", name = ContainerName(db, c), itemID = c } end
   if it[18] and it[18] ~= "" then out[#out + 1] = { kind = "crafted", name = it[18] } end
@@ -211,7 +233,10 @@ function ns.ItemWays(id)
     local n = db.N[d]
     if n then if n[10] ~= "" then w.dungeon = true else w.drop = true end end
   end
-  if it[8] > #(it[7] or {}) then w.world = true end
+  if it[8] > #(it[7] or {}) then
+    local trash = ns.TrashDrop and ns.TrashDrop[id]
+    if trash then w.dungeon, w.trash = true, trash else w.world = true end
+  end
   if it[9] then w.chest = true end
   if it[17] then w.inside = true end
   if it[18] and it[18] ~= "" then w.crafted = true end
@@ -285,6 +310,7 @@ local function ItemTooltip(id)
     if it and it[3] > 0 then lines[#lines + 1] = L["Requires level "] .. it[3] end
     local w = ns.ItemWays(id)
     if w.world then lines[#lines + 1] = C.GREY .. string.format(L["World drop: drops from %d different creatures."], it[8]) .. "|r" end
+    if w.trash then lines[#lines + 1] = C.GREY .. string.format(L["Dropped by the ordinary mobs of %s (%d different creatures), not by a boss. A rare drop."], w.trash, it[8]) .. "|r" end
     if w.ah then lines[#lines + 1] = C.GREY .. L["Not bound when picked up, so you can often buy it on the Auction House."] .. "|r" end
     local shownRep = {}
     for _, s in ipairs(srcs) do
@@ -370,6 +396,7 @@ function ns.ItemPageSetup(j)
     sources:SetText(table.concat(lines, "\n"))
     local n = {}
     if w.world and it then n[#n + 1] = string.format(L["World drop: drops from %d different creatures."], it[8]) end
+    if w.trash and it then n[#n + 1] = string.format(L["Dropped by the ordinary mobs of %s (%d different creatures), not by a boss. A rare drop."], w.trash, it[8]) end
     if w.ah then n[#n + 1] = L["Not bound when picked up, so you can often buy it on the Auction House."] end
     if w.repVendor then n[#n + 1] = C.ORANGE .. L["Sold by a quartermaster: usually needs reputation."] .. "|r" end
     if it and it[16] and it[16] > 0 and w.vendor and ns.Money then n[#n + 1] = L["Vendor price: "] .. ns.Money(it[16]) end
