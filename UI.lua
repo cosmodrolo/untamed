@@ -372,7 +372,7 @@ function ns.MakeModelBox(parent, size)
   function box:Picture(icon)
     Set(nil, nil, icon)
     box.picture = true
-    box.icon:SetSize(96, 96); box.icon:SetAlpha(1); box.icon:Show()
+    box.icon:SetSize(64, 64); box.icon:SetAlpha(1); box.icon:Show()      -- the icons are 64 px art: bigger goes soft
   end
   box.model:SetScript("OnUpdate", function(self, e)
     box.facing = (box.facing + e * 0.35) % (2 * math.pi)

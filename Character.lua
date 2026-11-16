@@ -810,7 +810,7 @@ do
     fill = ns.ItemPageSetup(j)
     j.onSelect = function(id)
       local x = info[id]
-      fill(id, x and string.format("%s%s|r   %s+%d|r %s%s   %s|r", C.WHITE, SLOT_LABEL[x.slot], C.GREEN, x.gain, C.GREY, L["over what you wear"], x.bucket) or "")
+      fill(id, x and string.format("%s%s|r   %s+%d|r %s%s|r", C.WHITE, SLOT_LABEL[x.slot], C.GREEN, x.gain, C.GREY, L["over what you wear"]) or "")
     end
   end
 
@@ -848,7 +848,7 @@ do
           for _, id in ipairs(found) do
             local it = db and db.I[id]
             rows[#rows + 1] = { 0, ns.ItemIcon(id), ns.QualityColor(id) .. (it and it[1] or "?") .. "|r",
-              C.GREEN .. "+" .. info[id].gain .. "|r", j:RowClick(id, function(k) ns.ItemClick(k)() end, function(k) if ns.Wishlist_Toggle then ns.Wishlist_Toggle(k) end end),
+              C.GREY .. SLOT_LABEL[info[id].slot] .. "|r   " .. C.GREEN .. "+" .. info[id].gain .. "|r", j:RowClick(id, function(k) ns.ItemClick(k)() end, function(k) if ns.Wishlist_Toggle then ns.Wishlist_Toggle(k) end end),
               j:RowHover(id) }
             keys[#rows] = id
             order[#order + 1] = id

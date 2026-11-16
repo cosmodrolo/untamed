@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.27.1
+- Gear: each row names its slot again, the "For you" line no longer runs off the page, and item and ability pictures are shown at their real size (they went soft when blown up).
+
 ## v2.27.0
 Gear and Wishlist in the journal style.
 - Gear: your next upgrades on the left, grouped Now / Soon / Later with how much better each is; the item's page on the right: its icon, how to get it, which slot it's for and how much it beats what you wear, every source with its distance, and three buttons: Go get it, Wishlist, Item details (hover it, or move the controller onto it, for the real item tooltip).
