@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.24.1
+- The window can't be made narrower than the journal pages need (about 1160 wide, less only on a screen that small), so nothing runs off the page. A window saved smaller than that opens at the new smallest size.
+
 ## v2.24.0
 The rest of the Bestiary section, in the journal style.
 - Find a Pet: pick what you want the pet for (Tank, Damage, Leveling, PvP, Utility); every family is ranked on the left, and the family's page on the right shows a model, its damage, armor and health, why it suits that role, what it can learn, and the best ones to tame now. Buttons: Plan for this family, See them all (the Bestiary on that family, fastest first), Starting build.

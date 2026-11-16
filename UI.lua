@@ -1045,14 +1045,16 @@ local function CreateMainFrame()
   local win = ns.db.win or {}
   -- Default size: roomy, but never taller or wider than the screen.
   local sw, sh = UIParent:GetWidth() or 1365, UIParent:GetHeight() or 768
-  local dw, dh = math.min(1000, sw - 60), math.min(800, sh - 60)
-  frame:SetSize(math.max(win.w or dw, 860), math.max(win.h or dh, 640))
+  -- The journal pages (a list, and a page with a model beside it) need this much width to fit.
+  local minW, minH = math.min(1160, sw - 40), math.min(700, sh - 40)
+  local dw, dh = math.max(minW, math.min(1240, sw - 60)), math.max(minH, math.min(820, sh - 60))
+  frame:SetSize(math.max(win.w or dw, minW), math.max(win.h or dh, minH))
   if win.p then frame:SetPoint(win.p, UIParent, win.rp, win.x, win.y) else frame:SetPoint("CENTER", 120, 40) end
   frame:SetFrameStrata("HIGH")
   frame:SetMovable(true)
   frame:SetResizable(true)
-  if frame.SetResizeBounds then frame:SetResizeBounds(860, 640, 1600, 1200)
-  elseif frame.SetMinResize then frame:SetMinResize(860, 640); frame:SetMaxResize(1600, 1200) end
+  if frame.SetResizeBounds then frame:SetResizeBounds(minW, minH, 1800, 1300)
+  elseif frame.SetMinResize then frame:SetMinResize(minW, minH); frame:SetMaxResize(1800, 1300) end
   frame:SetClampedToScreen(true)
   frame:EnableMouse(true)
   frame:RegisterForDrag("LeftButton")
