@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.26.0
+A look of its own: "Savage Land".
+- The window drops Blizzard's stock frame, red buttons and gold bands for deep jungle green panels with thin moss lines and amber for what's selected or the thing to press. Its own title bar and close button; flat buttons (the main one on each page is amber); flat menus; green model boxes, pages and cards.
+- The look lives in one place (the colors at the top of UI.lua), so it can be tuned or swapped without touching the pages.
+- Not restyled yet: checkboxes, scroll bars, the Feed button and tooltips (those are the game's own pieces).
+
 ## v2.25.0
 The rest of My Pets.
 - Abilities is a journal: what the pet you're viewing can learn on the left (with "teach 5" in green when you already know a rank it can use, "tame 6" when the next rank needs a beast), the ability's page on the right: the rank it has, what's next, which families can learn it, every rank ahead with its pet level and training point cost and whether to teach it or which beasts to tame, and three buttons: Hunt the next rank, Teachers on map, In the Bestiary.

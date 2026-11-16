@@ -12,6 +12,54 @@ function ns.Icon(path)
 end
 
 ---------------------------------------------------------------------------
+-- The look: "Savage Land". Deep jungle green panels, thin moss lines, amber for what's selected
+-- or the thing to press. Every page is drawn through the helpers in this file, so the look lives
+-- here: change these colors and the whole window follows.
+---------------------------------------------------------------------------
+local T = {
+  window = { 0.062, 0.102, 0.074 },   -- the window itself
+  bar    = { 0.040, 0.068, 0.048 },   -- title bar, section bar
+  panel  = { 0.086, 0.141, 0.100 },   -- the list and page panels
+  deep   = { 0.043, 0.074, 0.052 },   -- model boxes, pages, menus
+  button = { 0.130, 0.205, 0.140 },   -- a button at rest
+  line   = { 0.240, 0.350, 0.180 },   -- thin edges
+  accent = { 0.940, 0.700, 0.240 },   -- amber
+  ink    = { 0.230, 0.150, 0.020 },   -- text on amber
+}
+ns.Theme = T
+
+-- a flat fill and (optionally) a one-pixel edge on a frame of ours
+function ns.Skin(f, fill, alpha, edge, edgeAlpha)
+  if not rawget(f, "skinFill") then f.skinFill = f:CreateTexture(nil, "BACKGROUND") f.skinFill:SetAllPoints() end
+  f.skinFill:SetColorTexture(fill[1], fill[2], fill[3], alpha or 1)
+  if edge then
+    if not rawget(f, "skinEdges") then
+      f.skinEdges = {}
+      for i, pts in ipairs({ { "TOPLEFT", "TOPRIGHT" }, { "BOTTOMLEFT", "BOTTOMRIGHT" }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
+        local t = f:CreateTexture(nil, "BORDER")
+        t:SetPoint(pts[1]); t:SetPoint(pts[2])
+        if i <= 2 then t:SetHeight(1) else t:SetWidth(1) end
+        f.skinEdges[i] = t
+      end
+    end
+    for _, t in ipairs(f.skinEdges) do t:SetColorTexture(edge[1], edge[2], edge[3], edgeAlpha or 1) end
+  end
+end
+local Skin = ns.Skin
+
+-- amber buttons carry dark text
+local primaryFont
+if CreateFont then
+  primaryFont = CreateFont("UntamedFontOnAmber")
+  if primaryFont and primaryFont.CopyFontObject then
+    primaryFont:CopyFontObject(GameFontNormal)
+    primaryFont:SetTextColor(T.ink[1], T.ink[2], T.ink[3])
+  else
+    primaryFont = nil
+  end
+end
+
+---------------------------------------------------------------------------
 -- Generic scrolling list
 ---------------------------------------------------------------------------
 local function ShowTooltip(owner, tip)
@@ -78,7 +126,7 @@ function ns.NewList(parent, topOffset)
     r.rule:SetPoint("BOTTOMLEFT", 4, 0)
     r.rule:SetPoint("BOTTOMRIGHT", -4, 0)
     r.rule:SetHeight(1)
-    r.rule:SetColorTexture(1, 0.82, 0, 0.35)
+    r.rule:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 0.4)
     local hl = r:CreateTexture(nil, "HIGHLIGHT")
     hl:SetAllPoints()
     hl:SetColorTexture(1, 1, 1, 0.08)
@@ -104,11 +152,11 @@ function ns.NewList(parent, topOffset)
 
       -- section headings: a soft gold band with a rule under it; other rows alternate a faint stripe
       if o.header then
-        r.bg:SetColorTexture(1, 0.82, 0, 0.07); r.bg:Show(); r.rule:Show(); stripe = 0
+        r.bg:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 0.09); r.bg:Show(); r.rule:Show(); stripe = 0
       else
         r.rule:Hide()
         stripe = stripe + 1
-        if stripe % 2 == 0 then r.bg:SetColorTexture(1, 1, 1, 0.04); r.bg:Show() else r.bg:Hide() end
+        if stripe % 2 == 0 then r.bg:SetColorTexture(1, 1, 1, 0.035); r.bg:Show() else r.bg:Hide() end
       end
       r.left:SetFontObject(o.header and "GameFontNormalLarge" or "GameFontHighlight")
       r.icon:SetSize(o.header and 22 or 20, o.header and 22 or 20)
@@ -210,13 +258,40 @@ local function TextWidth(b, text)
 end
 ns.TextWidth = TextWidth
 
+-- A flat button: moss at rest, a little lighter under the cursor. b:SetPrimary(true) makes it the
+-- amber one (the thing to press on a page).
 function ns.MakeButton(parent, text, w, onClick)
-  local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+  local b = CreateFrame("Button", nil, parent)
   b:SetSize(w, 24)
+  Skin(b, T.button, 1, T.line)
+  if b.SetFontString then
+    local fs = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    fs:SetPoint("CENTER", 0, 0)
+    b:SetFontString(fs)
+  end
+  if b.SetNormalFontObject then
+    b:SetNormalFontObject("GameFontNormal")
+    b:SetHighlightFontObject("GameFontHighlight")
+    b:SetDisabledFontObject("GameFontDisable")
+  end
+  local hl = b:CreateTexture(nil, "HIGHLIGHT")
+  hl:SetAllPoints()
+  hl:SetColorTexture(1, 1, 1, 0.10)
   b:SetText(text)
   OneLine(b.GetFontString and b:GetFontString())
   local need = math.ceil(TextWidth(b, text)) + 24
   if need > w then b:SetWidth(need) end
+  -- a pressed look: the label drops a pixel
+  if b.SetPushedTextOffset then b:SetPushedTextOffset(1, -1) end
+  function b:SetPrimary(on)
+    if on then
+      Skin(self, T.accent, 1, T.accent)
+      if primaryFont and self.SetNormalFontObject then self:SetNormalFontObject(primaryFont); self:SetHighlightFontObject(primaryFont) end
+    else
+      Skin(self, T.button, 1, T.line)
+      if self.SetNormalFontObject then self:SetNormalFontObject("GameFontNormal"); self:SetHighlightFontObject("GameFontHighlight") end
+    end
+  end
   b:SetScript("OnClick", onClick)
   return b
 end
@@ -227,9 +302,7 @@ end
 function ns.MakeModelBox(parent, size)
   local box = CreateFrame("Frame", nil, parent)
   box:SetSize(size, size)
-  local bg = box:CreateTexture(nil, "BACKGROUND")
-  bg:SetAllPoints()
-  bg:SetColorTexture(0, 0, 0, 0.45)
+  Skin(box, T.deep, 1, T.line)
   box.icon = box:CreateTexture(nil, "BORDER")
   box.icon:SetSize(64, 64)
   box.icon:SetPoint("CENTER")
@@ -289,7 +362,7 @@ function ns.MakeHeading(parent, text)
   rule:SetPoint("TOPLEFT", h, "BOTTOMLEFT", 0, -3)
   rule:SetPoint("RIGHT", parent, "RIGHT", -12, 0)
   rule:SetHeight(1)
-  rule:SetColorTexture(1, 0.82, 0, 0.25)
+  rule:SetColorTexture(T.line[1], T.line[2], T.line[3], 0.9)
   return h
 end
 
@@ -310,9 +383,7 @@ function ns.MakeJournal(panel, emptyText)
   local page = CreateFrame("Frame", nil, panel)
   page:SetPoint("TOPLEFT", j.left, "TOPRIGHT", 10, 0)
   page:SetPoint("BOTTOMRIGHT", -4, 4)
-  local bg = page:CreateTexture(nil, "BACKGROUND")
-  bg:SetAllPoints()
-  bg:SetColorTexture(0, 0, 0, 0.28)
+  Skin(page, T.deep, 0.55, T.line, 0.6)
   j.page = page
   j.empty = page:CreateFontString(nil, "OVERLAY", "GameFontDisable")
   j.empty:SetPoint("CENTER")
@@ -368,6 +439,7 @@ function ns.MakeJournal(panel, emptyText)
         for i, k in pairs(j.rowKeys) do if k == j.selected then return j.list and j.list.rows[i] end end
       end }
     end
+    if out[1] then out[1]:SetPrimary(true) end
     lastBlock = out[1]
     return out
   end
@@ -429,15 +501,8 @@ end
 
 -- A sunken Blizzard inset panel (falls back to a dark backdrop).
 function ns.MakeInset(parent)
-  local ok, f = pcall(CreateFrame, "Frame", nil, parent, "InsetFrameTemplate")
-  if ok and f then return f end
-  f = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-  if f.SetBackdrop then
-    f:SetBackdrop({ bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-      tile = true, tileSize = 16, edgeSize = 12, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
-    f:SetBackdropColor(0, 0, 0, 0.5)
-    f:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
-  end
+  local f = CreateFrame("Frame", nil, parent)
+  Skin(f, T.panel, 0.92, T.line)
   return f
 end
 
@@ -456,12 +521,12 @@ function ns.MakeFlatButton(parent, h)
   b.text:SetWordWrap(false)
   b.sel = b:CreateTexture(nil, "BACKGROUND")
   b.sel:SetAllPoints()
-  b.sel:SetColorTexture(1, 0.82, 0, 0.14)
+  b.sel:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 0.16)
   b.sel:Hide()
   b.bar = b:CreateTexture(nil, "ARTWORK")
   b.bar:SetPoint("TOPLEFT"); b.bar:SetPoint("BOTTOMLEFT")
   b.bar:SetWidth(3)
-  b.bar:SetColorTexture(0.67, 0.83, 0.45, 1)
+  b.bar:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 1)
   b.bar:Hide()
   local hl = b:CreateTexture(nil, "HIGHLIGHT")
   hl:SetAllPoints()
@@ -501,9 +566,10 @@ function ns.MakeDropdown(parent, width, options, get, set, tip)
   end
   b:SetScript("OnClick", function(self)
     if not ddMenu then
-      ddMenu = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+      ddMenu = CreateFrame("Frame", nil, UIParent)
       ddMenu:SetFrameStrata("FULLSCREEN_DIALOG")
-      if ddMenu.SetBackdrop then
+      Skin(ddMenu, T.deep, 0.98, T.accent, 0.7)
+      if false then
         ddMenu:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
           tile = true, tileSize = 16, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
       end
@@ -768,10 +834,11 @@ end
 local menu, menuButtons = nil, {}
 local function OpenMenu(anchor)
   if not menu then
-    menu = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+    menu = CreateFrame("Frame", nil, frame)
     menu:SetFrameStrata("DIALOG")
     menu:SetWidth(270)
-    if menu.SetBackdrop then
+    Skin(menu, T.deep, 0.98, T.accent, 0.7)
+    if false then
       menu:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
         tile = true, tileSize = 16, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
     end
@@ -952,13 +1019,11 @@ local function BuildSectionBar()
   sectionBar:SetPoint("TOPLEFT", 10, -98)
   sectionBar:SetPoint("TOPRIGHT", -10, -98)
   sectionBar:SetHeight(32)
-  local bg = sectionBar:CreateTexture(nil, "BACKGROUND")
-  bg:SetAllPoints()
-  bg:SetColorTexture(0, 0, 0, 0.35)
+  Skin(sectionBar, T.bar, 1)
   local rule = sectionBar:CreateTexture(nil, "ARTWORK")
   rule:SetPoint("BOTTOMLEFT"); rule:SetPoint("BOTTOMRIGHT")
   rule:SetHeight(1)
-  rule:SetColorTexture(1, 0.82, 0, 0.3)
+  rule:SetColorTexture(T.line[1], T.line[2], T.line[3], 1)
   local function Hint(text)
     local fs = sectionBar:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     fs:SetText(text)
@@ -1046,7 +1111,17 @@ local function SaveGeometry()
 end
 
 local function CreateMainFrame()
-  frame = CreateFrame("Frame", "UntamedFrame", UIParent, "BasicFrameTemplate")
+  frame = CreateFrame("Frame", "UntamedFrame", UIParent)
+  Skin(frame, T.window, 0.97, T.line)
+  -- our own title bar and close button (no Blizzard frame art)
+  local bar = CreateFrame("Frame", nil, frame)
+  bar:SetPoint("TOPLEFT", 1, -1); bar:SetPoint("TOPRIGHT", -1, -1)
+  bar:SetHeight(23)
+  Skin(bar, T.bar, 1)
+  local barRule = bar:CreateTexture(nil, "ARTWORK")
+  barRule:SetPoint("BOTTOMLEFT"); barRule:SetPoint("BOTTOMRIGHT")
+  barRule:SetHeight(1)
+  barRule:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 0.55)
   -- v2.9 made everything roomier: reset a window size saved by older versions once.
   if ns.db.win and ns.db.win.layout ~= 2 then ns.db.win.w, ns.db.win.h = nil, nil; ns.db.win.layout = 2 end
   local win = ns.db.win or {}
@@ -1070,9 +1145,12 @@ local function CreateMainFrame()
   frame:Hide()
   tinsert(UISpecialFrames, "UntamedFrame")
 
-  local title = frame.TitleText or frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-  if not frame.TitleText then title:SetPoint("TOP", 0, -5) end
-  title:SetText("Untamed" .. (ns.FLAVOR == "forever" and " (Forever)" or ""))
+  local title = bar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  title:SetPoint("CENTER", 0, 0)
+  title:SetText("Untamed")
+  local close = ns.MakeButton(bar, "X", 24, function() frame:Hide() end)
+  close:SetSize(24, 19)
+  close:SetPoint("RIGHT", -3, 0)
 
   BuildHeader()
   BuildSectionBar()
@@ -1092,7 +1170,7 @@ local function CreateMainFrame()
   line:SetPoint("TOPLEFT", 10, -50)
   line:SetPoint("TOPRIGHT", -10, -50)
   line:SetHeight(1)
-  line:SetColorTexture(1, 0.82, 0, 0.25)
+  line:SetColorTexture(T.line[1], T.line[2], T.line[3], 1)
 
   -- Status bar along the bottom: tips and the current map focus.
   statusText = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
