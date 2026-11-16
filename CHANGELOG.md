@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.21.1
+- Bestiary page: the family icon no longer sits behind the model (it only stands in when the game has no model to show), the model stands back a little so long beasts fit, the switches show their whole label, the sort dropdown shares a row with the family one, and the mouse tooltip that covered the page is gone.
+
 ## v2.21.0
 The Bestiary is a journal now (the second step of the overhaul). It replaces All Beasts.
 - A list of beasts on the left, the beast's page on the right: its 3D model (it turns slowly), family, level, attack speed, where it's found and the nearest spot, what it teaches and whether each rank is new to you (and whether the pet you're viewing can use it), the family's damage, armor and health, its look, when you last saw it if it's a rare, and three buttons: Hunt it, Show on map, Wishlist.

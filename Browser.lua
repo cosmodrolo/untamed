@@ -157,6 +157,9 @@ local function FillPage()
     local ok = page.model.SetCreature and pcall(page.model.SetCreature, page.model, id)
     page.model:SetShown(ok and true or false)
     if ok and page.model.SetFacing then pcall(page.model.SetFacing, page.model, page.facing) end
+    -- stand back a little so long beasts (wind serpents, crocolisks) fit in the box
+    if ok and page.model.SetCamDistanceScale then pcall(page.model.SetCamDistanceScale, page.model, 1.55) end
+    page.icon:SetShown(not ok)
   end
 
   local playerLevel = UnitLevel("player")
@@ -249,9 +252,8 @@ end
 -- the controller's frame landing on a row opens that beast's page; the mouse gets a short hint
 local function RowHover(id)
   return function()
-    if ns.padFocusing then Select(id) return nil end
-    if selected == id then return { ns.Beasts[id][1], C.GREY .. L["Click: arrow to it.  Right-click: on the map.  Alt-click: wishlist."] .. "|r" } end
-    return { ns.Beasts[id][1], C.GREY .. L["Click to open its page."] .. "|r" }
+    if ns.padFocusing then Select(id) end
+    return nil      -- no tooltip: it would sit on top of the page
   end
 end
 
@@ -294,7 +296,7 @@ local function BuildPage(panel)
   page.body = body
 
   local box = CreateFrame("Frame", nil, body)
-  box:SetSize(190, 190)
+  box:SetSize(210, 210)
   box:SetPoint("TOPLEFT", 12, -12)
   local boxBg = box:CreateTexture(nil, "BACKGROUND")
   boxBg:SetAllPoints()
@@ -311,6 +313,11 @@ local function BuildPage(panel)
   page.model:SetScript("OnUpdate", function(self, e)
     page.facing = (page.facing + e * 0.35) % (2 * math.pi)
     if self.SetFacing then self:SetFacing(page.facing) end
+    -- the family's icon only stands in while the game has no model to show
+    if self.GetModelFileID then
+      local ok, file = pcall(self.GetModelFileID, self)
+      if ok then page.icon:SetShown(not file) end
+    end
   end)
 
   page.name = body:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
@@ -395,7 +402,8 @@ local function Chip(parent, text, get, set, tip)
   b.icon:SetWidth(1)
   b.text:SetText(text)
   b.text:SetJustifyH("CENTER")
-  b:SetWidth(math.max(60, ((b.text.GetStringWidth and b.text:GetStringWidth()) or (#text * 7)) + 22))
+  b.text:ClearAllPoints()
+  b.text:SetPoint("CENTER")
   local edge = b:CreateTexture(nil, "BORDER")
   edge:SetAllPoints()
   edge:SetColorTexture(1, 1, 1, 0.06)
@@ -408,6 +416,9 @@ local function Chip(parent, text, get, set, tip)
     b:SetScript("OnEnter", function(self) ns.ShowTooltip(self, tip) end)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
   end
+  -- sized for the selected look (its font is the wider one), so the label is never cut short
+  b:SetSelected(true)
+  b:SetWidth(math.max(56, ((b.text.GetStringWidth and b.text:GetStringWidth()) or (#text * 8)) + 24))
   b:Update()
   return b
 end
@@ -427,6 +438,8 @@ local function Build(panel)
   box:SetScript("OnLeave", function() GameTooltip:Hide() end)
   tb:Row()
   tb:Dropdown(150, FamilyOptions, function() return filter.family end, function(v) filter.family = v end)
+  tb:Dropdown(120, SORTS, function() return filter.sort end, function(v) filter.sort = v end)
+  tb:Row()
   tb:Dropdown(166, TeachOptions, function() return filter.teaches end, function(v) filter.teaches = v end,
     { L["Teaches"], L["Pick an ability to see every beast that teaches it."] })
   tb:Row()
@@ -443,8 +456,6 @@ local function Build(panel)
     x = x + c:GetWidth() + 5
     chips[i] = c
   end
-  tb:Row()
-  tb:Dropdown(150, SORTS, function() return filter.sort end, function(v) filter.sort = v end)
   list = tb:List()
 
   BuildPage(panel)
