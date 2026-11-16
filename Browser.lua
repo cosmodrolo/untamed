@@ -255,10 +255,12 @@ local function FillLooks(b)
   -- the biggest tile whose rows still fit between the heading and the notes: try every number of
   -- columns and keep the one that gives the largest tile
   local usable, room = width - 24, height - 30 - 74
-  local size, cols
+  local size, cols, nrows
   for c = 1, math.max(1, #list) do
     local s = math.min(120, math.floor((usable + TILE_GAP) / c) - TILE_GAP)
-    if s >= 40 and math.ceil(#list / c) * (s + 30 + TILE_GAP) <= room and (not size or s > size) then size, cols = s, c end
+    local r = math.ceil(#list / c)
+    -- the same tile size in fewer rows wins: a wide window uses its width
+    if s >= 40 and r * (s + 30 + TILE_GAP) <= room and (not size or s > size or (s == size and r < nrows)) then size, cols, nrows = s, c, r end
   end
   if not size then
     -- nothing fits (a very small window): the smallest tiles, as many to a row as there's room for
@@ -283,10 +285,9 @@ local function FillLooks(b)
       local ok = m.SetDisplayInfo and pcall(m.SetDisplayInfo, m, e.display)
       if not ok and m.SetCreature then pcall(m.SetCreature, m, e.ids[1]) end
       -- closer than the big model box: these are small tiles
-      -- the game draws some displays bigger than others (a look worn only by large beasts): the
-      -- camera stands back by the same amount, so every look fills its tile alike
-      local big = (ns.LookSize and ns.LookSize[e.display] or 100) / 100
-      if m.SetCamDistanceScale then pcall(m.SetCamDistanceScale, m, math.max(0.5, math.min(3, 1.25 * big))) end
+      -- one camera distance for every look. (Standing back by each display's size from Blizzard's
+      -- tables was tried in 2.34.3 and made the sizes less even: the model view already allows for it.)
+      if m.SetCamDistanceScale then pcall(m.SetCamDistanceScale, m, 1.2) end
       if m.SetFacing then pcall(m.SetFacing, m, 0.3) end
     end
     local on = e.look == mine
@@ -326,7 +327,9 @@ local function FillLooks(b)
   if unknown > 0 and #list > 0 then
     lines[#lines + 1] = C.GREY .. string.format(L["%d newer beasts in this family aren't sorted by look yet."], unknown) .. "|r"
   end
-  g.note:SetText(table.concat(lines, "\n"))
+  -- small tiles mean a small window: just the first line, so nothing is cut in half
+  g.note:SetText(size < 64 and (lines[1] or "") or table.concat(lines, "\n"))
+  g.note:SetWordWrap(size >= 64)
 end
 
 local function FillPage()

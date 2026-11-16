@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.34.6
+- Looks: the size correction from 2.34.3 made the models less even, not more (the model view already allows for a display's size), so it's gone: every look is drawn from the same distance again.
+- Looks: a wide window now uses its width (the same tile size in fewer rows), and at the smallest window the note under the tiles is one line instead of being cut in half.
+
 ## v2.34.5
 - Looks: at a small window the tiles ran out of the bottom and right of the window. The gallery now works out the largest tile that fits the space it has (trying every number of columns), shrinks the tiles as far as needed, lays them out again when you resize the window, and can no longer draw outside the window.
 
