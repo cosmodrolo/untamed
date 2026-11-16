@@ -107,67 +107,133 @@ function ns.BestBeasts(family, role, maxCount)
 end
 
 ---------------------------------------------------------------------------
--- Tab
+-- Page: pick what you want the pet for; the families are ranked on the left, and the family's
+-- page on the right says why, what it can learn, and the best ones to tame now.
 ---------------------------------------------------------------------------
-local list, buttons = nil, {}
+local list, j, chips = nil, nil, {}
+local tiles, why, learns, best = {}, nil, nil, nil
+local ranked = {}
 local ROLE_TO_PRESET = { tank = "tank", dps = "damage", leveling = "damage", pvp = "pvp", utility = "pvp" }
 
+local function CountTameable(family)
+  local n, level = 0, UnitLevel("player")
+  for _, b in pairs(ns.Beasts) do if b[4] == family and b[2] <= level and next(b[7]) then n = n + 1 end end
+  return n
+end
+local function Role() return ns.db.recRole or "dps" end
+local function RoleLabel()
+  for _, r in ipairs(ROLES) do if r.key == Role() then return L[r.label] end end
+end
+
+local function PlanFor(family)
+  ns.state.mode = "manual"; ns.state.family = family
+  ns.cdb.builds = ns.cdb.builds or {}
+  ns.Print(string.format(L["Planning for a %s. The Abilities, Planner and Builds tabs now show it."], ns.FamilyLabel(family)))
+  ns.Refresh()
+end
+
+local function Fill(family)
+  local entry
+  for _, f in ipairs(ranked) do if f.family == family then entry = f end end
+  if not entry then return end
+  local icon = ns.Icon(ns.FamilyIcons[family] or "Ability_Hunter_BeastTaming")
+  local beasts = ns.BestBeasts(family, Role(), 4)
+  if beasts[1] then j.box:Beast(beasts[1].id, icon) else
+    -- none tameable yet: any beast of the family, to show what it looks like
+    local any
+    for id, b in pairs(ns.Beasts) do if b[4] == family and (not any or id < any) then any = id end end
+    if any then j.box:Beast(any, icon) else j.box:Nothing(icon) end
+  end
+  j.name:SetText(ns.FamilyLabel(family))
+  j.sub:SetText(string.format(L["Number %d of %d for %s"], entry.rank, #ranked, RoleLabel()))
+  local st = ns.FamilyStats and ns.FamilyStats[family]
+  local function S(n) return ((n > 0 and C.GREEN .. "+") or (n < 0 and C.ORANGE) or C.GREY) .. n .. "%|r" end
+  tiles.stats.value:SetText(st and string.format("%s %s    %s %s    %s %s", S(st[1]), L["damage"], S(st[2]), L["armor"], S(st[3]), L["health"]) or "")
+  tiles.count.value:SetText(string.format(L["%d you can tame now"], CountTameable(family)))
+
+  why:SetText(#entry.reasons > 0 and table.concat(entry.reasons, "\n") or (C.GREY .. L["Nothing stands out for this."] .. "|r"))
+  local abil = {}
+  for _, a in ipairs(FamilyAbilities(family)) do abil[#abil + 1] = ns.AbilityLabel(a) end
+  learns:SetText(#abil > 0 and table.concat(abil, ",  ") or (C.GREY .. L["Only the abilities every pet has."] .. "|r"))
+  local lines = {}
+  for _, e in ipairs(beasts) do
+    local b = ns.Beasts[e.id]
+    lines[#lines + 1] = string.format("%s%s|r   %s%s %s|r%s   %s%s|r", b[5] and C.ORANGE or C.GOLD, b[1], C.WHITE, L["level"], ns.LevelText(b),
+      b[9] and (((b[9] < 2.0) and C.GREEN or C.GREY) .. string.format("   %.1f s|r", b[9])) or "", C.GREY, ns.ZonesText(b))
+  end
+  best:SetText(#lines > 0 and table.concat(lines, "\n") or (C.GREY .. L["none you can tame at your level yet"] .. "|r"))
+end
+
 local function Build(panel)
-  local x = 4
+  j = ns.MakeJournal(panel, "")
+  -- what for: five switches, one on at a time
+  local x, y = 6, -5
   for _, r in ipairs(ROLES) do
-    local b = ns.MakeButton(panel, L[r.label], 88, function() ns.db.recRole = r.key; ns.UI_Refresh() end)
-    b:SetPoint("TOPLEFT", x, -2)
+    local b = ns.MakeFlatButton(j.left, 22)
+    b.icon:SetTexture(nil); b.icon:SetWidth(1)
+    b.text:ClearAllPoints(); b.text:SetPoint("CENTER")
+    b.text:SetText(L[r.label])
+    local edge = b:CreateTexture(nil, "BORDER")
+    edge:SetAllPoints()
+    edge:SetColorTexture(1, 1, 1, 0.06)
+    b.bar:ClearAllPoints(); b.bar:SetPoint("BOTTOMLEFT"); b.bar:SetPoint("BOTTOMRIGHT"); b.bar:SetHeight(2)
+    b:SetSelected(true)
+    local w = math.max(50, ((b.text.GetStringWidth and b.text:GetStringWidth()) or (#L[r.label] * 8)) + 20)
+    if x + w > 334 then x, y = 6, y - 27 end
+    b:SetWidth(w)
+    b:SetPoint("TOPLEFT", x, y)
+    x = x + w + 5
+    b:SetScript("OnClick", function() ns.db.recRole = r.key; ns.UI_Refresh() end)
     b:SetScript("OnEnter", function(self) ns.ShowTooltip(self, { L[r.label], L[r.tip] }) end)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    buttons[r.key] = b
-    x = x + 92
+    chips[r.key] = b
   end
-  list = ns.NewList(panel, 36)
+  list = ns.NewList(j.left, -y + 30)
+  j.list = list
+
+  tiles.stats = j:Tile(L["As a family"])
+  tiles.count = j:Tile(L["Within reach"])
+  j:Buttons({
+    { L["Plan for this family"], 150, function() if j.selected then PlanFor(j.selected) end end,
+      { L["Plan for this family"], L["The Abilities, Builds and Planner pages show a pet of this family."] } },
+    { L["See them all"], 110, function()
+        if not j.selected then return end
+        local f = ns.BrowserFilter()
+        f.family, f.fresh, f.teaches, f.where, f.rare, f.tameable, f.sort = j.selected, false, "any", "any", false, true, "speed"
+        ns.UI_Show("browse")
+      end, { L["See them all"], L["Opens the Bestiary on this family: the ones you can tame now, fastest first."] } },
+    { L["Starting build"], 120, function()
+        if j.selected then PlanFor(j.selected) end
+        local t = ns.Target()
+        if t and ns.ApplyPreset then ns.ApplyPreset(t, ROLE_TO_PRESET[Role()]) end
+        ns.UI_Show("builds")
+      end, { L["Starting build"], L["Plans for this family and opens Builds with a build for the role you picked."] } },
+  })
+  why = j:Section(L["Why"])
+  learns = j:Section(L["It can learn"], "GameFontHighlightSmall")
+  best = j:Section(L["Best to tame now"])
+  j.onSelect = Fill
 end
 
 local function Refresh()
-  local role = ns.db.recRole or "dps"
-  for k, b in pairs(buttons) do if k == role then b:LockHighlight() else b:UnlockHighlight() end end
-  local rows = {}
-  local function add(...) rows[#rows + 1] = { ... } end
-  local roleLabel
-  for _, r in ipairs(ROLES) do if r.key == role then roleLabel = L[r.label] end end
-  local ranked = ns.RankFamilies(role)
-  add(0, nil, C.GREY .. string.format(L["Best families for %s"], roleLabel) .. "|r",
-    C.GREY .. L["click a beast for an arrow"] .. "|r")
-  for i = 1, math.min(4, #ranked) do
-    local f = ranked[i]
-    add(0, ns.Icon(ns.FamilyIcons[f.family] or "Ability_Hunter_BeastTaming"),
-      string.format("%s%d. %s|r", i == 1 and C.GREEN or C.GOLD, i, ns.FamilyLabel(f.family)), C.GREY .. table.concat(f.reasons, "  |  ") .. "|r",
-      function()
-        ns.state.mode = "manual"; ns.state.family = f.family
-        ns.cdb.builds = ns.cdb.builds or {}
-        ns.Print(string.format(L["Planning for a %s. The Abilities, Planner and Builds tabs now show it."], f.family))
-        ns.Refresh()
-      end,
-      { ns.FamilyLabel(f.family), table.concat(f.reasons, "\n"), L["Click to plan for this family."] }, { header = true })
-    local beasts = ns.BestBeasts(f.family, role, 3)
-    if #beasts == 0 then
-      add(28, nil, C.GREY .. L["none you can tame at your level yet"] .. "|r", "")
-    end
-    for _, e in ipairs(beasts) do
-      local b = ns.Beasts[e.id]
-      local right = ns.ZonesText(b)
-      if b[9] then right = C.GREY .. b[9] .. "s|r  " .. right end
-      add(28, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"),
-        string.format("%s%s|r", b[5] and C.ORANGE or C.WHITE, b[1]), right,
-        ns.BeastClick(e.id), ns.BeastTooltip(e.id, {
-          (b[9] and b[9] <= 1.2) and (C.GREEN .. L["Fast attack speed: great for damage."] .. "|r") or nil,
-        }), { mid = C.GREY .. ns.LevelText(b) .. "|r" })
-    end
+  local role = Role()
+  for k, b in pairs(chips) do b:SetSelected(k == role) end
+  ranked = ns.RankFamilies(role)
+  local rows, keys, order = {}, {}, {}
+  rows[1] = { 0, nil, string.format(L["Best families for %s"], RoleLabel()), "", nil, nil, { header = true } }
+  for i, f in ipairs(ranked) do
+    f.rank = i
+    local n = CountTameable(f.family)
+    rows[#rows + 1] = { 0, ns.Icon(ns.FamilyIcons[f.family] or "Ability_Hunter_BeastTaming"),
+      string.format("%s%d.  %s|r", i <= 3 and C.GREEN or C.WHITE, i, ns.FamilyLabel(f.family)),
+      n > 0 and (C.GREY .. n .. "|r") or (C.RED .. "0|r"),
+      j:RowClick(f.family, PlanFor), j:RowHover(f.family) }
+    keys[#rows] = f.family
+    order[#order + 1] = f.family
   end
-  add(0, ns.Icon("INV_Misc_Book_09"), L["Starting build"], C.GREY .. L["click to apply it on the Builds tab"] .. "|r", function()
-    local t = ns.Target()
-    if not t then ns.Print(L["Summon your pet or pick a family first."]) return end
-    if ns.ApplyPreset then ns.ApplyPreset(t, ROLE_TO_PRESET[role]) end
-    ns.UI_Show("builds")
-  end, nil, { header = true })
   list:Set(rows)
+  j:Rows(keys, order)
+  if j.selected then Fill(j.selected) end
 end
 
 ns.RegisterTab("recommend", L["Find a Pet"], Build, Refresh)

@@ -286,6 +286,140 @@ function ns.MakeHeading(parent, text)
   return h
 end
 
+-- A journal page: a list column on the left, a page on the right with a model box, a name, a
+-- line under it, facts, one row of buttons, and headed paragraphs. The page follows the list:
+-- j:Select(key) turns it (and the controller's frame landing on a row does the same).
+--   local j = ns.MakeJournal(panel, emptyText)
+--   j.left (put a toolbar and list in it; set j.list), j.box, j.name, j.sub
+--   j:Tile(label), j:Buttons({ { text, width, onClick, tip }, ... }), j:Section(title) -> fontstring
+--   j.onSelect = function(key) fill the page end;  rows: onClick = j:RowClick(key, again), tooltip = j:RowHover(key)
+--   after list:Set(rows): j:Rows(keysByRowIndex)
+function ns.MakeJournal(panel, emptyText)
+  local j = { rowKeys = {} }
+  j.left = CreateFrame("Frame", nil, panel)
+  j.left:SetPoint("TOPLEFT", 0, 0)
+  j.left:SetPoint("BOTTOMLEFT", 0, 0)
+  j.left:SetWidth(340)
+  local page = CreateFrame("Frame", nil, panel)
+  page:SetPoint("TOPLEFT", j.left, "TOPRIGHT", 10, 0)
+  page:SetPoint("BOTTOMRIGHT", -4, 4)
+  local bg = page:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  bg:SetColorTexture(0, 0, 0, 0.28)
+  j.page = page
+  j.empty = page:CreateFontString(nil, "OVERLAY", "GameFontDisable")
+  j.empty:SetPoint("CENTER")
+  j.empty:SetWidth(300)
+  j.empty:SetText(emptyText or "")
+  local body = CreateFrame("Frame", nil, page)
+  body:SetAllPoints()
+  j.body = body
+  j.box = ns.MakeModelBox(body, 210)
+  j.box:SetPoint("TOPLEFT", 12, -12)
+  j.name = body:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+  j.name:SetPoint("TOPLEFT", j.box, "TOPRIGHT", 14, -2)
+  j.name:SetPoint("RIGHT", body, "RIGHT", -10, 0)
+  j.name:SetJustifyH("LEFT")
+  j.name:SetWordWrap(false)
+  j.sub = body:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  j.sub:SetPoint("TOPLEFT", j.name, "BOTTOMLEFT", 0, -5)
+  j.sub:SetPoint("RIGHT", body, "RIGHT", -10, 0)
+  j.sub:SetJustifyH("LEFT")
+  j.sub:SetWordWrap(false)
+
+  local lastTile
+  function j:Tile(label)
+    local t = {}
+    t.label = body:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    t.label:SetText(label)
+    if lastTile then t.label:SetPoint("TOPLEFT", lastTile.label, "BOTTOMLEFT", 0, -30)
+    else t.label:SetPoint("TOPLEFT", j.sub, "BOTTOMLEFT", 0, -16) end
+    t.value = body:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    t.value:SetPoint("TOPLEFT", t.label, "BOTTOMLEFT", 0, -3)
+    t.value:SetPoint("RIGHT", body, "RIGHT", -10, 0)
+    t.value:SetJustifyH("LEFT")
+    t.value:SetWordWrap(false)
+    lastTile = t
+    return t
+  end
+
+  local lastBlock
+  function j:Buttons(defs)
+    local out, prev = {}, nil
+    for i, d in ipairs(defs) do
+      local b = ns.MakeButton(body, d[1], d[2], d[3])
+      if prev then b:SetPoint("LEFT", prev, "RIGHT", 6, 0) else b:SetPoint("TOPLEFT", j.box, "BOTTOMLEFT", 0, -12) end
+      if d[4] then
+        b:SetScript("OnEnter", function(self) ShowTooltip(self, d[4]) end)
+        b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+      end
+      out[i], prev = b, b
+    end
+    -- on a controller, left from the buttons goes back to the open row
+    if out[1] then
+      out[1].padNeighbor = { left = function()
+        for i, k in pairs(j.rowKeys) do if k == j.selected then return j.list and j.list.rows[i] end end
+      end }
+    end
+    lastBlock = out[1]
+    return out
+  end
+
+  function j:Section(title, font)
+    local h = ns.MakeHeading(body, title)
+    h:SetPoint("TOPLEFT", lastBlock or j.box, "BOTTOMLEFT", 0, -18)
+    local fs = body:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight")
+    fs:SetPoint("TOPLEFT", h, "BOTTOMLEFT", 0, -10)
+    fs:SetPoint("RIGHT", body, "RIGHT", -12, 0)
+    fs:SetJustifyH("LEFT")
+    fs:SetSpacing(5)
+    lastBlock = fs
+    return fs, h
+  end
+
+  local function Paint(i, on)
+    local r = j.list and j.list.rows[i]
+    if not r or j.rowKeys[i] == nil then return end
+    if on then r.bg:SetColorTexture(1, 0.82, 0, 0.20); r.bg:Show()
+    elseif (i - 1) % 2 == 0 then r.bg:SetColorTexture(1, 1, 1, 0.04); r.bg:Show()
+    else r.bg:Hide() end
+  end
+  local function Fill()
+    local has = j.selected ~= nil
+    j.empty:SetShown(not has)
+    body:SetShown(has)
+    if has and j.onSelect then j.onSelect(j.selected) end
+  end
+  function j:Select(key)
+    if j.selected == key then return end
+    for i, k in pairs(j.rowKeys) do if k == j.selected then Paint(i, false) end end
+    j.selected = key
+    for i, k in pairs(j.rowKeys) do if k == key then Paint(i, true) end end
+    Fill()
+  end
+  -- after list:Set: which key each row is; keeps the page on a key that's still listed
+  function j:Rows(keys, order)
+    wipe(j.rowKeys)
+    local keep, first = false, nil
+    for i, k in pairs(keys) do j.rowKeys[i] = k; if k == j.selected then keep = true end end
+    if not keep then j.selected = order and order[1] or nil end
+    for i, k in pairs(j.rowKeys) do if k == j.selected then Paint(i, true) end end
+    Fill()
+  end
+  -- a click opens the page; a click on the open one (or Cross on a controller) does `again`
+  function j:RowClick(key, again, alt)
+    return function(_, button)
+      if button == "RightButton" then j:Select(key); if alt then alt(key) end
+      elseif j.selected == key then if again then again(key) end
+      else j:Select(key) end
+    end
+  end
+  function j:RowHover(key)
+    return function() if ns.padFocusing then j:Select(key) end return nil end
+  end
+  return j
+end
+
 -- A sunken Blizzard inset panel (falls back to a dark backdrop).
 function ns.MakeInset(parent)
   local ok, f = pcall(CreateFrame, "Frame", nil, parent, "InsetFrameTemplate")

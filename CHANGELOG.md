@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.24.0
+The rest of the Bestiary section, in the journal style.
+- Find a Pet: pick what you want the pet for (Tank, Damage, Leveling, PvP, Utility); every family is ranked on the left, and the family's page on the right shows a model, its damage, armor and health, why it suits that role, what it can learn, and the best ones to tame now. Buttons: Plan for this family, See them all (the Bestiary on that family, fastest first), Starting build.
+- Rares: the rares on the left (tameable ones in green, "seen" on those you've met), the rare's page on the right: model, level, where it is and how far, when and where you last saw it, and what it is as a pet if you can tame it. Buttons: Go to it, Show on map, Its beast page.
+- Today: your pet at a glance under the cards (its model, happiness, free training points, attack speed, what you can teach it now and what to tame next for it). The text in each card sits in the middle now.
+
 ## v2.23.0
 - Today is a handful of cards instead of a long list: each card is something worth doing now (train spells, spend talent points, teach or feed your pet, the next beast to tame, upgrades within reach, low ammo, library books to hand in), and a click or Cross goes to the page for it. With nothing to do there's one green card saying so. The tips moved behind a "Good to know" button (hover or move onto it to read them; click to print them in chat).
 

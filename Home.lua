@@ -10,6 +10,7 @@ local function Go(tab) return function() ns.UI_Show(tab) end end
 -- Today is a handful of cards: each one is something worth doing now, and a click (or Cross) goes
 -- to the page for it. Nothing to do: one card saying so.
 local cards, holder, tipsButton = {}, nil, nil
+local pet            -- the panel under the cards: your pet at a glance
 local CARD_H, GAP = 86, 10
 
 local function Card(i)
@@ -32,10 +33,11 @@ local function Card(i)
   c.icon:SetPoint("LEFT", 16, 0)
   c.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
   c.title = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  c.title:SetPoint("TOPLEFT", c.icon, "TOPRIGHT", 14, 2)
+  -- the title sits just above the card's middle line and the detail just under it
+  c.title:SetPoint("BOTTOMLEFT", c.icon, "RIGHT", 14, 1)
   c.title:SetPoint("RIGHT", -12, 0)
   c.title:SetJustifyH("LEFT")
-  c.title:SetJustifyV("TOP")
+  c.title:SetJustifyV("BOTTOM")
   c.title:SetWordWrap(true)
   if c.title.SetMaxLines then c.title:SetMaxLines(2) end
   c.detail = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -64,6 +66,65 @@ local function Layout()
       n = n + 1
     end
   end
+  if pet then
+    pet:ClearAllPoints()
+    pet:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, -math.ceil(n / cols) * (CARD_H + GAP) - 8)
+    pet:SetPoint("RIGHT", holder, "RIGHT", 0, 0)
+  end
+end
+
+local function BuildPet()
+  pet = CreateFrame("Frame", nil, holder)
+  pet:SetHeight(174)
+  local bg = pet:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  bg:SetColorTexture(0, 0, 0, 0.22)
+  pet.box = ns.MakeModelBox(pet, 150)
+  pet.box:SetPoint("TOPLEFT", 12, -12)
+  pet.name = pet:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+  pet.name:SetPoint("TOPLEFT", pet.box, "TOPRIGHT", 16, -2)
+  pet.sub = pet:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  pet.sub:SetPoint("TOPLEFT", pet.name, "BOTTOMLEFT", 0, -4)
+  pet.lines = pet:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  pet.lines:SetPoint("TOPLEFT", pet.sub, "BOTTOMLEFT", 0, -12)
+  pet.lines:SetPoint("RIGHT", pet, "RIGHT", -12, 0)
+  pet.lines:SetJustifyH("LEFT")
+  pet.lines:SetSpacing(6)
+end
+
+local HAPPY = { L["Unhappy"], L["Content"], L["Happy"] }
+local HAPPY_C = { C.RED, C.GOLD, C.GREEN }
+local function FillPet(t)
+  if not pet then return end
+  local out = UnitExists("pet") and t and not t.stabled and not t.manual
+  pet:SetShown(out and true or false)
+  if not out then return end
+  pet.box:Unit("pet", ns.Icon(ns.FamilyIcons[t.family] or "Ability_Hunter_BeastTaming"))
+  pet.name:SetText(t.name or L["Pet"])
+  pet.sub:SetText(string.format("%s   %s %d", ns.FamilyLabel(t.family), L["level"], t.level or 0))
+  local lines = {}
+  local h = ns.PetHappiness and ns.PetHappiness()
+  if type(h) == "number" and not ns.IsSecret(h) and HAPPY[h] then
+    lines[#lines + 1] = C.GREY .. L["Happiness"] .. "|r   " .. HAPPY_C[h] .. HAPPY[h] .. "|r"
+  end
+  local free = ns.PetTrainingPoints and ns.PetTrainingPoints()
+  if free and not ns.IsSecret(free) then lines[#lines + 1] = C.GREY .. L["Training"] .. "|r   " .. string.format(L["%d free"], free) end
+  local p = ns.cdb.pets and ns.cdb.pets[ns.PetKey(t.name, t.family)]
+  if p and ns.PetSpeed then
+    local speed = ns.PetSpeed(p)
+    if speed then lines[#lines + 1] = C.GREY .. L["Attack speed"] .. "|r   " .. ((speed < 2.0) and C.GREEN or C.WHITE) .. string.format("%.1f s", speed) .. "|r" end
+  end
+  if p and ns.ReadyUpgrades then
+    local ups = ns.ReadyUpgrades(p)
+    if #ups > 0 then lines[#lines + 1] = C.GREY .. L["Teach it now"] .. "|r   " .. C.GREEN .. table.concat(ups, ", ") .. "|r" end
+  end
+  if p and ns.PetNextToLearn then
+    local n = ns.PetNextToLearn(p, 1)[1]
+    if n then
+      lines[#lines + 1] = C.GREY .. L["Tame next for it"] .. "|r   " .. string.format("%s %d: %s%s|r", ns.AbilityLabel(n.ability) or n.ability, n.rank, C.GOLD, ns.Beasts[n.beast][1])
+    end
+  end
+  pet.lines:SetText(table.concat(lines, "\n"))
 end
 
 local TIPS
@@ -84,6 +145,7 @@ local function Build(panel)
   holder:SetPoint("TOPLEFT", 6, -44)
   holder:SetPoint("BOTTOMRIGHT", -6, 6)
   holder:SetScript("OnSizeChanged", Layout)
+  BuildPet()
 end
 
 local function Refresh(panel, t)
@@ -181,6 +243,7 @@ local function Refresh(panel, t)
     item("Ability_Hunter_MasterMarksman", C.GREEN .. L["All caught up. Nice hunting!"] .. "|r", C.GREY .. L["Nothing needs you right now."] .. "|r", function() end)
     cards[1].edge:SetColorTexture(0.3, 0.9, 0.3, 0.8)
   end
+  FillPet(t)
   Layout()
 end
 

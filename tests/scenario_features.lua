@@ -254,6 +254,10 @@ do
   ns.cdb.pets["Rex|Cat"], ns.cdb.pets["Starving Mountain Lion|Cat"] = nil, nil
 end
 
+-- the other journal pages build and fill
+ns.UI_Show("recommend"); ns.UI_Show("rares"); ns.UI_Show("home")
+check(select(3, ns.UI_Sections()) == "home", "Find a Pet, Rares and Today open without a hitch")
+
 -- Wishlist
 ALT = true
 IsAltKeyDown = function() return ALT end

@@ -237,24 +237,91 @@ function ns.NavigateLastRare()
 end
 
 ---------------------------------------------------------------------------
--- Rares page
+-- Rares page: every rare (tameable or not) on the left, its page on the right: model, level,
+-- where it is and how far, when you last saw it, and what it is as a pet if you can tame it.
 ---------------------------------------------------------------------------
 do
-  local list
+  local list, j
+  local tiles, petInfo = {}, nil
   local opt = { where = "zone", tameable = false }
   local WHERE = { { "zone", L["This zone"] }, { "level", L["Near my level, anywhere"] }, { "seen", L["Ones I've seen"] } }
+  local dist = {}
+
+  local function Go(id)
+    local db = ns.SearchDB and ns.SearchDB()
+    local n = db and db.N[id]
+    if not n then return end
+    local s = Seen()[id]
+    if ns.Beasts[id] then ns.Navigate(id)
+    elseif s and s.map and s.x then ns.Arrow_Set(s.map, s.x, s.y, n[1])
+    elseif n[5] ~= 0 then ns.Arrow_Set(n[5], n[6], n[7], n[1]) end
+  end
+
+  local function Fill(id)
+    local db = ns.SearchDB and ns.SearchDB()
+    local n = db and db.N[id]
+    if not n then return end
+    local beast = ns.Beasts[id]
+    local s = Seen()[id]
+    j.box:Beast(id, ns.Icon(beast and (ns.FamilyIcons[beast[4]] or "Ability_Hunter_BeastTaming") or "Ability_Hunter_SniperShot"))
+    j.name:SetText(C.ORANGE .. n[1] .. "|r")
+    local lvl = n[2] == n[3] and tostring(n[2]) or (n[2] .. "-" .. n[3])
+    local level = UnitLevel("player")
+    j.sub:SetText(string.format("%s %s%s|r%s%s", L["level"], (n[3] > level + 2) and C.RED or C.WHITE, lvl,
+      n[9] == 2 and (C.ORANGE .. "   " .. L["elite"] .. "|r") or "",
+      beast and (C.HUNTER .. "   " .. string.format(L["tameable %s"], ns.FamilyLabel(beast[4])) .. "|r") or (C.GREY .. "   " .. L["not tameable"] .. "|r")))
+    local where = n[10] ~= "" and (C.ORANGE .. n[10] .. "|r") or (n[5] ~= 0 and string.format("%s %.0f, %.0f", ns.ZoneName(n[5]), n[6], n[7]) or (C.GREY .. L["unknown location"] .. "|r"))
+    tiles.where.value:SetText(where .. (dist[id] and (C.GREY .. "   " .. ns.FormatDistance(dist[id]) .. "|r") or ""))
+    tiles.seen.value:SetText(s and (C.GREEN .. Ago(s.t) .. "|r" .. ((s.map and s.x) and (C.GREY .. string.format("   %s %.0f, %.0f", ns.ZoneName(s.map), s.x, s.y) .. "|r") or ""))
+      or (C.GREY .. L["not yet: Untamed alerts you when it's near"] .. "|r"))
+    j.buttons[2]:SetShown(beast and true or false)
+    j.buttons[3]:SetShown(beast and true or false)
+    if beast then
+      local lines = {}
+      lines[#lines + 1] = L["Attack speed: "] .. (beast[9] and (((beast[9] < 2.0) and C.GREEN or C.WHITE) .. string.format("%.1f s", beast[9]) .. "|r") or (C.GREY .. L["not known"] .. "|r"))
+      lines[#lines + 1] = L["Teaches: "] .. (#beast[6] > 0 and ns.TeachesText(beast) or (C.GREY .. L["nothing"] .. "|r"))
+      if beast[10] then lines[#lines + 1] = L["Look: "] .. beast[10] end
+      if beast[2] > level then lines[#lines + 1] = C.RED .. L["too high to tame yet"] .. "|r" end
+      petInfo:SetText(table.concat(lines, "\n"))
+    else
+      petInfo:SetText(C.GREY .. L["Not a beast you can tame. Rares drop better loot than other mobs their level."] .. "|r")
+    end
+  end
+
   local function Build(panel)
-    local tb = ns.Toolbar(panel)
+    j = ns.MakeJournal(panel, L["No rares here."])
+    local tb = ns.Toolbar(j.left)
     tb:Dropdown(190, WHERE, function() return opt.where end, function(v) opt.where = v end)
+    tb:Row()
     tb:Check(L["Tameable only"], function() return opt.tameable end, function(v) opt.tameable = v end)
     list = tb:List()
+    j.list = list
+    tiles.where = j:Tile(L["Where"])
+    tiles.seen = j:Tile(L["You last saw it"])
+    j.buttons = j:Buttons({
+      { L["Go to it"], 96, function() if j.selected then Go(j.selected) end end, { L["Go to it"], L["An arrow to where it is (to where you last saw it, if you have)."] } },
+      { L["Show on map"], 110, function()
+          local db = ns.SearchDB and ns.SearchDB()
+          if j.selected and ns.Beasts[j.selected] then ns.Pins_Focus({ j.selected }, db.N[j.selected][1], true) end
+        end },
+      { L["Its beast page"], 120, function()
+          if not (j.selected and ns.Beasts[j.selected]) then return end
+          local f = ns.BrowserFilter()
+          f.family, f.fresh, f.teaches, f.where, f.rare, f.tameable = ns.Beasts[j.selected][4], false, "any", "any", true, false
+          ns.UI_Show("browse")
+          if ns.BestiarySelect then ns.BestiarySelect(j.selected) end
+        end, { L["Its beast page"], L["Opens this beast in the Bestiary."] } },
+    })
+    petInfo = j:Section(L["As a pet"])
+    local note = j:Section(L["Rare finder"], "GameFontHighlightSmall")
+    note:SetText(C.GREY .. L["Untamed watches nameplates, your target and your mouseover for rares. Turn on enemy nameplates (V) to spot them from further away."] .. "|r")
+    j.onSelect = Fill
   end
 
   local function Refresh()
-    local rows = {}
-    local function add(...) rows[#rows + 1] = { ... } end
+    local rows, keys, order = {}, {}, {}
     local db = ns.SearchDB and ns.SearchDB()
-    if not db then add(0, nil, C.RED .. L["Search data is missing."] .. "|r"); list:Set(rows) return end
+    if not db then rows[1] = { 0, nil, C.RED .. L["Search data is missing."] .. "|r" }; list:Set(rows); j:Rows(keys, order) return end
     local map = Here()
     -- Zone maps can be sub-zones; compare against the zone the player is in.
     local zone = map
@@ -278,70 +345,32 @@ do
         if keep and (not opt.tameable or ns.Beasts[id]) then ids[#ids + 1] = id end
       end
     end
-    local dist = {}
+    wipe(dist)
     for _, id in ipairs(ids) do local n = db.N[id]; dist[id] = ns.DistTo and ns.DistTo(n[5], n[6], n[7], pc, pe, pn) or nil end
     table.sort(ids, function(a, b)
       local x, y = db.N[a], db.N[b]
       if opt.where == "seen" then return (seen[a].t or 0) > (seen[b].t or 0) end
       if (dist[a] ~= nil) ~= (dist[b] ~= nil) then return dist[a] ~= nil end
       if dist[a] and dist[b] and dist[a] ~= dist[b] then return dist[a] < dist[b] end
-      return x[2] < y[2]
+      if x[2] ~= y[2] then return x[2] < y[2] end
+      return a < b
     end)
-    add(0, nil, ns.Count(#ids, L["rare"], L["rares"]), C.GREY .. L["click for an arrow"] .. "|r", nil,
-      { L["Rare finder"], L["Untamed watches nameplates, your target and your mouseover for rares. Turn on enemy nameplates (V) to spot them from further away."],
-        L["Tameable rares are green. Right-click a tameable one to pin it on the map."] }, { header = true })
+    rows[1] = { 0, nil, ns.Count(#ids, L["rare"], L["rares"]), "", nil, nil, { header = true } }
     for i = 1, math.min(150, #ids) do
       local id = ids[i]
       local n = db.N[id]
       local beast = ns.Beasts[id]
-      local s = seen[id]
       local lvl = n[2] == n[3] and tostring(n[2]) or (n[2] .. "-" .. n[3])
-      local where = n[10] ~= "" and (C.ORANGE .. n[10] .. "|r") or (n[5] ~= 0 and ns.ZoneName(n[5]) or L["unknown location"])
-      local right = (s and (C.GREEN .. L["seen "] .. Ago(s.t) .. "|r  ") or "") .. C.GREY .. where .. (dist[id] and (", " .. ns.FormatDistance(dist[id])) or "") .. "|r"
-      local label = (beast and C.HUNTER or C.WHITE) .. n[1] .. "|r" .. (n[9] == 2 and (C.ORANGE .. "  " .. L["elite"] .. "|r") or "")
-        .. (beast and (C.GREY .. "  " .. ns.FamilyLabel(beast[4]) .. "|r") or "")
-      add(0, ns.Icon(beast and (ns.FamilyIcons[beast[4]] or "Ability_Hunter_BeastTaming") or "Ability_Hunter_SniperShot"), label, right,
-        function(_, button)
-          if beast then
-            if button == "RightButton" then ns.Pins_Focus({ id }, n[1], true) else ns.Navigate(id) end
-          elseif s and s.map and s.x then ns.Arrow_Set(s.map, s.x, s.y, n[1])
-          elseif n[5] ~= 0 then ns.Arrow_Set(n[5], n[6], n[7], n[1]) end
-        end,
-        beast and ns.BeastTooltip(id, { s and (C.GREEN .. L["You saw it "] .. Ago(s.t) .. "|r") or nil })
-          or { n[1], L["Level "] .. lvl .. (n[9] == 2 and (" " .. L["elite"]) or ""), where,
-               s and (C.GREEN .. L["You saw it "] .. Ago(s.t) .. "|r") or "", C.GREY .. L["Click for an arrow."] .. "|r" },
-        { mid = ((n[3] > level + 2) and C.RED or C.GREY) .. lvl .. "|r" })
+      local label = (beast and C.HUNTER or C.WHITE) .. n[1] .. "|r" .. (seen[id] and (C.GREEN .. "  " .. L["seen"] .. "|r") or "")
+      rows[#rows + 1] = { 0, ns.Icon(beast and (ns.FamilyIcons[beast[4]] or "Ability_Hunter_BeastTaming") or "Ability_Hunter_SniperShot"), label,
+        ((n[3] > level + 2) and C.RED or C.GREY) .. lvl .. "|r",
+        j:RowClick(id, Go, function(k) if ns.Beasts[k] then ns.Pins_Focus({ k }, n[1], true) end end), j:RowHover(id) }
+      keys[#rows] = id
+      order[#order + 1] = id
     end
-    if #ids == 0 then add(0, nil, C.GREY .. L["No rares here."] .. "|r") end
+    if #ids == 0 then rows[#rows + 1] = { 0, nil, C.GREY .. L["No rares here."] .. "|r" } end
     list:Set(rows)
+    j:Rows(keys, order)
   end
   ns.RegisterTab("rares", L["Rares"], Build, Refresh)
 end
-
--- world map: the shown zone's rares (red; tameable ones green), from the search data and your sightings
-table.insert(ns.PinSources, function(mapID)
-  if ns.db.rarePins == false or not mapID then return nil end
-  local db = ns.SearchDB and ns.SearchDB()
-  if not db then return nil end
-  local seen = Seen()
-  local out = {}
-  for id, n in pairs(db.N) do
-    if (n[9] == 2 or n[9] == 4) and n[10] == "" then
-      local s = seen[id]
-      local map, x, y = n[5], n[6], n[7]
-      if s and s.map and s.x then map, x, y = s.map, s.x, s.y end
-      if map == mapID and x and x ~= 0 then
-        local beast = ns.Beasts[id]
-        local lvl = n[2] == n[3] and tostring(n[2]) or (n[2] .. "-" .. n[3])
-        out[#out + 1] = { map = map, x = x, y = y, name = n[1], size = 13,
-          border = beast and { 0.39, 0.75, 0.2, 1 } or { 0.89, 0.29, 0.29, 1 },
-          icon = beast and ("Interface\\Icons\\" .. (ns.FamilyIcons[beast[4]] or "Ability_Hunter_BeastTaming")) or "Interface\\Icons\\Ability_Hunter_SniperShot",
-          lines = { n[1], L["Rare"] .. ", " .. L["level"] .. " " .. lvl .. (beast and (", " .. L["tameable"]) or ""),
-            s and (L["You saw it "] .. Ago(s.t)) or nil } }
-      end
-    end
-  end
-  return out
-end)
-
-ns.RareTest = { Announce = Announce, CheckVignettes = CheckVignettes }
