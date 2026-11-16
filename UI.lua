@@ -1313,13 +1313,16 @@ local function CreateMainFrame()
   -- The journal pages (a list, and a page with a model beside it) need this much width to fit.
   local minW, minH = math.min(1160, sw - 40), math.min(700, sh - 40)
   local dw, dh = math.max(minW, math.min(1240, sw - 60)), math.max(minH, math.min(820, sh - 60))
-  frame:SetSize(math.max(win.w or dw, minW), math.max(win.h or dh, minH))
+  -- never bigger than the screen, or the resize corner ends up where you can't reach it
+  local maxW, maxH = math.max(minW, math.min(1800, sw - 20)), math.max(minH, math.min(1300, sh - 20))
+  frame:SetSize(math.min(math.max(win.w or dw, minW), maxW), math.min(math.max(win.h or dh, minH), maxH))
+  frame.defaultW, frame.defaultH = dw, dh
   if win.p then frame:SetPoint(win.p, UIParent, win.rp, win.x, win.y) else frame:SetPoint("CENTER", 120, 40) end
   frame:SetFrameStrata("HIGH")
   frame:SetMovable(true)
   frame:SetResizable(true)
-  if frame.SetResizeBounds then frame:SetResizeBounds(minW, minH, 1800, 1300)
-  elseif frame.SetMinResize then frame:SetMinResize(minW, minH); frame:SetMaxResize(1800, 1300) end
+  if frame.SetResizeBounds then frame:SetResizeBounds(minW, minH, maxW, maxH)
+  elseif frame.SetMinResize then frame:SetMinResize(minW, minH); frame:SetMaxResize(maxW, maxH) end
   frame:SetClampedToScreen(true)
   frame:EnableMouse(true)
   frame:RegisterForDrag("LeftButton")
@@ -1388,6 +1391,18 @@ local function CreateMainFrame()
 
   frame:SetScript("OnShow", function() ns.UI_Refresh(); if ns.Pad_Open then ns.Pad_Open() end end)
   frame:SetScript("OnHide", function() if menu then menu:Hide() end; ns.CloseDropdown(); if ns.Pad_Close then ns.Pad_Close() end end)
+end
+
+-- Back to the size and place the window starts with (/ut window reset, and a button in Settings).
+function ns.UI_ResetWindow()
+  if ns.db.win then ns.db.win.w, ns.db.win.h, ns.db.win.p, ns.db.win.rp, ns.db.win.x, ns.db.win.y = nil, nil, nil, nil, nil, nil end
+  if frame then
+    frame:SetSize(rawget(frame, "defaultW") or 1240, rawget(frame, "defaultH") or 820)
+    frame:ClearAllPoints()
+    frame:SetPoint("CENTER", 0, 0)
+    ns.UI_Refresh()
+  end
+  ns.Print(L["The Untamed window is back to its starting size, in the middle of the screen."])
 end
 
 -- "1 item", "3 items"

@@ -164,6 +164,7 @@ local SECTIONS = {
       { "check", L["Open on the Today page"], "openHome", L["Untamed opens on Today (what's worth doing now) instead of the page you left."] },
       { "check", L["Use the controller in this window"], "pad", L["D-pad moves, Cross selects, Circle goes back, L1 and R1 change sections. Your buttons go back to the game when the window closes or a fight starts."], on = true,
         after = function(v) if ns.PadCommand then ns.PadCommand(v and "on" or "off") end end },
+      { "button", L["Reset this window's size"], function() if ns.UI_ResetWindow then ns.UI_ResetWindow() end end, L["Back to its starting size, in the middle of the screen. Also /ut window reset."] },
     } },
   { key = "display", title = L["Under your character"], icon = "Ability_Hunter_SniperShot",
     blurb = L["The hunter display: what you watch in a fight, placed just below your character."],

@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.34.4
+- The window can no longer be made bigger than the screen (which put the resize corner out of reach), and a window saved too big is brought back inside the screen when you log in.
+- /ut window reset puts the window back to its starting size in the middle of the screen. Settings, Basics has a button for it too.
+
 ## v2.34.3
 - Looks: every look now fills its tile alike. The game draws some skins bigger than others (a look worn only by large beasts), so the camera stands back by the same amount, using each display's size from Blizzard's own tables. The models are also turned a little less to the side, so they sit nearer the middle.
 - Looks: beasts the game gives more than one skin are filed under each of them. Checked against Blizzard's display table, only one of the six candidates really has different skins (Riding Wolf, which adds three wolf looks); for the other five the extra displays are the same skin at another size.
