@@ -422,4 +422,22 @@ check(r.books["Goaz Scrolls"] and r.books["Goaz Scrolls"].quest == 78146, "book 
 check(next(r.marks) ~= nil, "minimap marks noted")
 local v, d, n, x = ns.RecordedCounts()
 check(x and x.beasts >= 1, "counts include sightings")
+-- Bag marks: arrow for an upgrade, lock when bound, coin when it can still be sold
+do
+  local keep = C_Container.GetContainerItemInfo
+  local up
+  for id, g in pairs(ns.GearItems) do if g[1] == "HEAD" and g[2] <= 10 and g[4] == 0 and g[3] > 5 then up = id break end end
+  local bagItems = { { itemID = up, isBound = false, quality = 2 }, { itemID = 6948, isBound = true, quality = 1 }, { itemID = 117, isBound = false, quality = 0 } }
+  C_Container.GetContainerItemInfo = function(bag, slot) return bag == 0 and bagItems[slot] or nil end
+  local a, b, c = ns.BagMarksFor(0, 1), ns.BagMarksFor(0, 2), ns.BagMarksFor(0, 3)
+  check(a and a.up and a.coin and not a.lock, "bag marks: unbound upgrade gets the arrow and the coin")
+  check(b and b.lock and not b.coin and not b.up, "bag marks: a soulbound item gets the lock")
+  check(c and not c.coin and not c.lock, "bag marks: grey junk gets nothing")
+  check(ns.BagMarksFor(0, 9) == false, "bag marks: empty slot")
+  local s = ns.GearScoreOf(up, "item:" .. up .. ":0:0:0:0:0:0:0")
+  check(s == ns.GearItems[up][3], "gear score: no suffix, same as the list")
+  ns.BagMarksTick()
+  ns.BagMarksCommand()
+  C_Container.GetContainerItemInfo = keep
+end
 print("DONE")

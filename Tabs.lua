@@ -233,6 +233,9 @@ local SECTIONS = {
     items = {
       { "check", L["Upgrade line on item tooltips"], "gearTooltip", L["Item tooltips say how much better (or worse) the item is than what you wear."] },
       { "check", L["Tell me about new upgrades"], "gearAlerts", L["A chat line when you level into an upgrade, or arrive in a zone where a vendor sells one."] },
+      { "check", L["Upgrade arrows in your bags"], "bagUp", L["A green arrow on gear in your bags that beats what you wear."], on = true },
+      { "check", L["Locks on soulbound items"], "bagLock", L["A small lock on bag items that are bound to you: they can't be traded or auctioned."], on = true },
+      { "check", L["Coins on items you can sell"], "bagCoin", L["A small coin on bag items that aren't bound yet, so you can trade them or put them on the Auction House."], on = true },
       { "check", L["Loot card in dungeons"], "lootCard", L["Targeting a boss shows which of its drops are upgrades for you."], on = true },
       { "check", L["Tell me when to roll Need"], "needAlert", L["When an upgrade for you drops in a group, Untamed says so."], on = true },
       { "check", L["Remind me to train on level up"], "trainerReminder", L["A chat line listing the new spell ranks your level unlocked."] },

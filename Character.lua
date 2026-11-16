@@ -689,17 +689,46 @@ local SLOT_LABEL = { HEAD = L["Head"], NECK = L["Neck"], SHOULDER = L["Shoulders
 
 local function Score(id) local g = ns.GearItems and id and ns.GearItems[id]; return g and g[3] or 0 end
 
+-- Score of the item worn in one inventory slot, random suffix included.
+local function WornAt(inv)
+  local id = GetInventoryItemID("player", inv)
+  if not id then return 0 end
+  local link = GetInventoryItemLink and GetInventoryItemLink("player", inv)
+  if ns.GearScoreOf then return (ns.GearScoreOf(id, link)) end
+  return Score(id)
+end
+
 -- Score of what's worn in a slot (lowest of two for rings and trinkets, so upgrades replace the weaker one).
 local function WornScore(slot)
+  if slot == "OFFHAND" then return WornAt(17) end
   for _, s in ipairs(SLOTS) do
     if s[1] == slot then
-      local a = Score(GetInventoryItemID("player", s[2]))
-      if s[3] then return math.min(a, Score(GetInventoryItemID("player", s[3]))) end
-      if slot == "WEAPON" then a = a + Score(GetInventoryItemID("player", 17)) end
+      local a = WornAt(s[2])
+      if s[3] then return math.min(a, WornAt(s[3])) end
+      if slot == "WEAPON" then a = a + WornAt(17) end
       return a
     end
   end
   return 0
+end
+
+-- How much better an item is than what you wear, or nil when it isn't for you (not hunter gear,
+-- mail before 40, level too high, an off-hand while you hold a two-hander).
+function ns.GearGain(id, link)
+  if not ns.GearScoreOf then return nil end
+  local score, g = ns.GearScoreOf(id, link)
+  if not g then return nil end
+  local level = UnitLevel("player") or 1
+  if g[2] > level or (g[4] == 1 and level < 40) then return nil end
+  if g[1] == "OFFHAND" then
+    local main = GetInventoryItemID("player", 16)
+    local instant = (C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
+    if main and instant then
+      local ok, _, _, _, loc = pcall(instant, main)
+      if ok and loc == "INVTYPE_2HWEAPON" then return nil end
+    end
+  end
+  return score - WornScore(g[1]), g
 end
 
 ns.GearWornScore = function(slot) return WornScore(slot) end
@@ -887,8 +916,10 @@ local function OnItemTooltip(tt, id)
   if ns.IsSecret and ns.IsSecret(id) then return end
   local g = ns.GearItems[id]
   if not g then return end
+  local link
+  if tt.GetItem then local ok, _, l = pcall(tt.GetItem, tt); if ok then link = l end end
   local worn = WornScore(g[1])
-  local diff = g[3] - worn
+  local diff = (ns.GearScoreOf and (ns.GearScoreOf(id, link)) or g[3]) - worn
   local level = UnitLevel("player")
   local note = (g[4] == 1 and level < 40) and (" " .. L["(mail at 40)"]) or ""
   if diff > 0 then

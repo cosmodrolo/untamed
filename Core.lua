@@ -593,6 +593,8 @@ SlashCmdList.UNTAMED = function(msg)
     if ns.PetSetOrigin then ns.PetSetOrigin(msg:match("^tamedfrom%s+(.+)$")) end
   elseif msg == "pad" or msg:match("^pad ") then
     if ns.PadCommand then ns.PadCommand(msg:match("^pad%s+(.+)$")) end
+  elseif msg == "bags" or msg:match("^bags ") then
+    if ns.BagMarksCommand then ns.BagMarksCommand(msg:match("^bags%s+(.+)$")) end
   elseif msg == "mem" or msg == "memory" then
     if ns.MemoryReport then ns.MemoryReport() end
   elseif msg == "doctor" then
@@ -654,6 +656,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/ut hud move  drag the display under your character")
     ns.Print("/ut help all  every command")
   elseif msg == "help all" then
+    ns.Print("/untamed bags  marks on bag items (arrows, locks, coins)   |  /untamed bags arrows, locks, coins  switch one")
     ns.Print("/untamed  open the window   |  /untamed plan, browse, care, settings  open a tab")
     ns.Print("/untamed search <text>  (or /ut s <text>)  find any item, NPC or beast and where to get it")
     ns.Print("/untamed zone  what your pet can learn in this zone   |  /untamed next  skip to the next route stop")

@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.32.0
+Marks on the items in your bags, built so they can't break the controller.
+- A green arrow on gear that beats what you wear, a small lock on soulbound items, and a small coin on items that aren't bound yet (so they can be traded or put on the Auction House). Grey junk and quest items get no coin.
+- Each has its own switch in Settings, Gear, spells and talents (or /ut bags arrows, /ut bags locks, /ut bags coins).
+- How it stays safe: the marks are pictures on Untamed's own sheet over the screen. Nothing is created inside or attached to Blizzard's bags; Untamed only reads where each slot is. The marks hide in a fight.
+- Gear scores now count random suffixes ("of the Monkey", "of the Eagle") on what you wear and what's in your bags. Before, two items with the same base name scored the same whatever their suffix, which made upgrade numbers wrong for most green drops.
+
 ## v2.31.1
 - Settings: the line under the page title now says how the page works instead of the old "Alerts, pins and data sharing".
 

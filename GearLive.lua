@@ -77,6 +77,46 @@ local function Compute(id)
   return { slot, tonumber(minLevel) or 1, math.floor(score + 0.5), (classID == 4 and subclassID == 3) and 1 or 0, live = true }, true
 end
 
+-- A worn or carried item can have a random suffix ("of the Monkey") that the item's number alone
+-- doesn't show. Its link does: score = the plain item's score + the weighted stats the suffix adds.
+local function Weighted(stats, ranged)
+  local score = 0
+  for k, v in pairs(stats) do
+    local w = WEIGHT[k]
+    if w and type(v) == "number" then score = score + v * w end
+  end
+  if ranged and type(stats.ITEM_MOD_DAMAGE_PER_SECOND_SHORT) == "number" then score = score + stats.ITEM_MOD_DAMAGE_PER_SECOND_SHORT * 14 end
+  return score
+end
+
+local function LinkStats(link)
+  local f = (C_Item and C_Item.GetItemStats) or GetItemStats
+  if not f then return nil end
+  local ok, t = pcall(f, link)
+  if ok and type(t) == "table" and not ns.IsSecret(t) then return t end
+end
+
+local suffixScore = {}
+-- score, entry for an item given its number and (when there is one) its link
+function ns.GearScoreOf(id, link)
+  id = tonumber(id)
+  local g = id and ns.GearItems and ns.GearItems[id]
+  if not g then return 0, nil end
+  if type(link) ~= "string" or (ns.IsSecret and ns.IsSecret(link)) then return g[3], g end
+  local suffix = link:match("item:%d+:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:(%-?%d+)")
+  if not suffix or suffix == "0" then return g[3], g end
+  local key = id .. ":" .. suffix
+  local s = suffixScore[key]
+  if not s then
+    local full, plain = LinkStats(link), Stats(id)
+    if not full or not plain then return g[3], g end
+    local add = Weighted(full, g[1] == "RANGED") - Weighted(plain, g[1] == "RANGED")
+    s = g[3] + math.max(0, math.floor(add + 0.5))
+    suffixScore[key] = s
+  end
+  return s, g
+end
+
 if ns.GearItems then
   setmetatable(ns.GearItems, { __index = function(_, id)
     if type(id) ~= "number" or id <= 0 then return nil end
