@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.28.1
+- Dungeons, Reputation, Supplies: headings keep their whole name ("Razorfen Downs", "Quivers" were cut short), and the page's "For you" line says what it is ("Drops from ...", "Needs Honored ...").
+
 ## v2.28.0
 The rest of the Gear section in the journal style: Dungeons, Reputation and Supplies.
 - Each keeps its list and filters on the left; picking an item opens its page on the right (icon, how to get it, every source with distance, Go get it / Wishlist / Item details). What used to stand at the end of the row (the boss that drops it, the standing it needs, the vendor that sells it) is the page's "For you" line.

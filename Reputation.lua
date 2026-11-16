@@ -136,7 +136,7 @@ do
           local gain = g and (g[3] - (ns.GearWornScore and ns.GearWornScore(g[1]) or 0)) or 0
           local rankName = _G["FACTION_STANDING_LABEL" .. (r + 1)] or tostring(r)
           add(28, ns.ItemIcon(id), ns.QualityColor(id) .. it[1] .. "|r" .. (gain > 0 and (C.GREEN .. "  +" .. gain .. "|r") or ""),
-            (met and C.GREEN or C.ORANGE) .. rankName .. "|r", ns.ItemClick(id), ns.ItemTooltip(id),
+            (met and (C.GREEN .. L["You have the standing: "]) or (C.ORANGE .. L["Needs "])) .. rankName .. "|r" .. C.GREY .. "   " .. name .. "|r", ns.ItemClick(id), ns.ItemTooltip(id),
             { mid = ((it[3] > level) and C.RED or C.GREY) .. L["lvl "] .. it[3] .. "|r" })
         end
       end

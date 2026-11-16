@@ -385,6 +385,7 @@ L["Nearest source first"] = true
 L["Nearest spot"] = true
 L["Neck"] = true
 L["Need on"] = true
+L["Needs "] = true
 L["Needs %s with %s"] = true
 L["New"] = true
 L["New pet skills in this zone: "] = true
@@ -766,6 +767,7 @@ L["You don't need lower ranks first: the highest rank your pet's level allows is
 L["You have "] = true
 L["You have %d library book(s) to hand in to %s (%s). Type /ut librarian for an arrow."] = true
 L["You have no food it eats."] = true
+L["You have the standing: "] = true
 L["You haven't seen it yet. Untamed alerts you when it's near."] = true
 L["You know these ranks already: teach them in Beast Training."] = true
 L["You last saw it"] = true

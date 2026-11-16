@@ -387,6 +387,7 @@ function ns.ItemJournal(panel, empty)
   local fill = ns.ItemPageSetup(j)
   local forYou = {}
   j.onSelect = function(id) fill(id, forYou[id]) end
+  local function Shown(text) return #((text or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
   function j:SetItemRows(rows)
     local keys, order = {}, {}
     wipe(forYou)
@@ -405,9 +406,10 @@ function ns.ItemJournal(panel, empty)
       elseif not header then
         -- the list is narrow now: long notes on the right would squeeze the name out
         if r[7] and r[7].mid then r[4] = r[7].mid; r[7].mid = nil
-        elseif r[4] and #r[4] > 44 then r[4] = "" end
+        elseif Shown(r[4]) > 22 then r[4] = "" end
         r[1] = math.min(r[1] or 0, 14)
-      elseif r[4] and #r[4] > 60 then
+      elseif Shown(r[4]) > 18 then
+        -- a heading keeps its whole name; a long note beside it goes
         r[4] = ""
       end
     end

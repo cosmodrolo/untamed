@@ -122,7 +122,7 @@ do
         local it = db.I[e.id]
         local bossName = db.N[e.boss] and db.N[e.boss][1] or "?"
         local gain = e.gain > 0 and (C.GREEN .. "  +" .. e.gain .. "|r") or ""
-        add(14, ns.ItemIcon(e.id), ns.QualityColor(e.id) .. it[1] .. "|r" .. gain, C.GREY .. bossName .. "|r",
+        add(14, ns.ItemIcon(e.id), ns.QualityColor(e.id) .. it[1] .. "|r" .. gain, C.GREY .. L["Drops from"] .. "|r " .. bossName .. (e.gain > 0 and (C.GREEN .. "   +" .. e.gain .. "|r" .. C.GREY .. " " .. L["over what you wear"] .. "|r") or ""),
           ns.ItemClick(e.id), ns.ItemTooltip(e.id), { mid = C.GREY .. (ns.GearSlotLabel and ns.GearSlotLabel(e.slot) or e.slot) .. "|r" })
       end
     end
