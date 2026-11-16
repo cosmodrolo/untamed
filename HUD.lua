@@ -270,23 +270,53 @@ end
 ---------------------------------------------------------------------------
 -- Reminders
 ---------------------------------------------------------------------------
+-- Aspects by name as well as by number: Forever's ranks don't all carry the old numbers.
+local ASPECT_NAMES = { "Aspect of the Hawk", "Aspect of the Cheetah", "Aspect of the Monkey", "Aspect of the Pack",
+  "Aspect of the Beast", "Aspect of the Wild" }
+local seen = { casts = 0, hidden = 0 }   -- for /ut doctor
+
 local function ReadAspect()
-  if not (C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID) then return end
-  local found
-  for id in pairs(HAWK_ASPECT) do
-    local ok, a = pcall(C_UnitAuras.GetPlayerAuraBySpellID, id)
-    if ok and a and not ns.IsSecret(a) then found, aspectID = "hawk", id break end
-    if not ok or ns.IsSecret(a) then return end   -- hidden right now: keep what we know
-  end
-  if not found then
-    for id in pairs(OTHER_ASPECTS) do
-      local ok, a = pcall(C_UnitAuras.GetPlayerAuraBySpellID, id)
-      if ok and a and not ns.IsSecret(a) then found, aspectID = "other", id break end
+  local found, foundID
+  if C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName then
+    for i, name in ipairs(ASPECT_NAMES) do
+      local ok, a = pcall(C_UnitAuras.GetAuraDataBySpellName, "player", name, "HELPFUL")
+      if not ok or ns.IsSecret(a) then seen.read = "hidden" return end   -- hidden right now: keep what we know
+      if a then
+        found = i == 1 and "hawk" or "other"
+        foundID = Plain(a.spellId)
+        break
+      end
     end
+  elseif C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID then
+    for _, set in ipairs({ HAWK_ASPECT, OTHER_ASPECTS }) do
+      for id in pairs(set) do
+        local ok, a = pcall(C_UnitAuras.GetPlayerAuraBySpellID, id)
+        if not ok or ns.IsSecret(a) then seen.read = "hidden" return end
+        if a then found, foundID = set == HAWK_ASPECT and "hawk" or "other", id break end
+      end
+      if found then break end
+    end
+  else
+    return
   end
-  aspect = found
-  if not found then aspectID = nil end
+  seen.read = found or "none"
+  aspect, aspectID = found, foundID
 end
+
+-- A spell you just cast: is it an aspect? By number first, then by its name.
+local function CastAspect(spellID)
+  seen.casts = seen.casts + 1
+  if spellID == nil or ns.IsSecret(spellID) then seen.hidden = seen.hidden + 1 return end
+  seen.last = spellID
+  if HAWK_ASPECT[spellID] then aspect, aspectID = "hawk", spellID return end
+  if OTHER_ASPECTS[spellID] then aspect, aspectID = "other", spellID return end
+  local ok, name = pcall(ns.SpellName, spellID)
+  name = ok and Plain(name)
+  if type(name) == "string" and name:find("^Aspect of the ") then
+    aspect, aspectID = name == "Aspect of the Hawk" and "hawk" or "other", spellID
+  end
+end
+ns.HUD_AspectSeen = function() return seen, aspect, aspectID end
 
 -- The aspect icon: always the aspect you have on. In a fight without Hawk it turns into the
 -- "switch to Hawk" warning. In a fight the game hides buffs, so it goes by your last cast.
@@ -298,11 +328,11 @@ local function PaintAspect(b, fight)
     b.label:SetText("|cffff5050" .. L["Hawk!"] .. "|r")
     return true
   end
-  if aspect and aspectID then
-    local tex = C_Spell and C_Spell.GetSpellTexture and Plain(C_Spell.GetSpellTexture(aspectID))
+  if aspect then
+    local tex = aspectID and C_Spell and C_Spell.GetSpellTexture and Plain(C_Spell.GetSpellTexture(aspectID))
     b.icon:SetTexture(tex or SpellIcon("Aspect of the Hawk"))
     b.icon:SetDesaturated(false); b:SetAlpha(1)
-    local name = ns.SpellName and ns.SpellName(aspectID) or ""
+    local name = aspectID and ns.SpellName and ns.SpellName(aspectID) or (aspect == "hawk" and "Hawk" or "")
     name = name:gsub("^Aspect of the ", "")
     b.label:SetText("|cffc8d2c8" .. name .. "|r")
     return true
@@ -432,11 +462,10 @@ do
     if event == "SPELLS_CHANGED" then LayoutRows(); UpdateCooldowns()
     elseif event == "SPELL_UPDATE_COOLDOWN" then UpdateCooldowns()
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
+      if unit == "player" then CastAspect(spellID) end
       if unit == "player" and spellID and not ns.IsSecret(spellID) then
         if STING_IDS[spellID] then StartTimer("sting", "Serpent Sting")
-        elseif MARK_IDS[spellID] then StartTimer("mark", "Hunter's Mark")
-        elseif HAWK_ASPECT[spellID] then aspect, aspectID = "hawk", spellID
-        elseif OTHER_ASPECTS[spellID] then aspect, aspectID = "other", spellID end
+        elseif MARK_IDS[spellID] then StartTimer("mark", "Hunter's Mark") end
       end
       UpdateCooldowns()
     elseif event == "UNIT_AURA" then

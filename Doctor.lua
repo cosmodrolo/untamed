@@ -138,5 +138,10 @@ function ns.Doctor()
     local st = ns.Pad_Status()
     Line(not st:find("goes to", 1, true) and (st:find("bound", 1, true) and true or nil), "Controller in the window", st)
   end
+  if ns.HUD_AspectSeen then
+    local seen, asp, id = ns.HUD_AspectSeen()
+    Line(nil, "Aspect", string.format("thinks: %s (spell %s); buffs read: %s; your casts seen: %d, hidden: %d, last readable: %s",
+      tostring(asp or "none"), tostring(id or "?"), tostring(seen.read or "never"), seen.casts, seen.hidden, tostring(seen.last or "none")))
+  end
   ns.Print(C.GREY .. "Red lines are the parts to tell Claude about.|r")
 end

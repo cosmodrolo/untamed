@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.32.3
+- Aspect icon: switching to Aspect of the Hawk in the middle of a fight left the red "Hawk!" warning up. Untamed now recognises aspects by name as well as by spell number (Forever's ranks don't all carry the old numbers). /ut doctor has an Aspect line showing what it saw.
+
 ## v2.32.2
 - Hunter display: more room between the Food, aspect and Pet icons, so their names no longer run together.
 
