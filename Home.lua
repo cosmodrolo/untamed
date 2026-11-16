@@ -7,27 +7,102 @@ local C = ns.C
 
 local function Go(tab) return function() ns.UI_Show(tab) end end
 
-local list
+-- Today is a handful of cards: each one is something worth doing now, and a click (or Cross) goes
+-- to the page for it. Nothing to do: one card saying so.
+local cards, holder, tipsButton = {}, nil, nil
+local CARD_H, GAP = 86, 10
+
+local function Card(i)
+  local c = cards[i]
+  if c then return c end
+  c = CreateFrame("Button", nil, holder)
+  c:SetHeight(CARD_H)
+  local bg = c:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  bg:SetColorTexture(0, 0, 0, 0.32)
+  c.edge = c:CreateTexture(nil, "BORDER")
+  c.edge:SetPoint("TOPLEFT"); c.edge:SetPoint("BOTTOMLEFT")
+  c.edge:SetWidth(3)
+  c.edge:SetColorTexture(1, 0.82, 0, 0.8)
+  local hl = c:CreateTexture(nil, "HIGHLIGHT")
+  hl:SetAllPoints()
+  hl:SetColorTexture(1, 1, 1, 0.07)
+  c.icon = c:CreateTexture(nil, "ARTWORK")
+  c.icon:SetSize(44, 44)
+  c.icon:SetPoint("LEFT", 16, 0)
+  c.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  c.title = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  c.title:SetPoint("TOPLEFT", c.icon, "TOPRIGHT", 14, 2)
+  c.title:SetPoint("RIGHT", -12, 0)
+  c.title:SetJustifyH("LEFT")
+  c.title:SetJustifyV("TOP")
+  c.title:SetWordWrap(true)
+  if c.title.SetMaxLines then c.title:SetMaxLines(2) end
+  c.detail = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  c.detail:SetPoint("TOPLEFT", c.title, "BOTTOMLEFT", 0, -5)
+  c.detail:SetPoint("RIGHT", -12, 0)
+  c.detail:SetJustifyH("LEFT")
+  c.detail:SetWordWrap(false)
+  c:SetScript("OnClick", function(self) if self.go then self.go() end end)
+  cards[i] = c
+  return c
+end
+
+local function Layout()
+  if not holder then return end
+  local w = holder:GetWidth() or 0
+  if w < 50 then w = 700 end
+  local cols = math.max(1, math.min(3, math.floor((w + GAP) / (330 + GAP))))
+  local cw = (w - (cols - 1) * GAP) / cols
+  local n = 0
+  for _, c in ipairs(cards) do
+    if c:IsShown() then
+      local col, row = n % cols, math.floor(n / cols)
+      c:ClearAllPoints()
+      c:SetPoint("TOPLEFT", holder, "TOPLEFT", col * (cw + GAP), -row * (CARD_H + GAP))
+      c:SetWidth(cw)
+      n = n + 1
+    end
+  end
+end
+
+local TIPS
 
 local function Build(panel)
   local tb = ns.Toolbar(panel)
   tb:Check(L["Open Untamed on this page"], function() return ns.db.openHome ~= false end, function(v) ns.db.openHome = v end)
-  list = tb:List()
+  tipsButton = tb:Button(L["Good to know"], 120, function(self)
+    for _, tip in ipairs(TIPS) do ns.Print(tip) end
+  end)
+  tipsButton:SetScript("OnEnter", function(self)
+    local lines = { L["Good to know"] }
+    for _, tip in ipairs(TIPS) do lines[#lines + 1] = tip; lines[#lines + 1] = " " end
+    ns.ShowTooltip(self, lines)
+  end)
+  tipsButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  holder = CreateFrame("Frame", nil, panel)
+  holder:SetPoint("TOPLEFT", 6, -44)
+  holder:SetPoint("BOTTOMRIGHT", -6, 6)
+  holder:SetScript("OnSizeChanged", Layout)
 end
 
 local function Refresh(panel, t)
-  local rows = {}
-  local function add(...) rows[#rows + 1] = { ... } end
   local level = UnitLevel("player")
   local _, class = UnitClass("player")
 
-  -- Right now: things worth doing, each one click away.
-  add(0, nil, L["Right now"], C.GREY .. L["click a line to go there"] .. "|r", nil, nil, { header = true })
+  -- things worth doing, each one click away
   local todo = 0
-  local function item(icon, text, right, tab, tip)
+  local function item(icon, text, right, tab)
     todo = todo + 1
-    add(14, ns.Icon(icon), text, right or "", type(tab) == "function" and tab or Go(tab), tip)
+    local c = Card(todo)
+    c.icon:SetTexture(ns.Icon(icon))
+    c.title:SetText(text)
+    c.detail:SetText(right or "")
+    c.go = type(tab) == "function" and tab or Go(tab)
+    c.edge:SetColorTexture(1, 0.82, 0, 0.8)
+    c:Show()
   end
+  for _, c in ipairs(cards) do c:Hide() end
 
   if class ~= "HUNTER" then
     item("INV_Misc_QuestionMark", C.ORANGE .. L["Untamed is made for hunters. Most pages are about your pet."] .. "|r", nil, "search")
@@ -94,30 +169,29 @@ local function Refresh(panel, t)
       item("INV_Ammo_Arrow_02", string.format(L["Ammo is low (%d). Restock at a vendor."], count), "", "supplies")
     end
   end
-  if todo == 0 then add(14, nil, C.GREEN .. L["All caught up. Nice hunting!"] .. "|r") end
-
-  -- Where things are.
-  add(0, nil, L["How Untamed is organized"], C.GREY .. L["click to open"] .. "|r", nil, nil, { header = true })
-  add(14, ns.Icon("Ability_Hunter_BeastTaming"), C.GOLD .. L["Bestiary"] .. "|r  " .. C.WHITE .. L["every beast, which pet to tame, rares, and a taming route"] .. "|r", "", Go("browse"))
-  add(14, ns.Icon("Ability_Hunter_BeastCall"), C.GOLD .. L["My Pets"] .. "|r  " .. C.WHITE .. L["what your pet can learn, its build, food and happiness, and your stable"] .. "|r", "", Go("abilities"))
-  add(14, ns.Icon("Ability_Hunter_RunningShot"), C.GOLD .. L["Hunter"] .. "|r  " .. C.WHITE .. L["spells to train, talents, rotation and class quests"] .. "|r", "", Go("spells"))
-  add(14, ns.Icon("INV_Weapon_Bow_07"), C.GOLD .. L["Gear"] .. "|r  " .. C.WHITE .. L["upgrades, your wishlist, dungeons, reputation and supplies"] .. "|r", "", Go("gear"))
-  add(14, ns.Icon("INV_Misc_Map_01"), C.GOLD .. L["World"] .. "|r  " .. C.WHITE .. L["library books, and a search for any item, NPC or beast"] .. "|r", "", Go("books"))
-
-  -- Good to know.
-  add(0, nil, L["Good to know"], "", nil, nil, { header = true })
-  local tips = {
-    L["On a controller: D-pad moves, Cross selects, Square is the second action, Circle goes back, L1 and R1 change sections."],
-    L["Click a beast, item or NPC for an arrow to it. Right-click a beast to see it on the world map."],
-    L["If a beast isn't at a spawn spot, the arrow moves on to the next closest one. Shift-right-click the arrow to skip ahead."],
-    L["Hover anything for details: where to get it, what it teaches, what it needs."],
-    L["Alt-click an item to add it to your wishlist. Shift-click to link it in chat."],
-    L["Viewing (top right) switches between your pet, a stabled pet, or any family you might tame."],
-    L["Type /ut s and a name to search from chat, or /ut help for every command."],
-    L["Untamed notes vendors and loot as you play to fill gaps in its data (Settings > Share data)."],
-  }
-  for _, tip in ipairs(tips) do add(14, nil, C.GREY .. tip .. "|r") end
-  list:Set(rows)
+  -- library books in your bags: hand them in
+  if ns.BooksCount then
+    local _, inBags = ns.BooksCount()
+    if inBags and inBags > 0 then
+      item("INV_Misc_Book_09", string.format(L["Hand in %s at the library."], ns.Count(inBags, L["library book"], L["library books"])),
+        C.GREY .. L["Library books"] .. "|r", "books")
+    end
+  end
+  if todo == 0 then
+    item("Ability_Hunter_MasterMarksman", C.GREEN .. L["All caught up. Nice hunting!"] .. "|r", C.GREY .. L["Nothing needs you right now."] .. "|r", function() end)
+    cards[1].edge:SetColorTexture(0.3, 0.9, 0.3, 0.8)
+  end
+  Layout()
 end
 
-ns.RegisterTab("home", L["Home"], Build, Refresh)
+TIPS = {
+  L["On a controller: D-pad moves, Cross selects, Square is the second action, Circle goes back, L1 and R1 change sections."],
+  L["Click a beast, item or NPC for an arrow to it. Right-click a beast to see it on the world map."],
+  L["If a beast isn't at a spawn spot, the arrow moves on to the next closest one. Shift-right-click the arrow to skip ahead."],
+  L["Alt-click an item to add it to your wishlist. Shift-click to link it in chat."],
+  L["Viewing (top right) switches between your pet, a stabled pet, or any family you might tame."],
+  L["Type /ut s and a name to search from chat, or /ut help for every command."],
+  L["Untamed notes vendors and loot as you play to fill gaps in its data (Settings > Share data)."],
+}
+
+ns.RegisterTab("home", L["Today"], Build, Refresh)

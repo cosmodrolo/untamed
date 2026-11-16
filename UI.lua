@@ -542,7 +542,7 @@ local TAB_META = {
   dungeons  = { icon = "INV_Misc_Key_03", sub = L["Hunter loot, bosses and beasts in each dungeon"] },
   reputation = { icon = "INV_Misc_Token_ArgentDawn", sub = L["Reputation you need for rewards you want"] },
   quests    = { icon = "INV_Misc_Note_02", sub = L["Class quests only hunters can do"] },
-  home      = { icon = "Interface\\AddOns\\Untamed\\Media\\Icon", sub = L["What to do next, and how Untamed works"] },
+  home      = { icon = "Interface\\AddOns\\Untamed\\Media\\Icon", sub = L["What's worth doing right now"] },
   settings  = { icon = "INV_Misc_Gear_01", sub = L["Alerts, pins and data sharing"] },
 }
 -- Six sections along the top; each page lives in one of them (the list on the left shows the

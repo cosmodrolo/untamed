@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.23.0
+- Today is a handful of cards instead of a long list: each card is something worth doing now (train spells, spend talent points, teach or feed your pet, the next beast to tame, upgrades within reach, low ammo, library books to hand in), and a click or Cross goes to the page for it. With nothing to do there's one green card saying so. The tips moved behind a "Good to know" button (hover or move onto it to read them; click to print them in chat).
+
 ## v2.22.1
 - Stable page: a pet's attack speed is also read from its Faster Attack or Slower Attack passive, so renamed pets show it too (Untamed learns which speed each tier means from pets whose beast it knows). "Knows" lists its abilities only, not the pet bar's commands.
 - /ut tamedfrom <beast's name> tells Untamed which beast the pet that's out was tamed from (for pets you renamed before Untamed kept track).
