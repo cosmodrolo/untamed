@@ -275,29 +275,42 @@ local ASPECT_NAMES = { "Aspect of the Hawk", "Aspect of the Cheetah", "Aspect of
   "Aspect of the Beast", "Aspect of the Wild" }
 local seen = { casts = 0, hidden = 0 }   -- for /ut doctor
 
+local function InFight()
+  if InCombatLockdown and InCombatLockdown() then return true end
+  local f = UnitAffectingCombat("player")
+  return ns.IsSecret(f) or (f and true or false)
+end
+
+-- Read the aspect from your buffs. Only outside fights: in a fight the game answers "no such buff"
+-- for everything, which would wipe what we learned from your casts.
 local function ReadAspect()
+  if InFight() then seen.read = "skipped (fight)" return end
+  local byID = C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID
+  local byName = C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName
+  if not byID and not byName then return end
   local found, foundID
-  if C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName then
+  -- the spell we saw you cast is the surest thing to look for
+  if byID and aspectID then
+    local ok, a = pcall(byID, aspectID)
+    if not ok or ns.IsSecret(a) then seen.read = "hidden" return end
+    if a then found, foundID = aspect, aspectID end
+  end
+  if not found and byName then
     for i, name in ipairs(ASPECT_NAMES) do
-      local ok, a = pcall(C_UnitAuras.GetAuraDataBySpellName, "player", name, "HELPFUL")
-      if not ok or ns.IsSecret(a) then seen.read = "hidden" return end   -- hidden right now: keep what we know
-      if a then
-        found = i == 1 and "hawk" or "other"
-        foundID = Plain(a.spellId)
-        break
-      end
+      local ok, a = pcall(byName, "player", name, "HELPFUL")
+      if not ok or ns.IsSecret(a) then seen.read = "hidden" return end
+      if a then found, foundID = i == 1 and "hawk" or "other", Plain(a.spellId) break end
     end
-  elseif C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID then
+  end
+  if not found and byID then
     for _, set in ipairs({ HAWK_ASPECT, OTHER_ASPECTS }) do
       for id in pairs(set) do
-        local ok, a = pcall(C_UnitAuras.GetPlayerAuraBySpellID, id)
+        local ok, a = pcall(byID, id)
         if not ok or ns.IsSecret(a) then seen.read = "hidden" return end
         if a then found, foundID = set == HAWK_ASPECT and "hawk" or "other", id break end
       end
       if found then break end
     end
-  else
-    return
   end
   seen.read = found or "none"
   aspect, aspectID = found, foundID
@@ -308,12 +321,12 @@ local function CastAspect(spellID)
   seen.casts = seen.casts + 1
   if spellID == nil or ns.IsSecret(spellID) then seen.hidden = seen.hidden + 1 return end
   seen.last = spellID
-  if HAWK_ASPECT[spellID] then aspect, aspectID = "hawk", spellID return end
-  if OTHER_ASPECTS[spellID] then aspect, aspectID = "other", spellID return end
+  if HAWK_ASPECT[spellID] then aspect, aspectID, seen.aspectCast = "hawk", spellID, spellID return end
+  if OTHER_ASPECTS[spellID] then aspect, aspectID, seen.aspectCast = "other", spellID, spellID return end
   local ok, name = pcall(ns.SpellName, spellID)
   name = ok and Plain(name)
   if type(name) == "string" and name:find("^Aspect of the ") then
-    aspect, aspectID = name == "Aspect of the Hawk" and "hawk" or "other", spellID
+    aspect, aspectID, seen.aspectCast = name == "Aspect of the Hawk" and "hawk" or "other", spellID, spellID
   end
 end
 ns.HUD_AspectSeen = function() return seen, aspect, aspectID end

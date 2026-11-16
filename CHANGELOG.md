@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.32.4
+- Aspect icon, the real cause: in a fight the game answers "no such buff" for every buff, and Untamed took that as "no aspect", wiping the Hawk it had just seen you cast. It no longer reads buffs during a fight, and outside fights it looks first for the exact aspect it saw you cast.
+
 ## v2.32.3
 - Aspect icon: switching to Aspect of the Hawk in the middle of a fight left the red "Hawk!" warning up. Untamed now recognises aspects by name as well as by spell number (Forever's ranks don't all carry the old numbers). /ut doctor has an Aspect line showing what it saw.
 

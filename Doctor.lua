@@ -141,7 +141,7 @@ function ns.Doctor()
   if ns.HUD_AspectSeen then
     local seen, asp, id = ns.HUD_AspectSeen()
     Line(nil, "Aspect", string.format("thinks: %s (spell %s); buffs read: %s; your casts seen: %d, hidden: %d, last readable: %s",
-      tostring(asp or "none"), tostring(id or "?"), tostring(seen.read or "never"), seen.casts, seen.hidden, tostring(seen.last or "none")))
+      tostring(asp or "none"), tostring(id or "?"), tostring(seen.read or "never"), seen.casts, seen.hidden, tostring(seen.last or "none")) .. "; last aspect cast: " .. tostring(seen.aspectCast or "none"))
   end
   ns.Print(C.GREY .. "Red lines are the parts to tell Claude about.|r")
 end
