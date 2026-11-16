@@ -85,6 +85,50 @@ if CreateFont then
   end
 end
 
+-- A scroll frame with a thin bar of our own: a dark track and an amber thumb you can drag; the
+-- mouse wheel scrolls three rows. The bar hides when everything fits.
+function ns.MakeScroll(parent, left, top, right, bottom)
+  local scroll = CreateFrame("ScrollFrame", nil, parent)
+  scroll:SetPoint("TOPLEFT", left or 2, top or 0)
+  scroll:SetPoint("BOTTOMRIGHT", (right or 0) - 14, bottom or 4)
+  local bar = CreateFrame("Slider", nil, parent)
+  bar:SetPoint("TOPLEFT", scroll, "TOPRIGHT", 4, 0)
+  bar:SetPoint("BOTTOMLEFT", scroll, "BOTTOMRIGHT", 4, 0)
+  bar:SetWidth(8)
+  if bar.SetOrientation then bar:SetOrientation("VERTICAL") end
+  Skin(bar, T.bar, 0.9)
+  local thumb = bar:CreateTexture(nil, "ARTWORK")
+  thumb:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 0.75)
+  thumb:SetSize(8, 44)
+  if bar.SetThumbTexture then bar:SetThumbTexture(thumb) end
+  bar:SetMinMaxValues(0, 0)
+  bar:SetValue(0)
+  if bar.SetValueStep then bar:SetValueStep(1) end
+  bar:Hide()
+  local function Sync()
+    local range = (scroll.GetVerticalScrollRange and scroll:GetVerticalScrollRange()) or 0
+    if type(range) ~= "number" then range = 0 end
+    bar:SetMinMaxValues(0, math.max(0, range))
+    bar:SetShown(range > 1)
+    local cur = scroll:GetVerticalScroll() or 0
+    if type(cur) ~= "number" then cur = 0 end
+    if cur > range then scroll:SetVerticalScroll(math.max(0, range)); cur = math.max(0, range) end
+    bar:SetValue(cur)
+  end
+  scroll:SetScript("OnScrollRangeChanged", Sync)
+  scroll:SetScript("OnVerticalScroll", function(_, v) if math.abs((bar:GetValue() or 0) - v) > 0.5 then bar:SetValue(v) end end)
+  bar:SetScript("OnValueChanged", function(_, v)
+    if type(v) == "number" and math.abs((scroll:GetVerticalScroll() or 0) - v) > 0.5 then scroll:SetVerticalScroll(v) end
+  end)
+  if scroll.EnableMouseWheel then scroll:EnableMouseWheel(true) end
+  scroll:SetScript("OnMouseWheel", function(self, delta)
+    local range = self:GetVerticalScrollRange() or 0
+    self:SetVerticalScroll(math.max(0, math.min(range, (self:GetVerticalScroll() or 0) - delta * 78)))
+  end)
+  scroll.bar, scroll.Sync = bar, Sync
+  return scroll
+end
+
 ---------------------------------------------------------------------------
 -- Generic scrolling list
 ---------------------------------------------------------------------------
@@ -116,9 +160,7 @@ local PLUS, MINUS = "Interface\\Buttons\\UI-PlusButton-Up", "Interface\\Buttons\
 -- mid = text for the middle column (level), toggleSpace = true (line up with toggled rows).
 function ns.NewList(parent, topOffset)
   local list = { rows = {} }
-  local scroll = CreateFrame("ScrollFrame", nil, parent, "UIPanelScrollFrameTemplate")
-  scroll:SetPoint("TOPLEFT", 2, -topOffset)
-  scroll:SetPoint("BOTTOMRIGHT", -26, 4)
+  local scroll = ns.MakeScroll(parent, 2, -topOffset, 0, 4)
   local content = CreateFrame("Frame", nil, scroll)
   content:SetSize(440, 1)
   scroll:SetScrollChild(content)
@@ -251,15 +293,27 @@ function ns.RefreshControls()
 end
 
 function ns.MakeCheck(parent, label, x, y, get, set, tip)
-  local c = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
+  -- our own box: dark with a moss edge, an amber square when it's on
+  local c = CreateFrame("CheckButton", nil, parent)
   c:SetSize(22, 22)
   c:SetPoint("TOPLEFT", x, y)
-  local fs = c.text or c.Text or c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  fs:SetFontObject("GameFontHighlightSmall")
-  fs:ClearAllPoints()
-  fs:SetPoint("LEFT", c, "RIGHT", 0, 1)
+  local boxFrame = CreateFrame("Frame", nil, c)
+  boxFrame:SetSize(16, 16)
+  boxFrame:SetPoint("CENTER")
+  Skin(boxFrame, T.deep, 1, T.line)
+  local mark = boxFrame:CreateTexture(nil, "OVERLAY")
+  mark:SetPoint("TOPLEFT", 3, -3); mark:SetPoint("BOTTOMRIGHT", -3, 3)
+  mark:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 1)
+  if c.SetCheckedTexture then c:SetCheckedTexture(mark) end
+  local hl = c:CreateTexture(nil, "HIGHLIGHT")
+  hl:SetAllPoints(boxFrame)
+  hl:SetColorTexture(1, 1, 1, 0.12)
+  local fs = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  fs:SetPoint("LEFT", c, "RIGHT", 2, 0)
   fs:SetText(label)
   c.label = fs
+  -- the label is part of the checkbox for the mouse
+  if c.SetHitRectInsets then c:SetHitRectInsets(0, -(((fs.GetStringWidth and fs:GetStringWidth()) or (#label * 6)) + 4), 0, 0) end
   c:SetScript("OnShow", function(self) self:SetChecked(get()) end)
   c:SetScript("OnClick", function(self) set(self:GetChecked() and true or false); ns.Refresh() end)
   if tip then
@@ -741,15 +795,18 @@ function ns.Toolbar(panel)
   end
   function tb:Row() self.row = self.row + 1; self.x = 6 end
   function tb:Search(hint, width, onChange)
-    local box = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
+    local box = CreateFrame("EditBox", nil, panel)
     box:SetSize(width, 22)
-    box:SetPoint("TOPLEFT", place(width + 6) + 6, y() - 1)
+    box:SetPoint("TOPLEFT", place(width + 6), y() - 1)
     box:SetAutoFocus(false)
+    Skin(box, T.deep, 1, T.line)
+    if box.SetFontObject then box:SetFontObject("GameFontHighlightSmall") end
+    if box.SetTextInsets then box:SetTextInsets(6, 6, 0, 0) end
     box:SetScript("OnTextChanged", function(self) onChange((self:GetText() or ""):lower()); ns.UI_Refresh() end)
     box:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
     box:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
     local h = box:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    h:SetPoint("LEFT", 4, 0)
+    h:SetPoint("LEFT", 7, 0)
     h:SetText(hint)
     box:HookScript("OnEditFocusGained", function() h:Hide() end)
     box:HookScript("OnEditFocusLost", function(self) h:SetShown((self:GetText() or "") == "") end)

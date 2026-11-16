@@ -111,7 +111,7 @@ do
       local icon = (C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(id)) or (GetSpellTexture and GetSpellTexture(id)) or nil
       add(indent or 14, icon, (known and C.GREY or C.WHITE) .. label .. "|r" .. (rank > 0 and (C.GREY .. "  " .. L["Rank "] .. rank .. "|r") or ""),
         status .. "   " .. Money(cost), nil,
-        { spellID = id, label .. (rank > 0 and (" " .. L["Rank "] .. rank) or ""), L["Trainer level "] .. lvl .. ", " .. Money(cost),
+        { spellID = id, label .. (rank > 0 and (" " .. L["Rank "] .. rank) or ""), "",
           OPTIONAL[name] and (C.GREY .. L["Many hunters skip this while leveling to save gold and buy it later if they need it."] .. "|r")
             or (NeedsTalent(name) and (C.GREY .. L["The trainer sells this rank once you have the talent."] .. "|r")) or "",
           cost < 0 and (C.GREY .. L["Cost not known yet for this WoW Forever spell."] .. "|r") or "" },
@@ -1052,8 +1052,11 @@ do
       end
       local showChain = show == "all" or (show == "open" and not allDone) or (show == "now" and anyNow)
       if showChain then
+      -- a heading for chains (and for finished ones, which list no steps); a lone quest is just its row
+      if #chain > 1 or allDone then
       add(0, nil, (allDone and C.GREEN or "") .. chain[1][2] .. (#chain > 1 and (C.GREY .. "  (" .. #chain .. " " .. L["steps"] .. ")|r") or "") .. "|r",
         allDone and (C.GREEN .. L["done"] .. "|r") or "", nil, nil, { header = true, mid = C.GREY .. L["lvl "] .. chain[1][4] .. "|r" })
+      end
       if not allDone then
         for _, q in ipairs(chain) do
           local done, inLog = QuestDoneAny(q), QuestInLog(q[1])

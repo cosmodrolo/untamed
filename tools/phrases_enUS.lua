@@ -690,7 +690,6 @@ L["Total cost of the ranks in this build"] = true
 L["Tough fights: Rapid Fire and Bestial Wrath together (each once you have it; press again if one didn't go off)."] = true
 L["Tough mob or an add: Brst (Rapid Fire, and Bestial Wrath from 40)."] = true
 L["Train %s at your hunter trainer."] = true
-L["Trainer level "] = true
 L["Training"] = true
 L["Training points"] = true
 L["Traps and escapes"] = true

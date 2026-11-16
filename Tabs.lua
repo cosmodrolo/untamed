@@ -147,9 +147,7 @@ end
 ---------------------------------------------------------------------------
 local function BuildSettings(panel, top)
   -- Everything sits in a scroll area so the list can grow.
-  local scroll = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
-  scroll:SetPoint("TOPLEFT", 0, top or -2)
-  scroll:SetPoint("BOTTOMRIGHT", -26, 4)
+  local scroll = ns.MakeScroll(panel, 0, top or -2, 0, 4)
   local host = CreateFrame("Frame", nil, scroll)
   host:SetSize(480, 1)
   scroll:SetScrollChild(host)
