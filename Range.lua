@@ -320,33 +320,46 @@ end
 -- The pet's buffs as icons with timers. In a fight Forever hides which buff is which, but the
 -- icon and the time left can still be handed to the widgets, so Frenzy shows as its own icon
 -- the moment it starts. When the game does say the name, Frenzy gets a gold edge.
+local petBuffLog = {}        -- what each step answered last time, for /ut doctor
 local function PaintPetBuffs(p, show)
   local ids
+  wipe(petBuffLog)
   if show and ns.db.petBuffs ~= false and C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs then
     local rule = Enum and Enum.UnitAuraSortRule and Enum.UnitAuraSortRule.ExpirationOnly
     local ok, list = pcall(C_UnitAuras.GetUnitAuraInstanceIDs, "pet", "HELPFUL", 4, rule)
-    if not ok then ok, list = pcall(C_UnitAuras.GetUnitAuraInstanceIDs, "pet", "HELPFUL") end
-    if ok and type(list) == "table" then ids = list end
+    if not ok then petBuffLog.sorted = tostring(list) end
+    if not ok or type(list) ~= "table" then ok, list = pcall(C_UnitAuras.GetUnitAuraInstanceIDs, "pet", "HELPFUL") end
+    if ok and type(list) == "table" then ids = list else petBuffLog.list = tostring(list) end
   end
+  local okN, count = pcall(function() return ids and #ids or 0 end)
+  petBuffLog.count = okN and count or "hidden"
   for i, b in ipairs(p.buffs) do
+    local okI, id = pcall(function() return ids and ids[i] end)
     local shown = false
-    local id = ids and ids[i]
-    if id ~= nil then
-      shown = pcall(function()
-        local data = C_UnitAuras.GetAuraDataByAuraInstanceID("pet", id)
-        b.icon:SetTexture(data.icon)
-        local timed
-        if C_UnitAuras.GetAuraDuration and b.cd.SetCooldownFromDurationObject then
-          timed = pcall(function() b.cd:SetCooldownFromDurationObject(C_UnitAuras.GetAuraDuration("pet", id), true) end)
-        end
-        if not timed then b.cd:Clear() end
+    if okI and id ~= nil then
+      shown = true
+      -- each step on its own: a step the game refuses in a fight doesn't take the icon away
+      local okD, data = pcall(C_UnitAuras.GetAuraDataByAuraInstanceID, "pet", id)
+      if not okD then petBuffLog.data = tostring(data) end
+      local okT, errT = pcall(function() b.icon:SetTexture(data.icon) end)
+      if not okT then
+        petBuffLog.icon = tostring(errT)
+        b.icon:SetTexture("Interface\\Icons\\Ability_Druid_Rake")
+      end
+      local okC, errC = pcall(function() b.cd:SetCooldownFromDurationObject(C_UnitAuras.GetAuraDuration("pet", id), true) end)
+      if not okC then petBuffLog.timer = tostring(errC); b.cd:Clear() end
+      local okE, isFrenzy = pcall(function()
         local name = data.name
-        b.edge:SetShown(not ns.IsSecret(name) and name ~= nil and name:find("Frenzy") ~= nil)
+        return not ns.IsSecret(name) and name ~= nil and name:find("Frenzy") ~= nil
       end)
+      b.edge:SetShown(okE and isFrenzy or false)
+    elseif not okI then
+      petBuffLog.index = tostring(id)
     end
     b:SetShown(shown)
   end
 end
+ns.RangePetBuffLog = function() return petBuffLog end
 ns.RangePetBuffs = function() return frame and frame.pet and frame.pet.buffs end
 
 local function PetDistance()

@@ -58,6 +58,16 @@ function ns.Doctor()
     Line(fr ~= nil and fr > 0 or (fr == nil and nil) or false, "Frenzy talent", fr and (fr .. " of " .. tostring(frMax or 5) .. " points (Ferocity " .. tostring(fe or "?") .. ")") or "could not read the talent tree")
   end
 
+  if ns.RangePetBuffLog then
+    local log = ns.RangePetBuffLog()
+    local parts = {}
+    for _, k in ipairs({ "count", "sorted", "list", "index", "data", "icon", "timer" }) do
+      if log[k] ~= nil then parts[#parts + 1] = k .. "=" .. tostring(log[k]):sub(1, 70) end
+    end
+    local bad = log.list or log.index or log.data or log.icon or log.timer
+    Line(not bad and (#parts > 0 or nil), "Pet buff icons, last draw" .. (InCombatLockdown() and " (in a fight)" or " (not in a fight)"), table.concat(parts, "; "))
+  end
+
   -- spells you know
   local known, total = 0, 0
   for _, name in ipairs({ "Auto Shot", "Serpent Sting", "Hunter's Mark", "Raptor Strike", "Aspect of the Hawk" }) do

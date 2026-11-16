@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.19
+- Pet buff icons: each step of drawing an icon now stands on its own, so if the game refuses one in a fight (the picture or the timer) the icon still shows, with a claw picture when the real one is refused. /ut doctor says what each step answered the last time the icons were drawn.
+
 ## v2.19.18
 - The hunter display sits a bit lower so it doesn't cover your character when you zoom in (if you moved it yourself it stays where you put it; /ut hud reset goes to the new spot).
 - /ut doctor shows how many points you have in Frenzy and lists your pet's buffs.
