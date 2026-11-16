@@ -138,7 +138,7 @@ local function Build()
 
   -- reminders, right of the timers: Food (out of combat), Aspect of the Hawk (in a fight), Pet
   hud.remind = CreateFrame("Frame", nil, hud)
-  hud.remind:SetSize(3 * 32, 28)
+  hud.remind:SetSize(3 * 48, 28)
   hud.remind:SetPoint("LEFT", hud.mid, "RIGHT", 14, 4)
   hud.remind.icons = {}
   for i, r in ipairs({ { "food", "Interface\\Icons\\INV_Misc_Food_14", L["Food"] },
@@ -341,7 +341,7 @@ local function PaintReminders(fight)
     if show then
       b:ClearAllPoints()
       b:SetPoint("LEFT", x, 0)
-      x = x + 32
+      x = x + 48
     end
   end
 end

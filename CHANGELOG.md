@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.32.2
+- Hunter display: more room between the Food, aspect and Pet icons, so their names no longer run together.
+
 ## v2.32.1
 - The aspect icon on the hunter display now always shows the aspect you have on (Hawk, Cheetah, Monkey...) with its name. Start a fight without Aspect of the Hawk and it turns into a red "Hawk!" warning. With no aspect at all it shows a dim "No aspect". It hides while mounted. In a fight the game hides your buffs from addons, so there it goes by the last aspect it saw you cast. Switch: Settings, Under your character, "Show the aspect I have on".
 - Bag coins only mark things worth selling: unbound gear, bags, gems, trade goods and recipes. Ammo, food, drink, potions, reagents, quest items and keys no longer get one.
