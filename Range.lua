@@ -12,7 +12,7 @@ local C = ns.C
 --    exact distance to your pet, and a warning when it runs off chasing something or fights a
 --    different mob than your target. The Back macro (Rotation tab) calls it back.
 --  * Feign Death: says whether it dropped you out of combat.
--- Our own frame (gamepad safe). /ut range off | on | alerts | always | buffs | pet off | pet on | leash 30; /ut hud move moves it.
+-- Our own frame (gamepad safe). /ut range off | on | alerts | always | pet off | pet on | leash 30; /ut hud move moves it.
 ---------------------------------------------------------------------------
 
 local DEFAULT_POS = { "CENTER", 0, 120 }
@@ -290,25 +290,6 @@ local function Build()
   p.mend:SetAlpha(0)
   p.yd = Text(p, 11)
   p.yd:SetPoint("RIGHT", 0, 0)
-  -- the pet's buffs, soonest to run out first (Frenzy, Bestial Wrath, Mend Pet ...)
-  p.buffs = {}
-  for i = 1, 4 do
-    local b = CreateFrame("Frame", nil, p)
-    b:SetSize(20, 20)
-    b:SetPoint("LEFT", p, "RIGHT", 6 + (i - 1) * 22, 0)
-    b.edge = b:CreateTexture(nil, "BACKGROUND")
-    b.edge:SetPoint("TOPLEFT", -1.5, 1.5); b.edge:SetPoint("BOTTOMRIGHT", 1.5, -1.5)
-    b.edge:SetColorTexture(1, 0.82, 0.25, 1)
-    b.edge:Hide()
-    b.icon = b:CreateTexture(nil, "ARTWORK")
-    b.icon:SetAllPoints()
-    b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    b.cd = CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate")
-    b.cd:SetAllPoints()
-    if b.cd.SetReverse then b.cd:SetReverse(true) end
-    b:Hide()
-    p.buffs[i] = b
-  end
   frame.pet = p
 
   frame.hint = Text(frame, 11)
@@ -317,117 +298,9 @@ local function Build()
   Place()
 end
 
--- The pet's buffs as icons with timers. In a fight Forever hides which buff is which, but the
--- icon and the time left can still be handed to the widgets, so Frenzy shows as its own icon
--- the moment it starts. When the game does say the name, Frenzy gets a gold edge.
--- In a fight Forever refuses addons every question about buffs ("Auras cannot be accessed"). What
--- still arrives is the game's own notice that a buff or debuff was put on the pet, with its picture
--- in a form that can only be handed straight to an icon. So in fights the icons are fed from those
--- notices: newest first, taken away when the game says it ended (or after 12 seconds if the game
--- hides which one ended). Which one is Frenzy can't be told; its picture shows.
-local petSeen = {}           -- { id, icon, expires, duration, at }
-local petSeenLog = { events = 0, added = 0 }
-local function PetAuraEvent(info)
-  petSeenLog.events = petSeenLog.events + 1
-  local okF, full = pcall(function() return info.isFullUpdate end)
-  if not okF then petSeenLog.info = tostring(full) return end
-  if not ns.IsSecret(full) and full then wipe(petSeen) end
-  pcall(function()
-    for _, rid in ipairs(info.removedAuraInstanceIDs or {}) do
-      if ns.IsSecret(rid) then petSeenLog.removedHidden = true else
-        for i = #petSeen, 1, -1 do if petSeen[i].id == rid then table.remove(petSeen, i) end end
-      end
-    end
-  end)
-  local okA, errA = pcall(function()
-    local list = info.addedAuras
-    petSeenLog.listIs = (ns.IsSecret(list) and "hidden " or "") .. type(list)
-    if list == nil then return end
-    -- the list itself can be hidden (no walking it): its entries are asked for one by one
-    for i = 1, 4 do
-      local okE, a = pcall(function() return list[i] end)
-      if not okE then petSeenLog.entry = tostring(a) break end
-      if a == nil then break end
-      local id = a.auraInstanceID
-      if ns.IsSecret(id) then id = nil; petSeenLog.idHidden = true end
-      petSeen[#petSeen + 1] = { id = id, icon = a.icon, expires = a.expirationTime, duration = a.duration, at = GetTime() }
-      petSeenLog.added = petSeenLog.added + 1
-    end
-  end)
-  if not okA then petSeenLog.addedErr = tostring(errA) end
-  while #petSeen > 8 do table.remove(petSeen, 1) end
-end
-
-local function PaintPetSeen(p)
-  local now = GetTime()
-  for i = #petSeen, 1, -1 do
-    local e = petSeen[i]
-    if now - e.at > (e.id and 60 or 12) then table.remove(petSeen, i) end
-  end
-  for i, b in ipairs(p.buffs) do
-    local e = petSeen[#petSeen - i + 1]
-    if e then
-      if b.seen ~= e then
-        b.seen = e
-        local okT, errT = pcall(function() b.icon:SetTexture(e.icon) end)
-        if not okT then petSeenLog.icon = tostring(errT); b.icon:SetTexture("Interface\\Icons\\Ability_Druid_Rake") end
-        local okC, errC = pcall(function() b.cd:SetCooldownFromExpirationTime(e.expires, e.duration) end)
-        if not okC then petSeenLog.timer = tostring(errC); b.cd:Clear() end
-        b.edge:Hide()
-      end
-      b:Show()
-    else
-      b.seen = nil
-      b:Hide()
-    end
-  end
-end
-ns.RangePetSeenLog = function() petSeenLog.showing = #petSeen return petSeenLog end
-
-local petBuffLog = {}        -- what each step answered last time, for /ut doctor
-local function PaintPetBuffs(p, show)
-  local ids
-  wipe(petBuffLog)
-  if show and ns.db.petBuffs ~= false and C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs then
-    local rule = Enum and Enum.UnitAuraSortRule and Enum.UnitAuraSortRule.ExpirationOnly
-    local ok, list = pcall(C_UnitAuras.GetUnitAuraInstanceIDs, "pet", "HELPFUL", 4, rule)
-    if not ok then petBuffLog.sorted = tostring(list) end
-    if not ok or type(list) ~= "table" then ok, list = pcall(C_UnitAuras.GetUnitAuraInstanceIDs, "pet", "HELPFUL") end
-    if ok and type(list) == "table" then ids = list else petBuffLog.list = tostring(list) end
-  end
-  local okN, count = pcall(function() return ids and #ids or 0 end)
-  petBuffLog.count = okN and count or "hidden"
-  if not ids and show and ns.db.petBuffs ~= false then PaintPetSeen(p) return end
-  if #petSeen > 0 then wipe(petSeen) end
-  for i, b in ipairs(p.buffs) do
-    b.seen = nil
-    local okI, id = pcall(function() return ids and ids[i] end)
-    local shown = false
-    if okI and id ~= nil then
-      shown = true
-      -- each step on its own: a step the game refuses in a fight doesn't take the icon away
-      local okD, data = pcall(C_UnitAuras.GetAuraDataByAuraInstanceID, "pet", id)
-      if not okD then petBuffLog.data = tostring(data) end
-      local okT, errT = pcall(function() b.icon:SetTexture(data.icon) end)
-      if not okT then
-        petBuffLog.icon = tostring(errT)
-        b.icon:SetTexture("Interface\\Icons\\Ability_Druid_Rake")
-      end
-      local okC, errC = pcall(function() b.cd:SetCooldownFromDurationObject(C_UnitAuras.GetAuraDuration("pet", id), true) end)
-      if not okC then petBuffLog.timer = tostring(errC); b.cd:Clear() end
-      local okE, isFrenzy = pcall(function()
-        local name = data.name
-        return not ns.IsSecret(name) and name ~= nil and name:find("Frenzy") ~= nil
-      end)
-      b.edge:SetShown(okE and isFrenzy or false)
-    elseif not okI then
-      petBuffLog.index = tostring(id)
-    end
-    b:SetShown(shown)
-  end
-end
-ns.RangePetBuffLog = function() return petBuffLog end
-ns.RangePetBuffs = function() return frame and frame.pet and frame.pet.buffs end
+-- Frenzy and the pet's other buffs can't be shown: in a fight Forever refuses addons every way of
+-- reading buffs (the questions error with "Auras cannot be accessed", and the game's own notices
+-- arrive as hidden tables that can't be opened). Tried in 2.19.16 to 2.19.21, taken out in 2.19.22.
 
 local function PetDistance()
   if not UnitDistanceSquared then return nil end
@@ -494,7 +367,6 @@ local function Paint()
     else
       p.yd:SetText("")
     end
-    PaintPetBuffs(p, true)
     p:Show()
   else
     p:Hide()
@@ -546,10 +418,6 @@ function ns.RangeCommand(arg)
     ns.db.rangeMeter = arg == "on"
     ns.Print(ns.db.rangeMeter and L["The range meter is on."] or L["The range meter is off (/ut range on brings it back)."])
     Paint()
-  elseif arg == "buffs" then
-    ns.db.petBuffs = ns.db.petBuffs == false
-    ns.Print(ns.db.petBuffs and L["Your pet's buffs show next to its health bar."] or L["Your pet's buffs are hidden (/ut range buffs brings them back)."])
-    Paint()
   elseif arg == "alerts" or arg == "always" then
     ns.db.rangeMode = arg
     ns.Print(arg == "alerts" and L["The range meter only shows when you're too close or too far."] or L["The range meter shows whenever you target an enemy."])
@@ -564,16 +432,6 @@ function ns.RangeCommand(arg)
   else
     ns.Print(L["/ut range off, on, alerts (only when too close or too far), always, pet off, pet on, leash 30  (/ut hud move moves it)"])
   end
-end
-
-do
-  local au = CreateFrame("Frame")
-  if au.RegisterUnitEvent then pcall(au.RegisterUnitEvent, au, "UNIT_AURA", "pet") end
-  pcall(au.RegisterEvent, au, "UNIT_PET")
-  au:SetScript("OnEvent", function(_, event, unit, info)
-    if event == "UNIT_PET" then wipe(petSeen) return end
-    if info ~= nil then PetAuraEvent(info) end
-  end)
 end
 
 do

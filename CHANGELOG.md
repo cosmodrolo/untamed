@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.22
+- The pet buff icons (for Frenzy) are taken out. Forever doesn't let addons read buffs during a fight in any form: asking errors with "Auras cannot be accessed", and the game's own notices about new buffs arrive as hidden tables that can't be opened. Frenzy still shows on Blizzard's target frame when you target your pet.
+
 ## v2.19.21
 - Pet buff notices: the list of new buffs arrives hidden and can't be walked, so its entries are asked for one by one. /ut doctor says more about what came through.
 

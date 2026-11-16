@@ -37,48 +37,10 @@ function ns.Doctor()
     Line(nil, "Pet spellbook", "no pet out")
   end
 
-  if UnitExists("pet") and C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs then
-    local okB, list = Try(C_UnitAuras.GetUnitAuraInstanceIDs, "pet", "HELPFUL")
-    local names = {}
-    if okB and type(list) == "table" then
-      for _, id in ipairs(list) do
-        local okD, data = pcall(C_UnitAuras.GetAuraDataByAuraInstanceID, "pet", id)
-        local okN, n = pcall(function() return data.name end)
-        names[#names + 1] = (okD and okN and not ns.IsSecret(n) and n) or "(hidden)"
-      end
-    end
-    if not okB and InCombatLockdown() then
-      Line(nil, "Pet buffs", "the game refuses this in a fight (expected)")
-    else
-      Line(okB, "Pet buffs", okB and (#names .. ": " .. table.concat(names, ", ")) or list)
-    end
-  else
-    Line(C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs and nil or false, "Pet buffs (Frenzy icon)", "no pet out or function missing")
-  end
-
   if ns.TalentRankOf then
     local fr, frMax = ns.TalentRankOf("Frenzy")
     local fe = ns.TalentRankOf("Ferocity")
     Line(fr ~= nil and fr > 0 or (fr == nil and nil) or false, "Frenzy talent", fr and (fr .. " of " .. tostring(frMax or 5) .. " points (Ferocity " .. tostring(fe or "?") .. ")") or "could not read the talent tree")
-  end
-
-  if ns.RangePetBuffLog then
-    local log = ns.RangePetBuffLog()
-    local parts = {}
-    for _, k in ipairs({ "count", "sorted", "list", "index", "data", "icon", "timer" }) do
-      if log[k] ~= nil then parts[#parts + 1] = k .. "=" .. tostring(log[k]):sub(1, 70) end
-    end
-    local bad = log.list or log.index or log.data or log.icon or log.timer
-    Line((not bad or InCombatLockdown()) and nil, "Pet buff icons, last draw" .. (InCombatLockdown() and " (in a fight)" or " (not in a fight)"), table.concat(parts, "; "))
-  end
-
-  if ns.RangePetSeenLog then
-    local log = ns.RangePetSeenLog()
-    local parts = {}
-    for _, k in ipairs({ "events", "added", "showing", "listIs", "idHidden", "removedHidden", "info", "entry", "addedErr", "icon", "timer" }) do
-      if log[k] ~= nil then parts[#parts + 1] = k .. "=" .. tostring(log[k]):gsub("Interface/AddOns/Untamed/", ""):sub(1, 110) end
-    end
-    Line(nil, "Pet buff notices (fight icons)", table.concat(parts, "; "))
   end
 
   -- spells you know
