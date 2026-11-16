@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.21.2
+- Bestiary: a beast's model shows the first time you open its page (the game is still fetching it then; Untamed now asks again until it's there).
+
 ## v2.21.1
 - Bestiary page: the family icon no longer sits behind the model (it only stands in when the game has no model to show), the model stands back a little so long beasts fit, the switches show their whole label, the sort dropdown shares a row with the family one, and the mouse tooltip that covered the page is gone.
 

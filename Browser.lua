@@ -152,6 +152,7 @@ local function FillPage()
   page.icon:SetTexture(ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"))
   if page.modelId ~= id then
     page.modelId = id
+    page.tries, page.wait = 0, 0
     page.facing = 0.5
     if page.model.ClearModel then pcall(page.model.ClearModel, page.model) end
     local ok = page.model.SetCreature and pcall(page.model.SetCreature, page.model, id)
@@ -316,7 +317,19 @@ local function BuildPage(panel)
     -- the family's icon only stands in while the game has no model to show
     if self.GetModelFileID then
       local ok, file = pcall(self.GetModelFileID, self)
-      if ok then page.icon:SetShown(not file) end
+      if ok then
+        page.icon:SetShown(not file)
+        -- the first time you look at a beast the game is still fetching it and the model comes up
+        -- empty: ask again every half second until it's there (20 tries)
+        if not file and page.modelId and (page.tries or 0) < 20 then
+          page.wait = (page.wait or 0) + e
+          if page.wait >= 0.5 then
+            page.wait, page.tries = 0, (page.tries or 0) + 1
+            pcall(self.SetCreature, self, page.modelId)
+            if self.SetCamDistanceScale then pcall(self.SetCamDistanceScale, self, 1.55) end
+          end
+        end
+      end
     end
   end)
 
