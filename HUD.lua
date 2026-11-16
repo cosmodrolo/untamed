@@ -21,13 +21,14 @@ local COOLDOWNS = { "Summon Hawk", "Aimed Shot", "Multi-Shot", "Rapid Fire", "Be
 local ESCAPES = { "Feign Death", "Frost Trap", "Freezing Trap", "Disengage" }
 local STING_IDS = { [1978] = true, [13549] = true, [13550] = true, [13551] = true, [13552] = true, [13553] = true, [13554] = true, [13555] = true }
 local MARK_IDS = { [1130] = true, [14323] = true, [14324] = true, [14325] = true }
-local HAWK_ASPECT = { [13165] = true, [14318] = true, [14319] = true, [14320] = true, [14321] = true, [14322] = true }
+local HAWK_ASPECT = { [13165] = true, [14318] = true, [14319] = true, [14320] = true, [14321] = true, [14322] = true, [25296] = true }
 local OTHER_ASPECTS = { [5118] = true, [13159] = true, [13163] = true, [20043] = true, [20190] = true, [13161] = true }
 local DEFAULT_DUR = { sting = 15, mark = 120 }
 
 local hud, moving
 local timers = {}   -- sting / mark: { ends, dur, guid }
 local aspect        -- "hawk", "other" or nil (unknown / none)
+local aspectID      -- the spell of the aspect that's on, when we know it
 
 local function Plain(v) if v == nil or ns.IsSecret(v) then return nil end return v end
 local function Bool(v, hidden) if ns.IsSecret(v) then return hidden end return v and true or false end
@@ -274,16 +275,45 @@ local function ReadAspect()
   local found
   for id in pairs(HAWK_ASPECT) do
     local ok, a = pcall(C_UnitAuras.GetPlayerAuraBySpellID, id)
-    if ok and a and not ns.IsSecret(a) then found = "hawk" break end
+    if ok and a and not ns.IsSecret(a) then found, aspectID = "hawk", id break end
     if not ok or ns.IsSecret(a) then return end   -- hidden right now: keep what we know
   end
   if not found then
     for id in pairs(OTHER_ASPECTS) do
       local ok, a = pcall(C_UnitAuras.GetPlayerAuraBySpellID, id)
-      if ok and a and not ns.IsSecret(a) then found = "other" break end
+      if ok and a and not ns.IsSecret(a) then found, aspectID = "other", id break end
     end
   end
   aspect = found
+  if not found then aspectID = nil end
+end
+
+-- The aspect icon: always the aspect you have on. In a fight without Hawk it turns into the
+-- "switch to Hawk" warning. In a fight the game hides buffs, so it goes by your last cast.
+local function PaintAspect(b, fight)
+  local hawk = Known("Aspect of the Hawk")
+  if fight and hawk and aspect ~= "hawk" then
+    b.icon:SetTexture(SpellIcon("Aspect of the Hawk"))
+    b.icon:SetDesaturated(false); b:SetAlpha(1)
+    b.label:SetText("|cffff5050" .. L["Hawk!"] .. "|r")
+    return true
+  end
+  if aspect and aspectID then
+    local tex = C_Spell and C_Spell.GetSpellTexture and Plain(C_Spell.GetSpellTexture(aspectID))
+    b.icon:SetTexture(tex or SpellIcon("Aspect of the Hawk"))
+    b.icon:SetDesaturated(false); b:SetAlpha(1)
+    local name = ns.SpellName and ns.SpellName(aspectID) or ""
+    name = name:gsub("^Aspect of the ", "")
+    b.label:SetText("|cffc8d2c8" .. name .. "|r")
+    return true
+  end
+  if hawk and not aspect then
+    b.icon:SetTexture(SpellIcon("Aspect of the Hawk"))
+    b.icon:SetDesaturated(true); b:SetAlpha(0.6)
+    b.label:SetText("|cffff9c40" .. L["No aspect"] .. "|r")
+    return true
+  end
+  return false
 end
 
 local function WellFed()
@@ -299,12 +329,14 @@ local function PaintReminders(fight)
   local hasPet = Bool(UnitExists("pet"), true) and not Bool(UnitIsDead("pet"), false)
   local want = {
     food = not fight and not mounted and ns.db.hudFood ~= false and not WellFed(),
-    aspect = fight and Known("Aspect of the Hawk") and aspect ~= "hawk",
+    aspect = ns.db.hudAspect ~= false and not mounted,
     pet = not hasPet and not mounted and Known("Call Pet"),
   }
   local x = 0
   for _, b in ipairs(hud.remind.icons) do
-    local show = moving or want[b.key]
+    local show = want[b.key]
+    if b.key == "aspect" and show then show = PaintAspect(b, fight) end
+    show = moving or show
     b:SetShown(show and true or false)
     if show then
       b:ClearAllPoints()
@@ -403,8 +435,8 @@ do
       if unit == "player" and spellID and not ns.IsSecret(spellID) then
         if STING_IDS[spellID] then StartTimer("sting", "Serpent Sting")
         elseif MARK_IDS[spellID] then StartTimer("mark", "Hunter's Mark")
-        elseif HAWK_ASPECT[spellID] then aspect = "hawk"
-        elseif OTHER_ASPECTS[spellID] then aspect = "other" end
+        elseif HAWK_ASPECT[spellID] then aspect, aspectID = "hawk", spellID
+        elseif OTHER_ASPECTS[spellID] then aspect, aspectID = "other", spellID end
       end
       UpdateCooldowns()
     elseif event == "UNIT_AURA" then

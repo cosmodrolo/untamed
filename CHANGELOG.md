@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.32.1
+- The aspect icon on the hunter display now always shows the aspect you have on (Hawk, Cheetah, Monkey...) with its name. Start a fight without Aspect of the Hawk and it turns into a red "Hawk!" warning. With no aspect at all it shows a dim "No aspect". It hides while mounted. In a fight the game hides your buffs from addons, so there it goes by the last aspect it saw you cast. Switch: Settings, Under your character, "Show the aspect I have on".
+- Bag coins only mark things worth selling: unbound gear, bags, gems, trade goods and recipes. Ammo, food, drink, potions, reagents, quest items and keys no longer get one.
+
 ## v2.32.0
 Marks on the items in your bags, built so they can't break the controller.
 - A green arrow on gear that beats what you wear, a small lock on soulbound items, and a small coin on items that aren't bound yet (so they can be traded or put on the Auction House). Grey junk and quest items get no coin.

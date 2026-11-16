@@ -429,7 +429,17 @@ do
   for id, g in pairs(ns.GearItems) do if g[1] == "HEAD" and g[2] <= 10 and g[4] == 0 and g[3] > 5 then up = id break end end
   local bagItems = { { itemID = up, isBound = false, quality = 2 }, { itemID = 6948, isBound = true, quality = 1 }, { itemID = 117, isBound = false, quality = 0 } }
   C_Container.GetContainerItemInfo = function(bag, slot) return bag == 0 and bagItems[slot] or nil end
+  local keepInstant = C_Item.GetItemInfoInstant
+  bagItems[4] = { itemID = 2512, isBound = false, quality = 1 }
+  C_Item.GetItemInfoInstant = function(id)
+    if id == up then return id, "Armor", "Leather", "INVTYPE_HEAD", 0, 4, 2 end
+    if id == 2512 then return id, "Projectile", "Arrow", "", 0, 6, 2 end
+    return keepInstant(id)
+  end
   local a, b, c = ns.BagMarksFor(0, 1), ns.BagMarksFor(0, 2), ns.BagMarksFor(0, 3)
+  local ammo = ns.BagMarksFor(0, 4)
+  check(ammo and not ammo.coin, "bag marks: arrows get no coin")
+  C_Item.GetItemInfoInstant = keepInstant
   check(a and a.up and a.coin and not a.lock, "bag marks: unbound upgrade gets the arrow and the coin")
   check(b and b.lock and not b.coin and not b.up, "bag marks: a soulbound item gets the lock")
   check(c and not c.coin and not c.lock, "bag marks: grey junk gets nothing")

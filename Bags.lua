@@ -26,6 +26,8 @@ local wasOpen = false
 
 local function Plain(v) if v == nil or ns.IsSecret(v) then return nil end return v end
 
+local SELL_CLASS = { [1] = true, [2] = true, [3] = true, [4] = true, [7] = true, [9] = true }
+
 local function On(key) return ns.db and ns.db[key] ~= false end
 
 -- What marks one bag slot gets. Pure data: no frames touched.
@@ -41,17 +43,21 @@ local function Marks(bag, slot)
       local bound = Plain(info.isBound) and true or false
       local quality = Plain(info.quality)
       local link = Plain(info.hyperlink)
-      local quest = false
+      -- worth selling: bags, weapons, gems, armor, trade goods, recipes; green or better odds and ends.
+      -- Ammo, food, drink, potions, reagents, quest items and keys get no coin.
+      local sellable = false
       local instant = (C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
       if instant then
         local okI, _, _, _, _, _, classID = pcall(instant, id)
-        if okI and classID == 12 then quest = true end
+        if okI and type(classID) == "number" then
+          sellable = SELL_CLASS[classID] or (classID == 15 and (quality or 0) >= 2) or false
+        end
       end
       local gain = ns.GearGain and ns.GearGain(id, link)
       m = {
         up = (gain and gain > 0) or false,
         lock = bound,
-        coin = (not bound) and (not quest) and (quality or 1) >= 1,
+        coin = (not bound) and sellable and (quality or 1) >= 1,
       }
     end
   end
