@@ -670,7 +670,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed chests  chest spots on the map (on, off, minimap)   |  /untamed scan  what the game marks on your minimap")
     ns.Print("/untamed recorded  what Untamed has noted for future data updates")
     ns.Print("/untamed doctor  self-check: what the game answers for each part of Untamed")
-    ns.Print("/untamed range  the range meter and pet watch (off, on, alerts, always, pet off, pet on, leash 30)")
+    ns.Print("/untamed range  the range meter and pet watch (off, on, alerts, always, buffs, pet off, pet on, leash 30)")
     ns.Print("/untamed want <beast name>  put a beast on your wishlist (again to take it off)   |  /untamed wishlist  open it")
   else
     if ns.UI_Toggle then ns.UI_Toggle() end

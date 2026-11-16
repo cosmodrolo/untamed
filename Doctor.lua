@@ -37,6 +37,21 @@ function ns.Doctor()
     Line(nil, "Pet spellbook", "no pet out")
   end
 
+  if UnitExists("pet") and C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs then
+    local okB, list = Try(C_UnitAuras.GetUnitAuraInstanceIDs, "pet", "HELPFUL")
+    local names = {}
+    if okB and type(list) == "table" then
+      for _, id in ipairs(list) do
+        local okD, data = pcall(C_UnitAuras.GetAuraDataByAuraInstanceID, "pet", id)
+        local okN, n = pcall(function() return data.name end)
+        names[#names + 1] = (okD and okN and not ns.IsSecret(n) and n) or "(hidden)"
+      end
+    end
+    Line(okB, "Pet buffs (Frenzy icon)", okB and (#names .. ": " .. table.concat(names, ", ")) or list)
+  else
+    Line(C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs and nil or false, "Pet buffs (Frenzy icon)", "no pet out or function missing")
+  end
+
   -- spells you know
   local known, total = 0, 0
   for _, name in ipairs({ "Auto Shot", "Serpent Sting", "Hunter's Mark", "Raptor Strike", "Aspect of the Hawk" }) do

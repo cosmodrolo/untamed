@@ -12,7 +12,7 @@ local C = ns.C
 --    exact distance to your pet, and a warning when it runs off chasing something or fights a
 --    different mob than your target. The Back macro (Rotation tab) calls it back.
 --  * Feign Death: says whether it dropped you out of combat.
--- Our own frame (gamepad safe). /ut range off | on | alerts | always | pet off | pet on | leash 30; /ut hud move moves it.
+-- Our own frame (gamepad safe). /ut range off | on | alerts | always | buffs | pet off | pet on | leash 30; /ut hud move moves it.
 ---------------------------------------------------------------------------
 
 local DEFAULT_POS = { "CENTER", 0, 120 }
@@ -290,6 +290,25 @@ local function Build()
   p.mend:SetAlpha(0)
   p.yd = Text(p, 11)
   p.yd:SetPoint("RIGHT", 0, 0)
+  -- the pet's buffs, soonest to run out first (Frenzy, Bestial Wrath, Mend Pet ...)
+  p.buffs = {}
+  for i = 1, 4 do
+    local b = CreateFrame("Frame", nil, p)
+    b:SetSize(20, 20)
+    b:SetPoint("LEFT", p, "RIGHT", 6 + (i - 1) * 22, 0)
+    b.edge = b:CreateTexture(nil, "BACKGROUND")
+    b.edge:SetPoint("TOPLEFT", -1.5, 1.5); b.edge:SetPoint("BOTTOMRIGHT", 1.5, -1.5)
+    b.edge:SetColorTexture(1, 0.82, 0.25, 1)
+    b.edge:Hide()
+    b.icon = b:CreateTexture(nil, "ARTWORK")
+    b.icon:SetAllPoints()
+    b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    b.cd = CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate")
+    b.cd:SetAllPoints()
+    if b.cd.SetReverse then b.cd:SetReverse(true) end
+    b:Hide()
+    p.buffs[i] = b
+  end
   frame.pet = p
 
   frame.hint = Text(frame, 11)
@@ -297,6 +316,38 @@ local function Build()
   frame.hint:Hide()
   Place()
 end
+
+-- The pet's buffs as icons with timers. In a fight Forever hides which buff is which, but the
+-- icon and the time left can still be handed to the widgets, so Frenzy shows as its own icon
+-- the moment it starts. When the game does say the name, Frenzy gets a gold edge.
+local function PaintPetBuffs(p, show)
+  local ids
+  if show and ns.db.petBuffs ~= false and C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs then
+    local rule = Enum and Enum.UnitAuraSortRule and Enum.UnitAuraSortRule.ExpirationOnly
+    local ok, list = pcall(C_UnitAuras.GetUnitAuraInstanceIDs, "pet", "HELPFUL", 4, rule)
+    if not ok then ok, list = pcall(C_UnitAuras.GetUnitAuraInstanceIDs, "pet", "HELPFUL") end
+    if ok and type(list) == "table" then ids = list end
+  end
+  for i, b in ipairs(p.buffs) do
+    local shown = false
+    local id = ids and ids[i]
+    if id ~= nil then
+      shown = pcall(function()
+        local data = C_UnitAuras.GetAuraDataByAuraInstanceID("pet", id)
+        b.icon:SetTexture(data.icon)
+        local timed
+        if C_UnitAuras.GetAuraDuration and b.cd.SetCooldownFromDurationObject then
+          timed = pcall(function() b.cd:SetCooldownFromDurationObject(C_UnitAuras.GetAuraDuration("pet", id), true) end)
+        end
+        if not timed then b.cd:Clear() end
+        local name = data.name
+        b.edge:SetShown(not ns.IsSecret(name) and name ~= nil and name:find("Frenzy") ~= nil)
+      end)
+    end
+    b:SetShown(shown)
+  end
+end
+ns.RangePetBuffs = function() return frame and frame.pet and frame.pet.buffs end
 
 local function PetDistance()
   if not UnitDistanceSquared then return nil end
@@ -363,6 +414,7 @@ local function Paint()
     else
       p.yd:SetText("")
     end
+    PaintPetBuffs(p, true)
     p:Show()
   else
     p:Hide()
@@ -413,6 +465,10 @@ function ns.RangeCommand(arg)
   elseif arg == "off" or arg == "on" then
     ns.db.rangeMeter = arg == "on"
     ns.Print(ns.db.rangeMeter and L["The range meter is on."] or L["The range meter is off (/ut range on brings it back)."])
+    Paint()
+  elseif arg == "buffs" then
+    ns.db.petBuffs = ns.db.petBuffs == false
+    ns.Print(ns.db.petBuffs and L["Your pet's buffs show next to its health bar."] or L["Your pet's buffs are hidden (/ut range buffs brings them back)."])
     Paint()
   elseif arg == "alerts" or arg == "always" then
     ns.db.rangeMode = arg

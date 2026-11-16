@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.16
+- Your pet's buffs now show as small icons with timers next to its health bar under your character, the one running out soonest first. Frenzy appears there the moment it starts and counts down. In a fight Forever hides which buff is which from addons, so Untamed shows them all (up to four) instead of picking out Frenzy; when the game does give the name, Frenzy gets a gold edge. /ut range buffs turns the icons off or on.
+
 ## v2.19.15
 - Range meter: still said "Melee 5 yd" on a far target. On Forever both the spell check and the action bar say "yes" for Raptor Strike at any distance. Now a shot with a minimum range (Auto Shot) that says "in range" wins over a melee "yes", so a target you can shoot shows "In range".
 - /ut doctor prints the raw range answers (Auto Shot, Raptor Strike, Wing Clip, your melee bar slot) and no longer marks the pet distance red when the game hides it in a fight.
