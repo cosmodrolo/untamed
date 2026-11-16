@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.36.1
+- Restock: "Ammo to carry" has a new choice, Fill my quiver, and it is the default. Untamed reads the quiver or ammo pouch you wear and buys exactly what still fits in it (a 14 slot quiver holds 2,800), in whole stacks so nothing spills into your bags. Slots holding a different kind of ammo are left alone. With no quiver worn it tops up to 1,000 as before.
+- If your amount was still the old default of 1,000 it moves to Fill my quiver once; an amount you picked yourself stays.
+
 ## v2.36.0
 Two steps toward not needing a second gear addon.
 - Rank: every piece of hunter gear now has a place among everything you can wear in its slot at your level. Item tooltips get a line ("rank 3 of 41 for shoulders"), and an item's page in Gear says it in full under Good to know, with the name of the best one.

@@ -527,4 +527,24 @@ do
   ns.QuestAdviceTest.Fill("complete")
   ns.QuestAdviceTest.Close()
 end
+-- Restock: "Fill my quiver" buys what still fits in the quiver
+do
+  local kInv, kInstant, kInfo, kSlots = GetInventoryItemID, C_Item.GetItemInfoInstant, C_Container.GetContainerItemInfo, C_Container.GetContainerNumSlots
+  GetInventoryItemID = function(u, slot) if slot == 23 then return 7371 end return kInv(u, slot) end       -- bag 4 holds a quiver
+  C_Item.GetItemInfoInstant = function(id) if id == 7371 then return id, "Quiver", "Quiver", "INVTYPE_QUIVER", 0, 11, 2 end return kInstant(id) end
+  C_Container.GetContainerNumSlots = function(bag) if bag == 4 then return 14 end return kSlots(bag) end
+  C_Container.GetContainerItemInfo = function(bag, slot)
+    if bag == 4 then
+      if slot <= 3 then return { itemID = 2515, stackCount = 200 } end
+      if slot == 4 then return { itemID = 2515, stackCount = 50 } end
+      if slot == 5 then return { itemID = 2512, stackCount = 200 } end     -- another kind of arrow: no room there
+      return nil
+    end
+    return kInfo(bag, slot)
+  end
+  local room, slots = ns.QuiverRoom(2515)
+  check(slots == 14 and room == 150 + 9 * 200, "restock: room left in a 14 slot quiver")
+  GetInventoryItemID, C_Item.GetItemInfoInstant, C_Container.GetContainerItemInfo, C_Container.GetContainerNumSlots = kInv, kInstant, kInfo, kSlots
+  check(ns.QuiverRoom(2515) == nil, "restock: no quiver worn, no quiver amount")
+end
 print("DONE")

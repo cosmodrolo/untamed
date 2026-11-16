@@ -223,7 +223,9 @@ local function Refresh(panel, t)
   local ammoID = GetInventoryItemID and GetInventoryItemID("player", INVSLOT_AMMO or 0)
   if class == "HUNTER" and level >= 2 then
     local count = ammoID and GetInventoryItemCount("player", INVSLOT_AMMO or 0) or 0
-    if count < math.min(400, (ns.db.ammoTarget or 1000) / 2) then
+    local ammoTarget = ns.db.ammoTarget or 0
+    if ammoTarget == 0 then ammoTarget = 1000 end      -- "Fill my quiver"
+    if count < math.min(400, ammoTarget / 2) then
       item("INV_Ammo_Arrow_02", string.format(L["Ammo is low (%d). Restock at a vendor."], count), "", "supplies")
     end
   end

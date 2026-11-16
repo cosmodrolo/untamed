@@ -227,7 +227,7 @@ local SECTIONS = {
       { "check", L["Mend Pet and Revive Pet alerts"], "petHealthAlerts", L["Says so on screen when your pet is low on health or has died."] },
       { "check", L["Low ammo warning"], "ammoWarning", L["Warns below 200 arrows or bullets and points you to the nearest ammo vendor."] },
       { "check", L["Restock when I open a vendor"], "autoRestock", L["Buys ammo and pet food up to the amounts below without asking. Off: use the Restock button beside the vendor window."] },
-      { "choose", L["Ammo to carry"], "ammoTarget", { { 400, "400" }, { 800, "800" }, { 1000, "1000" }, { 1400, "1400" }, { 2000, "2000" } }, 1000 },
+      { "choose", L["Ammo to carry"], "ammoTarget", { { 0, L["Fill my quiver"] }, { 400, "400" }, { 800, "800" }, { 1000, "1000" }, { 1400, "1400" }, { 2000, "2000" } }, 0 },
       { "choose", L["Pet food to carry"], "foodTarget", { { 5, "5" }, { 10, "10" }, { 20, "20" }, { 40, "40" } }, 20 },
     } },
   { key = "gear", title = L["Gear, spells and talents"], icon = "INV_Weapon_Bow_07",

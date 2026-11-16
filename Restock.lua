@@ -36,6 +36,41 @@ end
 
 local function Count(id) return (C_Item and C_Item.GetItemCount and C_Item.GetItemCount(id)) or (GetItemCount and GetItemCount(id)) or 0 end
 
+-- Your quiver or ammo pouch: how much more of one kind of ammo fits in it. Returns the room left
+-- (nil when you wear none), and its number of slots.
+local function QuiverRoom(ammoID)
+  local CC = C_Container
+  if not (CC and CC.GetContainerNumSlots and CC.ContainerIDToInventoryID) then return nil end
+  local instant = (C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
+  local info = (C_Item and C_Item.GetItemInfo) or GetItemInfo
+  local stack = 200
+  if info and ammoID then
+    local ok, _, _, _, _, _, _, _, maxStack = pcall(info, ammoID)
+    if ok and type(maxStack) == "number" and maxStack > 0 then stack = maxStack end
+  end
+  local room, slots
+  for bag = 1, (NUM_BAG_SLOTS or 4) do
+    local okI, inv = pcall(CC.ContainerIDToInventoryID, bag)
+    local bagItem = okI and inv and GetInventoryItemID("player", inv)
+    local classID
+    if bagItem and instant then
+      local ok, _, _, _, _, _, cls = pcall(instant, bagItem)
+      classID = ok and cls or nil
+    end
+    if classID == 11 then                      -- a quiver or an ammo pouch
+      local n = CC.GetContainerNumSlots(bag) or 0
+      room, slots = room or 0, (slots or 0) + n
+      for slot = 1, n do
+        local it = CC.GetContainerItemInfo(bag, slot)
+        if not it or not it.itemID then room = room + stack
+        elseif it.itemID == ammoID then room = room + math.max(0, stack - (it.stackCount or 0)) end
+      end
+    end
+  end
+  return room, slots
+end
+ns.QuiverRoom = QuiverRoom
+
 -- Best ammo and food this vendor sells for you: returns { {index, id, want}, ... }
 local function Plan()
   local db = ns.SearchDB and ns.SearchDB()
@@ -61,8 +96,19 @@ local function Plan()
   local out = {}
   if bestAmmo then
     local have = Count(bestAmmo.id)
-    local target = ns.db.ammoTarget or 1000
-    if have < target then out[#out + 1] = { index = bestAmmo.index, id = bestAmmo.id, want = target - have, kind = "ammo" } end
+    local target = ns.db.ammoTarget or 0
+    local room = target == 0 and QuiverRoom(bestAmmo.id) or nil
+    if room then
+      -- "Fill my quiver": whatever still fits in it
+      -- whole vendor stacks only, so nothing spills over into your bags
+      local _, perBuy = MerchantPrice(bestAmmo.index)
+      perBuy = math.max(1, perBuy or 1)
+      local want = math.floor(room / perBuy) * perBuy
+      if want > 0 then out[#out + 1] = { index = bestAmmo.index, id = bestAmmo.id, want = want, kind = "ammo" } end
+    else
+      if target == 0 then target = 1000 end      -- no quiver worn: a sensible amount
+      if have < target then out[#out + 1] = { index = bestAmmo.index, id = bestAmmo.id, want = target - have, kind = "ammo" } end
+    end
   end
   if bestFood and bestFood.ilvl >= (petLevel or 0) - 30 then
     local have = Count(bestFood.id)
@@ -84,7 +130,7 @@ function ns.Restock(quiet)
     local price, perBuy = MerchantPrice(p.index)
     perBuy = math.max(1, perBuy or 1)
     -- One purchase = one vendor click (a stack of perBuy items), like clicking the item yourself.
-    local clicks = math.min(20, math.ceil(p.want / perBuy))
+    local clicks = math.min(30, math.ceil(p.want / perBuy))
     local bought = 0
     for _ = 1, clicks do
       if price and price > GetMoney() then
@@ -109,7 +155,9 @@ local function UpdateButton()
     button:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", -4, -60)
     button:SetScript("OnEnter", function(self)
       local plan, ammo, food = Plan()
-      local lines = { L["Restock"], string.format(L["Tops up ammo to %d and pet food to %d. Change these in Untamed Settings."], ns.db.ammoTarget or 1000, ns.db.foodTarget or 20) }
+      local at = ns.db.ammoTarget or 0
+      local lines = { L["Restock"], at == 0 and string.format(L["Fills your quiver or ammo pouch and tops up pet food to %d. Change these in Untamed Settings."], ns.db.foodTarget or 20)
+        or string.format(L["Tops up ammo to %d and pet food to %d. Change these in Untamed Settings."], at, ns.db.foodTarget or 20) }
       for _, p in ipairs(plan) do
         local name = GetMerchantItemInfo and GetMerchantItemInfo(p.index) or p.id
         lines[#lines + 1] = C.GREEN .. string.format(L["Will buy %d %s"], p.want, name) .. "|r"
@@ -142,8 +190,14 @@ ev:SetScript("OnEvent", function(_, event)
 end)
 
 ns.On("LOGIN", function()
-  for k, v in pairs({ ammoTarget = 1000, foodTarget = 20, autoRestock = false }) do
+  for k, v in pairs({ ammoTarget = 0, foodTarget = 20, autoRestock = false }) do
     if ns.db[k] == nil then ns.db[k] = v end
+  end
+  -- 2.36.1: "Fill my quiver" (0) is the new default. An amount still at the old default of 1000
+  -- moves over once; an amount you chose yourself stays.
+  if not ns.db.ammoQuiverDefault then
+    ns.db.ammoQuiverDefault = true
+    if ns.db.ammoTarget == 1000 then ns.db.ammoTarget = 0 end
   end
 end)
 
