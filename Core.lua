@@ -595,6 +595,8 @@ SlashCmdList.UNTAMED = function(msg)
     if ns.PadCommand then ns.PadCommand(msg:match("^pad%s+(.+)$")) end
   elseif msg == "window reset" or msg == "window" or msg == "resetwindow" then
     if ns.UI_ResetWindow then ns.UI_ResetWindow() end
+  elseif msg == "advice" then
+    if ns.QuestAdviceCommand then ns.QuestAdviceCommand() end
   elseif msg == "bags" or msg:match("^bags ") then
     if ns.BagMarksCommand then ns.BagMarksCommand(msg:match("^bags%s+(.+)$")) end
   elseif msg == "mem" or msg == "memory" then
@@ -659,6 +661,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/ut window reset  the window back to its starting size and place")
     ns.Print("/ut help all  every command")
   elseif msg == "help all" then
+    ns.Print("/untamed advice  what the quest reward box saw lately, and which addon took a reward for you")
     ns.Print("/untamed bags  marks on bag items (arrows, locks, coins)   |  /untamed bags arrows, locks, coins  switch one")
     ns.Print("/untamed  open the window   |  /untamed plan, browse, care, settings  open a tab")
     ns.Print("/untamed search <text>  (or /ut s <text>)  find any item, NPC or beast and where to get it")

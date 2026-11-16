@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.37.2
+- Quest reward advice: the box could stay on screen after the quest window was gone. It now also closes when a reward is taken, when a quest is accepted or handed in, when the quest window is no longer up, and after two minutes whatever happens.
+- When an addon takes a quest reward for you, Untamed says which one in chat ("RXPGuides picked quest reward 2 of 3 for you."). /ut advice lists the last things the box saw: quests offered, handed in, who took each reward, and what closed the box.
+
 ## v2.37.1
 - Chests: Untamed now notices when you open one. The spot you opened comes off your map, your minimap and the "chest spot nearby" alert for 30 minutes, until a chest could be back, and a chat line says so. It's remembered per character, so it survives a /reload.
 - (Books already worked this way: a book in your bags or handed in is off the map and out of the alerts.)
