@@ -483,4 +483,20 @@ do
   UnitExists, UnitHealth, UnitHealthMax, UnitIsDead = kE, kH, kHM, kD
   C_PetInfo.GetPetHappiness = kHap; GetPetHappiness = kGet
 end
+-- Looks: a family's skins, and the gallery on a beast's page
+do
+  local list, unknown = ns.FamilyLooks("Cat")
+  local n = 0
+  for _, e in ipairs(list) do n = n + #e.ids end
+  check(#list >= 10 and #list <= 25 and n > #list, "looks: cats come in a handful of looks, several beasts each")
+  local e = list[1]
+  check(ns.LookOf(e.ids[1]) == e.look and e.lo <= e.hi, "looks: a beast knows its look")
+  check(ns.Beasts[ns.LookPick(e, 60)] ~= nil, "looks: a beast to show for a look")
+  ns.UI_Show("browse")
+  ns.BestiarySelect(e.ids[1])
+  ns.BestiaryLooks(true)
+  ns.BestiarySelect(list[2].ids[1])
+  ns.BestiaryLooks(false)
+  check(ns.BestiarySelected() == list[2].ids[1], "looks: the gallery opens and closes on a beast's page")
+end
 print("DONE")

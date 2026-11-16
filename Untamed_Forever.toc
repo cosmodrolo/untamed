@@ -19,6 +19,7 @@ Data\Hunter_Forever.lua
 GearLive.lua
 Data\Books_Forever.lua
 Data\Chests_Forever.lua
+Data\Looks_Forever.lua
 Abilities.lua
 Foods.lua
 Core.lua

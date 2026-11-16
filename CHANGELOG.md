@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.34.0
+Looks: every skin a family comes in.
+- A beast's page in the Bestiary has a new Looks button. It swaps the lower half of the page for a gallery: one small 3D model per look in that beast's family (16 for cats, 11 for wolves, 13 for spiders...), each with how many beasts wear it and their level range.
+- The look of the beast you're on is lit. Pick another look and the page jumps to a beast with it: the highest one you can tame right now out in the world. Press the lit look again to step through the other beasts that wear it.
+- Under the gallery: the names and levels of every beast with the current look. Details brings the normal page back.
+- Good to know now says when other beasts share a beast's exact look.
+- Where the looks come from: which display each beast uses (cmangos classic-db) and Blizzard's own display table for WoW Forever, which says which displays share a model and colors. 564 beasts are sorted; the 77 beasts new in Forever aren't in that data yet and the gallery says so.
+
 ## v2.33.0
 One button for your pet: the Care macro.
 - Make it on the Hunter section's Rotation page (the macro list, under "Your pet": click "Care"), then put it on your bars from /macro like the others.
