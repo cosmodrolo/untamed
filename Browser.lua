@@ -161,11 +161,18 @@ function ns.FamilyLooks(family)
     if b[4] == family then
       local look, display = ns.LookOf(id)
       if look then
-        local e = by[look]
-        if not e then e = { look = look, display = display, ids = {}, lo = b[2], hi = b[3] }; by[look] = e; list[#list + 1] = e end
-        e.ids[#e.ids + 1] = id
-        if b[2] < e.lo then e.lo = b[2] end
-        if b[3] > e.hi then e.hi = b[3] end
+        local function add(lk, disp)
+          local e = by[lk]
+          if not e then e = { look = lk, display = disp, ids = {}, lo = b[2], hi = b[3] }; by[lk] = e; list[#list + 1] = e end
+          e.ids[#e.ids + 1] = id
+          if b[2] < e.lo then e.lo = b[2] end
+          if b[3] > e.hi then e.hi = b[3] end
+        end
+        add(look, display)
+        -- a beast the game gives several skins is filed under each of them
+        for _, d in ipairs(ns.BeastLookAlso and ns.BeastLookAlso[id] or {}) do
+          add((ns.LookGroup and ns.LookGroup[d]) or -d, d)
+        end
       else
         unknown = unknown + 1
       end
@@ -270,10 +277,16 @@ local function FillLooks(b)
       local ok = m.SetDisplayInfo and pcall(m.SetDisplayInfo, m, e.display)
       if not ok and m.SetCreature then pcall(m.SetCreature, m, e.ids[1]) end
       -- closer than the big model box: these are small tiles
-      if m.SetCamDistanceScale then pcall(m.SetCamDistanceScale, m, 1.25) end
-      if m.SetFacing then pcall(m.SetFacing, m, 0.45) end
+      -- the game draws some displays bigger than others (a look worn only by large beasts): the
+      -- camera stands back by the same amount, so every look fills its tile alike
+      local big = (ns.LookSize and ns.LookSize[e.display] or 100) / 100
+      if m.SetCamDistanceScale then pcall(m.SetCamDistanceScale, m, math.max(0.5, math.min(3, 1.25 * big))) end
+      if m.SetFacing then pcall(m.SetFacing, m, 0.3) end
     end
     local on = e.look == mine
+    if not on and mine and ns.BeastLookAlso and ns.BeastLookAlso[selected] then
+      for _, id in ipairs(e.ids) do if id == selected then on = true end end
+    end
     if on then current = e end
     ns.Skin(t.box, ns.Theme.deep, 1, on and ns.Theme.accent or ns.Theme.line, 1, -0.55)
     local tame = false
