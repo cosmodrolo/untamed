@@ -450,4 +450,37 @@ do
   ns.BagMarksCommand()
   C_Container.GetContainerItemInfo = keep
 end
+-- Care macro: feed when hungry and healthy, mend otherwise, revive when the pet is known dead
+do
+  local kE, kH, kHM, kD = UnitExists, UnitHealth, UnitHealthMax, UnitIsDead
+  local kHap = C_PetInfo and C_PetInfo.GetPetHappiness
+  local kGet = GetPetHappiness
+  local happy = 2
+  C_PetInfo = C_PetInfo or {}
+  C_PetInfo.GetPetHappiness = function() return happy end
+  GetPetHappiness = function() return happy end
+  UnitExists = function(u) if u == "pet" then return true end return kE(u) end
+  UnitIsDead = function() return false end
+  UnitHealth = function() return 100 end; UnitHealthMax = function() return 100 end
+  local kFood = ns.EdibleFood
+  ns.EdibleFood = function() return { { 2672, 0, 1, 5, 10, "Stringy Wolf Meat" } } end
+  local body, mode = ns.PetCareBody()
+  check(mode == "feed" and body:find("Feed Pet", 1, true) and body:find("/use [nocombat,pet,@pet,nodead] 0 1", 1, true), "care macro: hungry pet gets fed")
+  check(#body <= 255, "care macro fits in a macro")
+  UnitHealth = function() return 40 end
+  body, mode = ns.PetCareBody()
+  check(mode == "mend" and not body:find("/use", 1, true), "care macro: a hurt pet is mended first")
+  UnitHealth = function() return 100 end
+  happy = 3
+  body, mode = ns.PetCareBody()
+  check(mode == "mend", "care macro: a happy pet is mended, not fed")
+  ns.cdb.petDead = true
+  body = ns.PetCareBody()
+  check(body:find("[nopet] Revive Pet", 1, true), "care macro: a dead pet whose body is gone is revived, not called")
+  ns.cdb.petDead = false
+  check(ns.PetCareBody():find("[nopet] Call Pet", 1, true), "care macro: a dismissed pet is called")
+  ns.EdibleFood = kFood
+  UnitExists, UnitHealth, UnitHealthMax, UnitIsDead = kE, kH, kHM, kD
+  C_PetInfo.GetPetHappiness = kHap; GetPetHappiness = kGet
+end
 print("DONE")

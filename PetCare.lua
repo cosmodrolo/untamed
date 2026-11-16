@@ -208,3 +208,80 @@ ns.On("UNIT_HAPPINESS", OnChange)
 ns.On("BAG_UPDATE_DELAYED", function() UpdateFeedMacro(); ns.Fire("PETCARE") end)
 ns.On("PLAYER_REGEN_ENABLED", function() UpdateFeedMacro(); UpdateFloater() end)
 ns.On("REFRESH", function() UpdateFeedMacro(); UpdateFloater() end)
+
+---------------------------------------------------------------------------
+-- The Care macro: one button for your pet. Dead: Revive Pet. Not out: Call Pet. In a fight: Mend
+-- Pet. Otherwise: feed it when it isn't happy, else Mend Pet.
+--
+-- The game decides the first three by itself when you press (macro conditions work in fights).
+-- Feeding has no macro condition, so Untamed rewrites the last part of the macro outside fights:
+-- "Feed Pet + this food" while the pet is hungry, "Mend Pet" the rest of the time.
+---------------------------------------------------------------------------
+local fedUntil = 0
+
+local function PlainV(v) if v == nil or ns.IsSecret(v) then return nil end return v end
+
+-- should the out-of-fight press feed? Returns the food to use, or nil.
+local function WantsFeed()
+  if not PlainV(UnitExists("pet")) or PlainV(UnitIsDead("pet")) then return nil end
+  local h = PlainV((Happiness()))
+  if not h or h >= 3 then return nil end
+  if GetTime() < fedUntil then return nil end          -- it's still eating
+  local hp, max = PlainV(UnitHealth("pet")), PlainV(UnitHealthMax("pet"))
+  if hp and max and max > 0 and hp / max < 0.7 then return nil end   -- hurt: heal first
+  return ns.EdibleFood()[1]
+end
+
+function ns.PetCareBody()
+  local gone = (ns.cdb and ns.cdb.petDead) and "Revive Pet" or "Call Pet"
+  local food = WantsFeed()
+  local body = "#showtooltip\n/cast [@pet,dead] Revive Pet; [nopet] " .. gone .. "; [combat] Mend Pet; " .. (food and "Feed Pet" or "Mend Pet")
+  if food then body = body .. "\n/use [nocombat,pet,@pet,nodead] " .. food[2] .. " " .. food[3] end
+  return body, food and "feed" or "mend", gone
+end
+
+ns.On("LOGIN", function()
+  if select(2, UnitClass("player")) ~= "HUNTER" then return end
+  local ev = CreateFrame("Frame")
+  for _, e in ipairs({ "UNIT_PET", "UNIT_HEALTH", "UNIT_HAPPINESS", "BAG_UPDATE_DELAYED", "UNIT_SPELLCAST_SUCCEEDED", "UI_ERROR_MESSAGE",
+                       "PLAYER_REGEN_ENABLED" }) do
+    pcall(ev.RegisterEvent, ev, e)
+  end
+  local pending
+  local function Later(delay)
+    if pending then return end
+    pending = true
+    C_Timer.After(delay or 0.5, function()
+      pending = false
+      if ns.UpdateHunterMacros then ns.UpdateHunterMacros(true) end
+    end)
+  end
+  ev:SetScript("OnEvent", function(_, event, a, b, c)
+    if event == "UI_ERROR_MESSAGE" then
+      -- Call Pet answered "your pet is dead" (it died and its body is gone), or Revive Pet "not dead"
+      local msg = PlainV(b)
+      if type(msg) ~= "string" or PlainV(UnitExists("pet")) then return end
+      msg = msg:lower()
+      if msg:find("not dead", 1, true) then ns.cdb.petDead = false
+      elseif msg:find("dead", 1, true) and msg:find("pet", 1, true) then ns.cdb.petDead = true
+      else return end
+      Later(0.1)
+      return
+    end
+    if event == "UNIT_SPELLCAST_SUCCEEDED" then
+      if a ~= "player" or PlainV(c) ~= FEED_PET then return end
+      fedUntil = GetTime() + 20
+      C_Timer.After(20.5, function() Later(0.1) end)
+    elseif (event == "UNIT_HEALTH" or event == "UNIT_HAPPINESS") and a ~= "pet" then
+      return
+    elseif event == "UNIT_PET" and a ~= "player" then
+      return
+    end
+    if PlainV(UnitExists("pet")) then
+      local dead = UnitIsDead("pet")
+      if not ns.IsSecret(dead) then ns.cdb.petDead = dead and true or false end
+    end
+    Later(0.5)
+  end)
+  Later(6)
+end)

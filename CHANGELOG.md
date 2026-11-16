@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.33.0
+One button for your pet: the Care macro.
+- Make it on the Hunter section's Rotation page (the macro list, under "Your pet": click "Care"), then put it on your bars from /macro like the others.
+- What a press does: your pet is dead, Revive Pet. Not out, Call Pet. In a fight, Mend Pet. Outside a fight, it feeds your pet when it isn't happy (your lowest food that still gives the most happiness), and mends it otherwise.
+- A hurt pet (under 70% health) is mended before it's fed, and after a feed the button goes back to Mend Pet for 20 seconds so a second press doesn't waste food.
+- If your pet died and its body is gone, the first press tries Call Pet, the game says it's dead, and the button switches to Revive Pet for the next press.
+- The game doesn't let addons change a button during a fight, so the feed part is only brought up to date outside fights. In a fight the button is always Revive, Call or Mend, which the game picks by itself.
+
 ## v2.32.4
 - Aspect icon, the real cause: in a fight the game answers "no such buff" for every buff, and Untamed took that as "no aspect", wiping the Hawk it had just seen you cast. It no longer reads buffs during a fight, and outside fights it looks first for the exact aspect it saw you cast.
 

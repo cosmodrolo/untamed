@@ -498,6 +498,7 @@ L["On your wishlist!"] = true
 L["On your wishlist."] = true
 L["Once your pet has the mob's attention (a hit or two): Aimed Shot on cooldown."] = true
 L["Once your pet holds the mob."] = true
+L["One button for your pet: revives it when it's dead, calls it when it's not out, mends it in a fight, and outside fights feeds it when it isn't happy (else mends). Untamed keeps the feeding part current by itself."] = true
 L["Ones I've seen"] = true
 L["Only beasts at or under your level."] = true
 L["Only beasts in the zone you're in."] = true

@@ -49,6 +49,8 @@ ns.HUNTER_MACROS = {
   { "Back", "Call Pet", L["Calls your pet off a chase: it stops attacking and runs back to you. Open sends it in again."],
     "#showtooltip Call Pet\n/petpassive\n/petfollow" },
   Plain("Feed", "Feed Pet", L["Feeds your pet (pick the food in your bags)."]),
+  { "Care", "Mend Pet", L["One button for your pet: revives it when it's dead, calls it when it's not out, mends it in a fight, and outside fights feeds it when it isn't happy (else mends). Untamed keeps the feeding part current by itself."],
+    "#showtooltip\n/cast [@pet,dead] Revive Pet; [nopet] Call Pet; [combat] Mend Pet; Mend Pet" },
   { group = L["Up close"] },
   Plain("Rapt", "Raptor Strike", L["A mob in melee."]),
   Plain("Mong", "Mongoose Bite", L["After you dodge."]),
@@ -129,6 +131,7 @@ end
 
 local function MakeOne(m)
   if InCombatLockdown() then return false, L["Macros can be made after combat."] end
+  if m[1] == "Care" and ns.PetCareBody then m[4] = ns.PetCareBody() end
   local state = MacroState(m)
   if state == "yours" or state == "made" then return false end
   local ok, err
@@ -259,8 +262,10 @@ local function UpdateMacros(quiet)
   for _, m in ipairs(ns.HUNTER_MACROS) do
     if not m.group then
       if m[1] == "Open" then m[4] = OpenBody(slot) end
+      -- Care changes with your pet (hungry or not, dead or dismissed): rewritten quietly
+      if m[1] == "Care" and ns.PetCareBody then m[4] = ns.PetCareBody() end
       if MacroState(m) == "update" then
-        if pcall(EditMacro, GetMacroIndexByName(m[1]), m[1], nil, m[4]) then names[#names + 1] = m[1] end
+        if pcall(EditMacro, GetMacroIndexByName(m[1]), m[1], nil, m[4]) and m[1] ~= "Care" then names[#names + 1] = m[1] end
       end
     end
   end
