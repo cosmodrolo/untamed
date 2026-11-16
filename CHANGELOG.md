@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.29.0
+More pages in the journal style.
+- Hunter > Spells: the spells on the left (train now, later, optional), the spell's page on the right with its cost, the trainer level and why it's marked the way it is, and an Arrow to trainer button.
+- Hunter > Hunter Quests: the quest chains on the left, the quest's page on the right (levels, who starts it and where, who to turn it in to), and an Arrow to it button.
+- World > Library books: the books on the left, the book's page on the right (where it is, how far, what's special about it), and an Arrow to it button. Square (or right-click) still marks a book handed in.
+- World > Search: results on the left; picking an item opens the same item page as Gear and Wishlist.
+- Talents, Rotation, Builds, the Planner and Settings stay as they are: they're things you work through or tick, not things you look up.
+
 ## v2.28.1
 - Dungeons, Reputation, Supplies: headings keep their whole name ("Razorfen Downs", "Quivers" were cut short), and the page's "For you" line says what it is ("Drops from ...", "Needs Honored ...").
 

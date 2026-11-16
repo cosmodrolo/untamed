@@ -443,7 +443,7 @@ end
 -- Search tab
 ---------------------------------------------------------------------------
 do
-  local list, box
+  local list, box, j
   local f = { type = "all", kind = "any", source = "any", quality = 0, usable = false, near = false }
   local query = ""
 
@@ -485,7 +485,8 @@ do
   local function FiltersActive() return f.kind ~= "any" or f.source ~= "any" or f.quality > 0 or f.usable or f.type == "beasts" or f.type == "vendors" end
 
   local function Build(panel)
-    local tb = ns.Toolbar(panel)
+    j = ns.ItemJournal(panel, L["Type at least 3 letters: an item (Heavy Shot, Hawkeye's Tunic), an NPC (Hogor Thunderhoof) or a beast."])
+    local tb = ns.Toolbar(j.left)
     box = tb:Search(L["Item, NPC or beast name"], 190, function(t) query = t end)
     tb:Dropdown(130, TYPES, function() return f.type end, function(v) f.type = v end)
     tb:Dropdown(160, KINDS, function() return f.kind end, function(v) f.kind = v end)
@@ -501,6 +502,7 @@ do
       ns.UI_Show("search")
     end)
     list = tb:List()
+    j.list = list
   end
 
   local function Refresh()
@@ -511,10 +513,10 @@ do
       add(0, nil, C.GREY .. L["Type at least 3 letters: an item (Heavy Shot, Hawkeye's Tunic), an NPC (Hogor Thunderhoof) or a beast."] .. "|r")
       add(0, nil, C.GREY .. L["Or leave the box empty and just pick filters, like Bows + Vendor + Near me."] .. "|r")
       add(0, nil, C.GREY .. L["Click a result for an arrow to the nearest place to get it. Hover for every source."] .. "|r")
-      list:Set(rows) return
+      j:SetItemRows(rows) return
     end
     local db = ns.SearchDB()
-    if not db then add(0, nil, C.RED .. L["Search data is missing."] .. "|r"); list:Set(rows) return end
+    if not db then add(0, nil, C.RED .. L["Search data is missing."] .. "|r"); j:SetItemRows(rows) return end
     local CAP, level = 150, UnitLevel("player")
     local q = #query >= 3 and query or nil
     local pc, pe, pn = ns.PlayerWorld()
@@ -607,7 +609,7 @@ do
       end
     end
     if #items == 0 and #npcs == 0 then add(0, nil, C.GREY .. L["Nothing found. Try fewer filters."] .. "|r") end
-    list:Set(rows)
+    j:SetItemRows(rows)
   end
 
   function ns.SearchFor(text)

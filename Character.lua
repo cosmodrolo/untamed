@@ -62,19 +62,20 @@ function ns.SpellsToTrain()
 end
 
 do
-  local list
+  local list, j
   local showAll = false
   local function Build(panel)
-    local tb = ns.Toolbar(panel)
+    j = ns.TipJournal(panel, L["The spell guide"], L["Arrow to trainer"], function() ns.NavigateService("T", L["Hunter trainer"]) end)
+    local tb = ns.Toolbar(j.left)
     tb:Dropdown(190, { { false, L["What's next"] }, { true, L["Every level, 1 to 60"] } }, function() return showAll end, function(v) showAll = v end)
-    tb:Button(L["Arrow to trainer"], 130, function() ns.NavigateService("T", L["Hunter trainer"]) end)
     list = tb:List()
+    j.list = list
   end
 
   local function Refresh()
     local rows = {}
     local function add(...) rows[#rows + 1] = { ... } end
-    if not ns.TrainerSpells then NotForever(add, L["The spell guide"]); list:Set(rows) return end
+    if not ns.TrainerSpells then NotForever(add, L["The spell guide"]); j:SetTipRows(rows) return end
     local playerLevel = UnitLevel("player")
     -- Highest rank per spell name the player knows.
     local missingNow, missingNowCost, optionalCost = 0, 0, 0
@@ -155,7 +156,7 @@ do
         for _, x in ipairs(skipped) do SpellRow(x[1], x[2]) end
       end
     end
-    list:Set(rows)
+    j:SetTipRows(rows)
   end
   ns.RegisterTab("spells", L["Spells"], Build, Refresh)
 end
@@ -963,13 +964,15 @@ local function QuestInLog(id)
 end
 
 do
-  local list
+  local list, j
   local show = "open"
   local SHOW = { { "open", L["Not done yet"] }, { "now", L["Available now or in my log"] }, { "all", L["All, including done"] } }
   local function Build(panel)
-    local tb = ns.Toolbar(panel)
+    j = ns.TipJournal(panel, L["Quests only hunters can do."], L["Arrow to it"])
+    local tb = ns.Toolbar(j.left)
     tb:Dropdown(210, SHOW, function() return show end, function(v) show = v end)
     list = tb:List()
+    j.list = list
   end
   local function NpcGo(npcId, label)
     local db = ns.SearchDB and ns.SearchDB()
@@ -1038,7 +1041,6 @@ do
     for _, q in ipairs(mine) do if not seen[q[1]] then groups[#groups + 1] = { q } end end
     table.sort(groups, function(a, b) return a[1][4] < b[1][4] end)
 
-    add(0, nil, C.GREY .. L["Quests only hunters can do. Click a quest for an arrow to who starts it (or who to turn it in to)."] .. "|r")
     for _, chain in ipairs(groups) do
       local allDone = true
       for _, q in ipairs(chain) do if not QuestDoneAny(q) then allDone = false end end
@@ -1077,7 +1079,7 @@ do
       end
       end
     end
-    list:Set(rows)
+    j:SetTipRows(rows)
   end
   ns.RegisterTab("quests", L["Hunter Quests"], Build, Refresh)
 end

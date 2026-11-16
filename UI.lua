@@ -534,6 +534,72 @@ function ns.MakeJournal(panel, emptyText)
   return j
 end
 
+-- How long a colored string is on screen (color codes don't count).
+function ns.ShownLen(text) return #((text or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
+
+-- A journal whose list is rows built the old way ({ indent, icon, text, right, onClick, tooltip,
+-- opts }): every row that has a tooltip or a click opens a page made from it (the row's icon, its
+-- name, its status, and the tooltip's lines as the body), with one button that does the row's click.
+--   local j = ns.TipJournal(panel, emptyText, buttonLabel, defaultClick)   then   j:SetTipRows(rows)
+-- A click on the open row (Cross on a controller) is the row's click; right-click (Square) is its
+-- right-click.
+function ns.TipJournal(panel, empty, goLabel, defaultClick)
+  local j = ns.MakeJournal(panel, empty or "")
+  local status = j:Tile(L["Status"])
+  local data = {}
+  local go = j:Buttons({ { goLabel or L["Go to it"], 130, function()
+    local d = data[j.selected]
+    local f = d and (d.click or defaultClick)
+    if f then f(nil, "LeftButton") end
+  end } })
+  local body = j:Section(L["Details"])
+  j.onSelect = function(key)
+    local d = data[key]
+    if not d then return end
+    j.box:Picture(d.icon or ns.Icon("INV_Misc_Note_01"))
+    j.name:SetText(d.name or "")
+    j.sub:SetText(d.mid or "")
+    status.value:SetText(d.right or "")
+    local tip = d.tip
+    if type(tip) == "function" then tip = tip() end
+    local lines = {}
+    for i, line in ipairs(tip or {}) do
+      if i > 1 and line and line ~= "" then lines[#lines + 1] = line end
+    end
+    body:SetText(table.concat(lines, "\n"))
+    go[1]:SetShown((d.click or defaultClick) and true or false)
+  end
+  function j:SetTipRows(rows)
+    local keys, order = {}, {}
+    wipe(data)
+    for i, r in ipairs(rows) do
+      local opts = r[7]
+      local header = opts and opts.header
+      if not header and (r[5] or r[6]) then
+        local key = (r[3] or "") .. "#" .. ((opts and opts.mid) or "")
+        if data[key] then key = key .. "#" .. i end
+        local click = r[5]
+        data[key] = { icon = r[2], name = r[3], right = r[4], mid = opts and opts.mid, click = click, tip = r[6] }
+        if ns.ShownLen(r[4]) > 20 then r[4] = (opts and opts.mid) or "" end
+        r[5] = j:RowClick(key, function() local f = click or defaultClick; if f then f(nil, "LeftButton") end end,
+          function() if click then click(nil, "RightButton") end end)
+        r[6] = j:RowHover(key)
+        r[1], r[7] = math.min(r[1] or 0, 14), nil
+        keys[i] = key
+        order[#order + 1] = key
+      elseif header then
+        if ns.ShownLen(r[4]) > 18 then r[4] = "" end
+        opts.mid = nil
+      else
+        r[1] = math.min(r[1] or 0, 14)
+      end
+    end
+    j.list:Set(rows)
+    j:Rows(keys, order)
+  end
+  return j
+end
+
 -- A sunken Blizzard inset panel (falls back to a dark backdrop).
 function ns.MakeInset(parent)
   local f = CreateFrame("Frame", nil, parent)

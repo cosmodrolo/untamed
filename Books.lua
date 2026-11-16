@@ -296,11 +296,12 @@ end)
 -- Books page
 ---------------------------------------------------------------------------
 do
-  local list
+  local list, j
   local opt = { show = "need" }
   local SHOW = { { "need", L["Still to get"] }, { "all", L["All books"] } }
   local function Build(panel)
-    local tb = ns.Toolbar(panel)
+    j = ns.TipJournal(panel, L["Library books"], L["Arrow to it"])
+    local tb = ns.Toolbar(j.left)
     tb:Dropdown(150, SHOW, function() return opt.show end, function(v) opt.show = v end)
     tb:Check(L["Alert when one is near"], function() return ns.db.bookAlerts ~= false end, function(v) ns.db.bookAlerts = v end)
     tb:Button(L["Find handed-in books"], 150, function() ns.BooksScanCompleted(true) end,
@@ -308,6 +309,7 @@ do
     tb:Check(L["Show on the map"], function() return ns.db.bookPins ~= false end,
       function(v) ns.db.bookPins = v; if ns.Pins_Refresh then ns.Pins_Refresh() end end)
     list = tb:List()
+    j.list = list
   end
   local function Refresh()
     ScanBags()
@@ -367,7 +369,7 @@ do
           L["Level "] .. (b.lvl or 1) .. "+", C.GREY .. L["Click for an arrow. Right-click to mark it handed in (or not)."] .. "|r" },
         { mid = C.GREY .. (b.lvl or 1) .. "+|r" })
     end
-    list:Set(rows)
+    j:SetTipRows(rows)
   end
   ns.RegisterTab("books", L["Library books"], Build, Refresh)
 end
