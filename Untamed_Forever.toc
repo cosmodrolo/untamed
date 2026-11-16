@@ -43,6 +43,7 @@ Leveling.lua
 Hunter.lua
 Combat.lua
 UI.lua
+Pad.lua
 Planner.lua
 Recommend.lua
 Stable.lua

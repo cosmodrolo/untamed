@@ -114,5 +114,9 @@ function ns.Doctor()
   Line(_G.ForeverDungeonJournal_NS ~= nil, "Dungeon Journal (loot card)", _G.ForeverDungeonJournal_NS and "connected" or "not loaded")
   local slot = ns.cdb and ns.cdb.petDefSlot
   Line(slot ~= nil, "Pet bar Defensive slot (Open macro)", slot or "not read yet (summon your pet)")
+  if ns.Pad_Status then
+    local st = ns.Pad_Status()
+    Line(not st:find("goes to", 1, true) and (st:find("bound", 1, true) and true or nil), "Controller in the window", st)
+  end
   ns.Print(C.GREY .. "Red lines are the parts to tell Claude about.|r")
 end

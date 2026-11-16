@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.20.0
+The first step of the overhaul: a tidier window, and the controller works in it.
+- Six sections along the top instead of one long list of 21 pages: Today, Bestiary, My Pets, Hunter, Gear, World. The list on the left shows only the pages of the section you're in, and each section remembers the page you were on. Settings is the gear at the right end. The pages themselves are unchanged for now.
+- The controller works in the window: D-pad moves a gold frame to the nearest button, row, dropdown or checkbox in that direction (lists scroll as you move through them, and the thing under the frame shows its tooltip), Cross selects, Square is the second action (what right-click does), Circle goes back (closes a menu, then to the list of pages, then closes the window), L1 and R1 change sections. The buttons are taken only while the window is open and you're not in a fight, and only once you've let go of every button; they go back to the game the moment a fight starts or the window closes. /ut pad off leaves the controller alone. /ut doctor says whether the buttons came through.
+
 ## v2.19.22
 - The pet buff icons (for Frenzy) are taken out. Forever doesn't let addons read buffs during a fight in any form: asking errors with "Auras cannot be accessed", and the game's own notices about new buffs arrive as hidden tables that can't be opened. Frenzy still shows on Blizzard's target frame when you target your pet.
 

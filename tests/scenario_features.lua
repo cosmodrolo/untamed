@@ -176,6 +176,41 @@ BOUGHT = {}
 ns.Restock()
 check(#BOUGHT == 5, "restock buys 5 stacks of 200 for 1000 arrows (" .. #BOUGHT .. ")")
 
+-- The window: six sections, every page in exactly one, and the controller's step picker
+do
+  ns.db.lastPage = nil
+  ns.UI_Show("home")
+  local secs, curSec, curTab = ns.UI_Sections()
+  local n, seen = 0, {}
+  for _, sec in ipairs(secs) do for _, k in ipairs(sec[2]) do n = n + 1; seen[k] = true end end
+  check(#secs == 6 and curSec == "today" and curTab == "home", "six sections, Home opens in Today (" .. tostring(curSec) .. ")")
+  check(n >= 19 and seen.browse and seen.abilities and seen.books and seen.gear, "every page sits in a section (" .. n .. ")")
+  ns.UI_StepSection(1)
+  local _, s2, t2 = ns.UI_Sections()
+  check(s2 == "bestiary" and t2 == "browse", "R1 goes to the Bestiary's first page (" .. tostring(t2) .. ")")
+  ns.UI_StepPage(1)
+  check(select(3, ns.UI_Sections()) == "recommend", "R2 goes to the section's next page")
+  ns.UI_StepSection(-1); ns.UI_StepSection(1)
+  check(select(3, ns.UI_Sections()) == "recommend", "a section remembers the page you were on")
+  ns.UI_Show("settings")
+  check(select(2, ns.UI_Sections()) == "settings", "Settings is its own place")
+  ns.UI_StepSection(1)
+  check(select(2, ns.UI_Sections()) == "today", "R1 from Settings goes to the first section")
+  -- the picker: rects are l, r, t, b
+  local side = { { l = 10, r = 190, t = 500, b = 470 }, { l = 10, r = 190, t = 468, b = 438 } }
+  local rows = { { l = 200, r = 900, t = 440, b = 420 }, { l = 200, r = 900, t = 418, b = 398 } }
+  local drop = { l = 210, r = 360, t = 500, b = 476 }
+  local all = { side[2], rows[1], rows[2], drop }
+  check(ns.PadPick(side[1], all, "down") == 1, "pad: down the list of pages")
+  check(ns.PadPick(side[1], all, "right") == 4, "pad: right from the list to the page's first control")
+  check(ns.PadPick(drop, { side[1], side[2], rows[1], rows[2] }, "down") == 3, "pad: down from a narrow control to the wide row under it")
+  check(ns.PadPick(rows[1], { side[1], side[2], rows[2], drop }, "down") == 3, "pad: down a list row by row")
+  check(ns.PadPick(rows[2], { side[1], side[2], rows[1], drop }, "down") == nil, "pad: nothing below the last row")
+  check(ns.PadPick(rows[1], { side[1], side[2], rows[2], drop }, "left") == 2, "pad: left from a row back to the list of pages")
+  for _, a in ipairs({ "up", "down", "left", "right", "accept", "alt", "back", "secnext", "pagenext" }) do ns.PadAct[a]() end
+  check(true, "pad: every button runs without a controller")
+end
+
 -- Wishlist
 ALT = true
 IsAltKeyDown = function() return ALT end

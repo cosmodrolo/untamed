@@ -458,32 +458,66 @@ local tabs, activeTab = {}, nil
 
 -- Where each tab lives in the sidebar.
 local TAB_META = {
-  abilities = { group = 1, order = 1, icon = "Ability_Hunter_BeastTraining", sub = L["What your pet can learn, and which beasts teach it"] },
-  builds    = { group = 1, order = 2, icon = "INV_Misc_Book_09", sub = L["Plan how to spend your pet's training points"] },
-  care      = { group = 1, order = 3, icon = "INV_Misc_Food_14", sub = L["Happiness, food and where to level your pet"] },
-  stable    = { group = 1, order = 4, icon = "Ability_Hunter_BeastCall", sub = L["Every pet you own, and what you can teach each one"] },
-  recommend = { group = 2, order = 1, icon = "Ability_Hunter_BeastTaming", sub = L["Pick a role and get the best family and beasts for it"] },
-  plan      = { group = 2, order = 3, icon = "INV_Misc_Map_01", sub = L["A route to tame the beasts your pet still needs"] },
-  rares     = { group = 2, order = 4, icon = "Ability_Hunter_SniperShot", sub = L["Rares near you, and the ones you've seen"] },
-  browse    = { group = 2, order = 2, icon = "INV_Misc_Spyglass_03", sub = L["Every tameable beast: filter by family, ability and place"] },
-  search    = { group = 3, order = 1, icon = "INV_Misc_Spyglass_02", sub = L["Find any item, NPC or beast and where to get it"] },
-  supplies  = { group = 3, order = 5, icon = "INV_Ammo_Arrow_02", sub = L["Ammo, quivers and food for your pet"] },
-  spells    = { group = 4, order = 1, icon = "INV_Misc_Book_11", sub = L["What to train at each level and what it costs"] },
-  talents   = { group = 4, order = 2, icon = "Ability_Hunter_SniperShot", sub = L["Talent builds, with the next point highlighted"] },
-  rotation  = { group = 4, order = 3, icon = "Ability_Hunter_RunningShot", sub = L["What to press in a fight, macros and where they go on the controller"] },
-  gear      = { group = 3, order = 3, icon = "INV_Weapon_Bow_07", sub = L["Your next upgrades, and how to get them"] },
-  books     = { group = 2, order = 5, icon = "INV_Misc_Book_09", sub = L["Library books: where they are, and which you've handed in"] },
-  wishlist  = { group = 3, order = 2, icon = "INV_Misc_Note_01", sub = L["Items you want, with their sources on your map"] },
-  dungeons  = { group = 3, order = 4, icon = "INV_Misc_Key_03", sub = L["Hunter loot, bosses and beasts in each dungeon"] },
-  reputation = { group = 4, order = 4, icon = "INV_Misc_Token_ArgentDawn", sub = L["Reputation you need for rewards you want"] },
-  quests    = { group = 4, order = 5, icon = "INV_Misc_Note_02", sub = L["Class quests only hunters can do"] },
-  home      = { group = 0, order = 1, icon = "Interface\\AddOns\\Untamed\\Media\\Icon", sub = L["What to do next, and how Untamed works"] },
-  settings  = { group = 9, order = 1, icon = "INV_Misc_Gear_01", sub = L["Alerts, pins and data sharing"] },
+  abilities = { icon = "Ability_Hunter_BeastTraining", sub = L["What your pet can learn, and which beasts teach it"] },
+  builds    = { icon = "INV_Misc_Book_09", sub = L["Plan how to spend your pet's training points"] },
+  care      = { icon = "INV_Misc_Food_14", sub = L["Happiness, food and where to level your pet"] },
+  stable    = { icon = "Ability_Hunter_BeastCall", sub = L["Every pet you own, and what you can teach each one"] },
+  recommend = { icon = "Ability_Hunter_BeastTaming", sub = L["Pick a role and get the best family and beasts for it"] },
+  plan      = { icon = "INV_Misc_Map_01", sub = L["A route to tame the beasts your pet still needs"] },
+  rares     = { icon = "Ability_Hunter_SniperShot", sub = L["Rares near you, and the ones you've seen"] },
+  browse    = { icon = "INV_Misc_Spyglass_03", sub = L["Every tameable beast: filter by family, ability and place"] },
+  search    = { icon = "INV_Misc_Spyglass_02", sub = L["Find any item, NPC or beast and where to get it"] },
+  supplies  = { icon = "INV_Ammo_Arrow_02", sub = L["Ammo, quivers and food for your pet"] },
+  spells    = { icon = "INV_Misc_Book_11", sub = L["What to train at each level and what it costs"] },
+  talents   = { icon = "Ability_Hunter_SniperShot", sub = L["Talent builds, with the next point highlighted"] },
+  rotation  = { icon = "Ability_Hunter_RunningShot", sub = L["What to press in a fight, macros and where they go on the controller"] },
+  gear      = { icon = "INV_Weapon_Bow_07", sub = L["Your next upgrades, and how to get them"] },
+  books     = { icon = "INV_Misc_Book_09", sub = L["Library books: where they are, and which you've handed in"] },
+  wishlist  = { icon = "INV_Misc_Note_01", sub = L["Items you want, with their sources on your map"] },
+  dungeons  = { icon = "INV_Misc_Key_03", sub = L["Hunter loot, bosses and beasts in each dungeon"] },
+  reputation = { icon = "INV_Misc_Token_ArgentDawn", sub = L["Reputation you need for rewards you want"] },
+  quests    = { icon = "INV_Misc_Note_02", sub = L["Class quests only hunters can do"] },
+  home      = { icon = "Interface\\AddOns\\Untamed\\Media\\Icon", sub = L["What to do next, and how Untamed works"] },
+  settings  = { icon = "INV_Misc_Gear_01", sub = L["Alerts, pins and data sharing"] },
 }
-local GROUPS = { L["My Pet"], L["Taming"], L["Gear"], L["Hunter"] }
+-- Six sections along the top; each page lives in one of them (the list on the left shows the
+-- pages of the section you're in). Settings is the gear at the right end.
+local SECTIONS = {
+  { key = "today",    title = L["Today"],    icon = "INV_Misc_PocketWatch_01" },
+  { key = "bestiary", title = L["Bestiary"], icon = "Ability_Hunter_BeastTaming" },
+  { key = "pets",     title = L["My Pets"],  icon = "Ability_Hunter_BeastCall" },
+  { key = "hunter",   title = L["Hunter"],   icon = "Ability_Hunter_RunningShot" },
+  { key = "gear",     title = L["Gear"],     icon = "INV_Weapon_Bow_07" },
+  { key = "world",    title = L["World"],    icon = "INV_Misc_Map_01" },
+}
+local SECTION_OF = {
+  home = { "today", 1 },
+  browse = { "bestiary", 1 }, recommend = { "bestiary", 2 }, rares = { "bestiary", 3 }, plan = { "bestiary", 4 },
+  abilities = { "pets", 1 }, builds = { "pets", 2 }, care = { "pets", 3 }, stable = { "pets", 4 },
+  spells = { "hunter", 1 }, talents = { "hunter", 2 }, rotation = { "hunter", 3 }, quests = { "hunter", 4 },
+  gear = { "gear", 1 }, wishlist = { "gear", 2 }, dungeons = { "gear", 3 }, reputation = { "gear", 4 }, supplies = { "gear", 5 },
+  books = { "world", 1 }, search = { "world", 2 },
+  settings = { "settings", 1 },
+}
+local sectionByKey = {}
+for i, sec in ipairs(SECTIONS) do sec.index = i; sectionByKey[sec.key] = sec end
+local activeSection
+local side, sectionBar
+local LayoutSidebar
 
 function ns.RegisterTab(key, title, build, refresh)
-  tabs[key] = { key = key, title = title, build = build, refresh = refresh, meta = TAB_META[key] or { group = 2, order = 99, icon = "INV_Misc_QuestionMark" } }
+  local meta = TAB_META[key] or { icon = "INV_Misc_QuestionMark" }
+  local where = SECTION_OF[key] or { "world", 99 }
+  meta.sec, meta.order = where[1], where[2]
+  tabs[key] = { key = key, title = title, build = build, refresh = refresh, meta = meta }
+end
+
+-- the pages of a section, in order
+local function SectionPages(secKey)
+  local list = {}
+  for _, t in pairs(tabs) do if t.meta.sec == secKey then list[#list + 1] = t end end
+  table.sort(list, function(a, b) if a.meta.order ~= b.meta.order then return a.meta.order < b.meta.order end return a.key < b.key end)
+  return list
 end
 
 local function SelectTab(key)
@@ -494,6 +528,15 @@ local function SelectTab(key)
     if t.button then t.button:SetSelected(k == key) end
   end
   local t = tabs[key]
+  -- the section this page lives in: its button lights up, its pages fill the list on the left
+  activeSection = t.meta.sec
+  ns.db.lastPage = ns.db.lastPage or {}
+  ns.db.lastPage[activeSection] = key
+  if sectionBar then
+    for _, sec in ipairs(SECTIONS) do if sec.button then sec.button:SetSelected(sec.key == activeSection) end end
+    if sectionBar.gear then sectionBar.gear:SetSelected(activeSection == "settings") end
+  end
+  if LayoutSidebar then LayoutSidebar() end
   content.title:SetText(t.title)
   content.sub:SetText(t.meta.sub or "")
   if not t.panel then
@@ -690,70 +733,102 @@ end
 ---------------------------------------------------------------------------
 -- Frame
 ---------------------------------------------------------------------------
+local function SelectSection(secKey)
+  local pages = SectionPages(secKey)
+  if #pages == 0 then return end
+  local last = ns.db.lastPage and ns.db.lastPage[secKey]
+  SelectTab((last and tabs[last] and tabs[last].meta.sec == secKey) and last or pages[1].key)
+end
+
+-- The bar of sections under the header.
+local function BuildSectionBar()
+  sectionBar = CreateFrame("Frame", nil, frame)
+  sectionBar:SetPoint("TOPLEFT", 10, -98)
+  sectionBar:SetPoint("TOPRIGHT", -10, -98)
+  sectionBar:SetHeight(32)
+  local bg = sectionBar:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  bg:SetColorTexture(0, 0, 0, 0.35)
+  local rule = sectionBar:CreateTexture(nil, "ARTWORK")
+  rule:SetPoint("BOTTOMLEFT"); rule:SetPoint("BOTTOMRIGHT")
+  rule:SetHeight(1)
+  rule:SetColorTexture(1, 0.82, 0, 0.3)
+  local function Hint(text)
+    local fs = sectionBar:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    fs:SetText(text)
+    fs:Hide()
+    return fs
+  end
+  sectionBar.l1, sectionBar.r1 = Hint("L1"), Hint("R1")
+  sectionBar.l1:SetPoint("LEFT", 8, 0)
+  local x = 30
+  for _, sec in ipairs(SECTIONS) do
+    local b = ns.MakeFlatButton(sectionBar, 28)
+    b.text:SetFontObject("GameFontNormal")
+    b.icon:SetTexture(ns.Icon(sec.icon))
+    b.text:SetText(sec.title)
+    local w = 28 + 10 + math.max(40, (b.text.GetStringWidth and b.text:GetStringWidth()) or (#sec.title * 8)) + 12
+    b:SetWidth(w)
+    b:SetPoint("LEFT", x, 0)
+    x = x + w + 4
+    b.bar:ClearAllPoints()
+    b.bar:SetPoint("BOTTOMLEFT"); b.bar:SetPoint("BOTTOMRIGHT")
+    b.bar:SetHeight(3)
+    b:SetSelected(false)
+    b:SetScript("OnClick", function() SelectSection(sec.key) end)
+    sec.button = b
+  end
+  sectionBar.r1:SetPoint("LEFT", x + 4, 0)
+  local gear = ns.MakeFlatButton(sectionBar, 28)
+  gear.icon:SetTexture(ns.Icon("INV_Misc_Gear_01"))
+  gear.text:SetText(L["Settings"])
+  gear:SetWidth(28 + 10 + math.max(50, (gear.text.GetStringWidth and gear.text:GetStringWidth()) or 60) + 8)
+  gear:SetPoint("RIGHT", -4, 0)
+  gear.bar:ClearAllPoints()
+  gear.bar:SetPoint("BOTTOMLEFT"); gear.bar:SetPoint("BOTTOMRIGHT")
+  gear.bar:SetHeight(3)
+  gear:SetSelected(false)
+  gear:SetScript("OnClick", function() SelectTab("settings") end)
+  sectionBar.gear = gear
+end
+
+-- The list on the left: the pages of the section you're in. A section with one page has no list,
+-- and its page takes the whole width.
 local function BuildSidebar()
-  local side = ns.MakeInset(frame)
-  side:SetPoint("TOPLEFT", 10, -100)
+  side = ns.MakeInset(frame)
+  side:SetPoint("TOPLEFT", 10, -134)
   side:SetPoint("BOTTOMLEFT", 10, 30)
   side:SetWidth(186)
-  local list = {}
-  for _, t in pairs(tabs) do list[#list + 1] = t end
-  table.sort(list, function(a, b)
-    if a.meta.group ~= b.meta.group then return a.meta.group < b.meta.group end
-    return a.meta.order < b.meta.order
-  end)
-  -- Buttons and group headings are laid out to fit the sidebar's height: roomy when there is space,
-  -- tighter on a short window, so Settings never runs off the bottom.
-  local items, lastGroup = {}, nil
-  for _, t in ipairs(list) do
-    local g = t.meta.group
-    local b = ns.MakeFlatButton(side, 26)
-    if g == 9 then
-      b:SetPoint("BOTTOMLEFT", 4, 6)
-      b:SetPoint("BOTTOMRIGHT", -4, 6)
-    else
-      if g ~= lastGroup then
-        if GROUPS[g] then
-          local h = side:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-          h:SetText(GROUPS[g])
-          local rule = side:CreateTexture(nil, "ARTWORK")
-          rule:SetPoint("LEFT", h, "RIGHT", 8, 0)
-          rule:SetPoint("RIGHT", side, "RIGHT", -10, 0)
-          rule:SetHeight(1)
-          rule:SetColorTexture(1, 0.82, 0, 0.25)
-          items[#items + 1] = { head = h, gap = lastGroup ~= nil }
-        end
-        lastGroup = g
-      end
-      items[#items + 1] = { button = b }
-    end
+  for _, t in pairs(tabs) do
+    local b = ns.MakeFlatButton(side, 30)
     b.icon:SetTexture(ns.Icon(t.meta.icon))
     b.text:SetText(t.title)
     b:SetSelected(false)
     b:SetScript("OnClick", function() SelectTab(t.key) end)
+    b:Hide()
     t.button = b
   end
-  local function Layout()
-    local nButtons, nHeads = 0, 0
-    for _, it in ipairs(items) do if it.button then nButtons = nButtons + 1 else nHeads = nHeads + 1 end end
-    local avail = (side:GetHeight() or 600) - 8 - 40   -- top padding, Settings at the bottom
-    local scale = math.min(1, math.max(0.72, avail / (nButtons * 27 + nHeads * 30)))
-    local step, headH, gap = math.floor(27 * scale), math.floor(20 * scale), math.floor(10 * scale)
+  LayoutSidebar = function()
+    for _, t in pairs(tabs) do if t.button then t.button:Hide() end end
+    local pages = SectionPages(activeSection)
+    local single = #pages <= 1
+    side:SetShown(not single)
+    if content then
+      content:ClearAllPoints()
+      content:SetPoint("TOPLEFT", single and 10 or 202, -134)
+      content:SetPoint("BOTTOMRIGHT", -10, 30)
+    end
     local y = -8
-    for _, it in ipairs(items) do
-      if it.head then
-        if it.gap then y = y - gap end
-        it.head:ClearAllPoints(); it.head:SetPoint("TOPLEFT", 12, y)
-        y = y - headH
-      else
-        it.button:SetHeight(step - 1)
-        it.button.icon:SetSize(step - 8, step - 8)
-        it.button:ClearAllPoints(); it.button:SetPoint("TOPLEFT", 4, y); it.button:SetPoint("RIGHT", side, "RIGHT", -4, 0)
-        y = y - step
-      end
+    for _, t in ipairs(pages) do
+      local b = t.button
+      b:ClearAllPoints()
+      b:SetPoint("TOPLEFT", 4, y)
+      b:SetPoint("RIGHT", side, "RIGHT", -4, 0)
+      b:SetSelected(t.key == activeTab)
+      b:Show()
+      y = y - 32
     end
   end
-  side:SetScript("OnSizeChanged", Layout)
-  Layout()
 end
 
 local function SaveGeometry()
@@ -792,10 +867,11 @@ local function CreateMainFrame()
   title:SetText("Untamed" .. (ns.FLAVOR == "forever" and " (Forever)" or ""))
 
   BuildHeader()
+  BuildSectionBar()
   BuildSidebar()
 
   content = ns.MakeInset(frame)
-  content:SetPoint("TOPLEFT", 202, -100)
+  content:SetPoint("TOPLEFT", 202, -134)
   content:SetPoint("BOTTOMRIGHT", -10, 30)
   content.title = content:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
   content.title:SetPoint("TOPLEFT", 14, -11)
@@ -831,8 +907,8 @@ local function CreateMainFrame()
   grip:SetScript("OnMouseDown", function() frame:StartSizing("BOTTOMRIGHT") end)
   grip:SetScript("OnMouseUp", function() frame:StopMovingOrSizing(); SaveGeometry() end)
 
-  frame:SetScript("OnShow", function() ns.UI_Refresh() end)
-  frame:SetScript("OnHide", function() if menu then menu:Hide() end; ns.CloseDropdown() end)
+  frame:SetScript("OnShow", function() ns.UI_Refresh(); if ns.Pad_Open then ns.Pad_Open() end end)
+  frame:SetScript("OnHide", function() if menu then menu:Hide() end; ns.CloseDropdown(); if ns.Pad_Close then ns.Pad_Close() end end)
 end
 
 -- "1 item", "3 items"
@@ -847,8 +923,10 @@ function ns.UI_Refresh()
   end
   local t = ns.Target()
   RefreshHeader(t)
-  local petPage = activeTab and tabs[activeTab] and tabs[activeTab].meta.group == 1
-  if not ns.cdb.scanned and petPage and UnitExists("pet") then
+  local petPage = activeTab and tabs[activeTab] and tabs[activeTab].meta.sec == "pets"
+  if ns.Pad_Active and ns.Pad_Active() then
+    statusText:SetText(C.GREY .. L["D-pad: move    Cross: select    Square: second action    Circle: back    L1 R1: sections"] .. "|r")
+  elseif not ns.cdb.scanned and petPage and UnitExists("pet") then
     statusText:SetText(C.ORANGE .. L["Tip: open Beast Training once so Untamed knows which ranks you already have."] .. "|r")
   else
     local fl = ns.Pins_GetFocusLabel()
@@ -866,6 +944,47 @@ function ns.UI_Show(key)
   if not frame then CreateMainFrame() end
   frame:Show()
   SelectTab((key and tabs[key]) and key or activeTab or (ns.db.openHome ~= false and "home") or "abilities")
+end
+
+-- For the controller (Pad.lua): the window, an open menu and what opened it, and stepping through
+-- sections and pages.
+function ns.UI_Frame() return frame end
+function ns.UI_Popup()
+  if ddMenu and ddMenu:IsShown() then return ddMenu, ddMenu.owner end
+  if menu and menu:IsShown() then return menu, header.viewing end
+  return nil
+end
+function ns.UI_ClosePopups() if menu then menu:Hide() end; ns.CloseDropdown() end
+function ns.UI_PageButton() local t = activeTab and tabs[activeTab]; return t and t.button and t.button:IsShown() and t.button or nil end
+function ns.UI_Sidebar() return side end
+function ns.UI_Content() return content end
+function ns.UI_PadHints(on)
+  if sectionBar then sectionBar.l1:SetShown(on); sectionBar.r1:SetShown(on) end
+  ns.UI_Refresh()
+end
+function ns.UI_StepSection(dir)
+  local cur = sectionByKey[activeSection]
+  local i = cur and cur.index or (dir > 0 and 0 or 1)
+  for _ = 1, #SECTIONS do
+    i = (i - 1 + dir) % #SECTIONS + 1
+    if #SectionPages(SECTIONS[i].key) > 0 then SelectSection(SECTIONS[i].key) return end
+  end
+end
+function ns.UI_StepPage(dir)
+  local pages = SectionPages(activeSection)
+  if #pages < 2 then return end
+  for i, t in ipairs(pages) do
+    if t.key == activeTab then SelectTab(pages[(i - 1 + dir) % #pages + 1].key) return end
+  end
+end
+function ns.UI_Sections()
+  local out = {}
+  for _, sec in ipairs(SECTIONS) do
+    local names = {}
+    for _, t in ipairs(SectionPages(sec.key)) do names[#names + 1] = t.key end
+    out[#out + 1] = { sec.key, names }
+  end
+  return out, activeSection, activeTab
 end
 
 function ns.UI_ViewingMenu() if header.viewing then OpenMenu(header.viewing) end end
