@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.34.2
+- Looks: the tiles are bigger. They take the largest size (up to 120) that still fits the family's looks in the space the window has, and the models stand a little further back so they sit inside the tile.
+
 ## v2.34.1
 - Looks: the models in the gallery tiles are drawn closer, so they fill the tile instead of sitting small in the middle.
 

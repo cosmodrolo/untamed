@@ -198,7 +198,7 @@ ns.LookPick = LookPick
 local lookMode = false
 local Select      -- defined below
 
-local TILE, TILE_GAP = 76, 8
+local TILE, TILE_GAP = 76, 8      -- TILE is the smallest; FillLooks picks the biggest size that fits
 local function LookTile(parent, i)
   local t = CreateFrame("Button", nil, parent)
   t:SetSize(TILE, TILE + 30)
@@ -242,9 +242,16 @@ local function FillLooks(b)
   local mine = ns.LookOf(selected)
   local level = UnitLevel("player") or 60
   g.head:SetText(string.format(L["%s looks: %d"], ns.FamilyLabel(b[4]), #list))
-  local width = g:GetWidth()
+  local width, height = g:GetWidth(), g:GetHeight()
   if type(width) ~= "number" or width < TILE then width = 6 * (TILE + TILE_GAP) end
-  local cols = math.max(1, math.floor((width - 12 + TILE_GAP) / (TILE + TILE_GAP)))
+  if type(height) ~= "number" or height < 100 then height = 300 end
+  -- the biggest tile whose rows still fit above the notes
+  local size, cols = TILE, 1
+  for _, s in ipairs({ 120, 108, 96, 86, TILE }) do
+    local c = math.max(1, math.floor((width - 12 + TILE_GAP) / (s + TILE_GAP)))
+    size, cols = s, c
+    if math.ceil(#list / c) * (s + 30 + TILE_GAP) + 110 <= height then break end
+  end
   local current
   for i, e in ipairs(list) do
     local t = g.tiles[i]
@@ -252,7 +259,10 @@ local function FillLooks(b)
     t.entry = e
     local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
     t:ClearAllPoints()
-    t:SetPoint("TOPLEFT", g.head, "BOTTOMLEFT", col * (TILE + TILE_GAP), -12 - row * (TILE + 30 + TILE_GAP))
+    t:SetPoint("TOPLEFT", g.head, "BOTTOMLEFT", col * (size + TILE_GAP), -12 - row * (size + 30 + TILE_GAP))
+    t:SetSize(size, size + 30)
+    t.box:SetSize(size, size)
+    t.text:SetWidth(size + 4)
     if t.shown ~= e.display then
       t.shown = e.display
       local m = t.model
@@ -260,8 +270,8 @@ local function FillLooks(b)
       local ok = m.SetDisplayInfo and pcall(m.SetDisplayInfo, m, e.display)
       if not ok and m.SetCreature then pcall(m.SetCreature, m, e.ids[1]) end
       -- closer than the big model box: these are small tiles
-      if m.SetCamDistanceScale then pcall(m.SetCamDistanceScale, m, 0.95) end
-      if m.SetFacing then pcall(m.SetFacing, m, 0.6) end
+      if m.SetCamDistanceScale then pcall(m.SetCamDistanceScale, m, 1.25) end
+      if m.SetFacing then pcall(m.SetFacing, m, 0.45) end
     end
     local on = e.look == mine
     if on then current = e end
@@ -275,7 +285,7 @@ local function FillLooks(b)
   for i = #list + 1, #g.tiles do g.tiles[i]:Hide() end
   local rows = math.ceil(#list / cols)
   g.note:ClearAllPoints()
-  g.note:SetPoint("TOPLEFT", g.head, "BOTTOMLEFT", 0, -18 - rows * (TILE + 30 + TILE_GAP))
+  g.note:SetPoint("TOPLEFT", g.head, "BOTTOMLEFT", 0, -18 - rows * (size + 30 + TILE_GAP))
   g.note:SetPoint("RIGHT", g, "RIGHT", -12, 0)
   local lines = {}
   if current then
