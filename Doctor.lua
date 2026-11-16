@@ -47,7 +47,11 @@ function ns.Doctor()
         names[#names + 1] = (okD and okN and not ns.IsSecret(n) and n) or "(hidden)"
       end
     end
-    Line(okB, "Pet buffs (Frenzy icon)", okB and (#names .. ": " .. table.concat(names, ", ")) or list)
+    if not okB and InCombatLockdown() then
+      Line(nil, "Pet buffs", "the game refuses this in a fight (expected)")
+    else
+      Line(okB, "Pet buffs", okB and (#names .. ": " .. table.concat(names, ", ")) or list)
+    end
   else
     Line(C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs and nil or false, "Pet buffs (Frenzy icon)", "no pet out or function missing")
   end
@@ -65,7 +69,16 @@ function ns.Doctor()
       if log[k] ~= nil then parts[#parts + 1] = k .. "=" .. tostring(log[k]):sub(1, 70) end
     end
     local bad = log.list or log.index or log.data or log.icon or log.timer
-    Line(not bad and (#parts > 0 or nil), "Pet buff icons, last draw" .. (InCombatLockdown() and " (in a fight)" or " (not in a fight)"), table.concat(parts, "; "))
+    Line((not bad or InCombatLockdown()) and nil, "Pet buff icons, last draw" .. (InCombatLockdown() and " (in a fight)" or " (not in a fight)"), table.concat(parts, "; "))
+  end
+
+  if ns.RangePetSeenLog then
+    local log = ns.RangePetSeenLog()
+    local parts = {}
+    for _, k in ipairs({ "events", "added", "showing", "idHidden", "removedHidden", "info", "addedErr", "icon", "timer" }) do
+      if log[k] ~= nil then parts[#parts + 1] = k .. "=" .. tostring(log[k]):sub(1, 60) end
+    end
+    Line(nil, "Pet buff notices (fight icons)", table.concat(parts, "; "))
   end
 
   -- spells you know

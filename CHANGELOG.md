@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.20
+- Pet buff icons in fights, second try. /ut doctor showed that Forever refuses addons every question about buffs during a fight. What still arrives is the game's notice that something was put on your pet, so in fights the icons are now fed from those notices: the newest buff or debuff on Zabu shows first (Frenzy when it procs), and goes when the game says it ended. An experiment: the game may hide parts of those notices too, and /ut doctor's "Pet buff notices" line says what came through.
+
 ## v2.19.19
 - Pet buff icons: each step of drawing an icon now stands on its own, so if the game refuses one in a fight (the picture or the timer) the icon still shows, with a claw picture when the real one is refused. /ut doctor says what each step answered the last time the icons were drawn.
 
