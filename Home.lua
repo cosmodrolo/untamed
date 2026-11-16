@@ -18,7 +18,7 @@ local function Card(i)
   if c then return c end
   c = CreateFrame("Button", nil, holder)
   c:SetHeight(CARD_H)
-  ns.Skin(c, ns.Theme.deep, 0.7, ns.Theme.line, 0.6)
+  ns.Skin(c, ns.Theme.button, 0.75, ns.Theme.line, 0.7, 0.3)
   c.edge = c:CreateTexture(nil, "BORDER")
   c.edge:SetPoint("TOPLEFT"); c.edge:SetPoint("BOTTOMLEFT")
   c.edge:SetWidth(3)

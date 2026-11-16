@@ -28,10 +28,23 @@ local T = {
 }
 ns.Theme = T
 
--- a flat fill and (optionally) a one-pixel edge on a frame of ours
-function ns.Skin(f, fill, alpha, edge, edgeAlpha)
+-- shade a texture from one color to another (flat if this client can't)
+function ns.Gradient(tex, orient, r1, g1, b1, a1, r2, g2, b2, a2)
+  if not (tex.SetGradient and CreateColor) then return false end
+  tex:SetColorTexture(1, 1, 1, 1)
+  return (pcall(tex.SetGradient, tex, orient, CreateColor(r1, g1, b1, a1), CreateColor(r2, g2, b2, a2)))
+end
+
+-- a fill and (optionally) a one-pixel edge on a frame of ours. `lift` shades the fill top to bottom
+-- for depth: 0.3 is lighter at the top (panels, buttons), -0.5 lighter at the bottom (a lit floor).
+function ns.Skin(f, fill, alpha, edge, edgeAlpha, lift)
   if not rawget(f, "skinFill") then f.skinFill = f:CreateTexture(nil, "BACKGROUND") f.skinFill:SetAllPoints() end
   f.skinFill:SetColorTexture(fill[1], fill[2], fill[3], alpha or 1)
+  if lift then
+    local lo, hi = 1 - math.abs(lift), 1 + math.abs(lift)
+    if lift < 0 then lo, hi = hi, lo end
+    ns.Gradient(f.skinFill, "VERTICAL", fill[1] * lo, fill[2] * lo, fill[3] * lo, alpha or 1, fill[1] * hi, fill[2] * hi, fill[3] * hi, alpha or 1)
+  end
   if edge then
     if not rawget(f, "skinEdges") then
       f.skinEdges = {}
@@ -46,6 +59,19 @@ function ns.Skin(f, fill, alpha, edge, edgeAlpha)
   end
 end
 local Skin = ns.Skin
+
+-- amber brackets in the corners of a box (model boxes, cards)
+function ns.Corners(f, len, alpha)
+  len = len or 12
+  for _, c in ipairs({ { "TOPLEFT", 1, -1 }, { "TOPRIGHT", -1, -1 }, { "BOTTOMLEFT", 1, 1 }, { "BOTTOMRIGHT", -1, 1 } }) do
+    for k = 1, 2 do
+      local t = f:CreateTexture(nil, "ARTWORK")
+      t:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], alpha or 0.85)
+      t:SetPoint(c[1], f, c[1], c[2], c[3])
+      if k == 1 then t:SetSize(len, 2) else t:SetSize(2, len) end
+    end
+  end
+end
 
 -- amber buttons carry dark text
 local primaryFont
@@ -107,6 +133,13 @@ function ns.NewList(parent, topOffset)
     r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     r.bg = r:CreateTexture(nil, "BACKGROUND")
     r.bg:SetAllPoints()
+    -- headings: an amber band that fades out to the right
+    r.band = r:CreateTexture(nil, "BACKGROUND")
+    r.band:SetAllPoints()
+    if not ns.Gradient(r.band, "HORIZONTAL", T.accent[1], T.accent[2], T.accent[3], 0.26, T.accent[1], T.accent[2], T.accent[3], 0) then
+      r.band:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 0.09)
+    end
+    r.band:Hide()
     r.toggle = r:CreateTexture(nil, "ARTWORK")
     r.toggle:SetSize(14, 14)
     r.icon = r:CreateTexture(nil, "ARTWORK")
@@ -152,8 +185,9 @@ function ns.NewList(parent, topOffset)
 
       -- section headings: a soft gold band with a rule under it; other rows alternate a faint stripe
       if o.header then
-        r.bg:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 0.09); r.bg:Show(); r.rule:Show(); stripe = 0
+        r.bg:Hide(); r.band:Show(); r.rule:Show(); stripe = 0
       else
+        r.band:Hide()
         r.rule:Hide()
         stripe = stripe + 1
         if stripe % 2 == 0 then r.bg:SetColorTexture(1, 1, 1, 0.035); r.bg:Show() else r.bg:Hide() end
@@ -263,7 +297,7 @@ ns.TextWidth = TextWidth
 function ns.MakeButton(parent, text, w, onClick)
   local b = CreateFrame("Button", nil, parent)
   b:SetSize(w, 24)
-  Skin(b, T.button, 1, T.line)
+  Skin(b, T.button, 1, T.line, 1, 0.22)
   if b.SetFontString then
     local fs = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     fs:SetPoint("CENTER", 0, 0)
@@ -285,10 +319,10 @@ function ns.MakeButton(parent, text, w, onClick)
   if b.SetPushedTextOffset then b:SetPushedTextOffset(1, -1) end
   function b:SetPrimary(on)
     if on then
-      Skin(self, T.accent, 1, T.accent)
+      Skin(self, T.accent, 1, T.accent, 1, 0.12)
       if primaryFont and self.SetNormalFontObject then self:SetNormalFontObject(primaryFont); self:SetHighlightFontObject(primaryFont) end
     else
-      Skin(self, T.button, 1, T.line)
+      Skin(self, T.button, 1, T.line, 1, 0.22)
       if self.SetNormalFontObject then self:SetNormalFontObject("GameFontNormal"); self:SetHighlightFontObject("GameFontHighlight") end
     end
   end
@@ -302,7 +336,8 @@ end
 function ns.MakeModelBox(parent, size)
   local box = CreateFrame("Frame", nil, parent)
   box:SetSize(size, size)
-  Skin(box, T.deep, 1, T.line)
+  Skin(box, T.deep, 1, T.line, 1, -0.55)
+  ns.Corners(box)
   box.icon = box:CreateTexture(nil, "BORDER")
   box.icon:SetSize(64, 64)
   box.icon:SetPoint("CENTER")
@@ -502,7 +537,7 @@ end
 -- A sunken Blizzard inset panel (falls back to a dark backdrop).
 function ns.MakeInset(parent)
   local f = CreateFrame("Frame", nil, parent)
-  Skin(f, T.panel, 0.92, T.line)
+  Skin(f, T.panel, 0.92, T.line, 1, 0.12)
   return f
 end
 
@@ -1019,7 +1054,7 @@ local function BuildSectionBar()
   sectionBar:SetPoint("TOPLEFT", 10, -98)
   sectionBar:SetPoint("TOPRIGHT", -10, -98)
   sectionBar:SetHeight(32)
-  Skin(sectionBar, T.bar, 1)
+  Skin(sectionBar, T.bar, 1, nil, nil, -0.5)
   local rule = sectionBar:CreateTexture(nil, "ARTWORK")
   rule:SetPoint("BOTTOMLEFT"); rule:SetPoint("BOTTOMRIGHT")
   rule:SetHeight(1)
@@ -1112,7 +1147,7 @@ end
 
 local function CreateMainFrame()
   frame = CreateFrame("Frame", "UntamedFrame", UIParent)
-  Skin(frame, T.window, 0.97, T.line)
+  Skin(frame, T.window, 0.97, T.line, 1, 0.45)
   -- our own title bar and close button (no Blizzard frame art)
   local bar = CreateFrame("Frame", nil, frame)
   bar:SetPoint("TOPLEFT", 1, -1); bar:SetPoint("TOPRIGHT", -1, -1)
@@ -1146,8 +1181,12 @@ local function CreateMainFrame()
   tinsert(UISpecialFrames, "UntamedFrame")
 
   local title = bar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  title:SetPoint("CENTER", 0, 0)
-  title:SetText("Untamed")
+  title:SetPoint("CENTER", 10, 0)
+  title:SetText("U N T A M E D")
+  local mark = bar:CreateTexture(nil, "ARTWORK")
+  mark:SetSize(17, 17)
+  mark:SetPoint("RIGHT", title, "LEFT", -8, 0)
+  mark:SetTexture("Interface\\AddOns\\Untamed\\Media\\Icon")
   local close = ns.MakeButton(bar, "X", 24, function() frame:Hide() end)
   close:SetSize(24, 19)
   close:SetPoint("RIGHT", -3, 0)
@@ -1171,6 +1210,12 @@ local function CreateMainFrame()
   line:SetPoint("TOPRIGHT", -10, -50)
   line:SetHeight(1)
   line:SetColorTexture(T.line[1], T.line[2], T.line[3], 1)
+  local tick = content:CreateTexture(nil, "OVERLAY")
+  tick:SetPoint("TOPLEFT", line, "TOPLEFT", 0, 1)
+  tick:SetSize(90, 3)
+  if not ns.Gradient(tick, "HORIZONTAL", T.accent[1], T.accent[2], T.accent[3], 1, T.accent[1], T.accent[2], T.accent[3], 0) then
+    tick:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 0.9)
+  end
 
   -- Status bar along the bottom: tips and the current map focus.
   statusText = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")

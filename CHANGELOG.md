@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.26.1
+- The look gets some depth: panels, buttons and the window shade from top to bottom instead of sitting flat, list headings are an amber band that fades out, model boxes have a lit floor and amber corner brackets, page titles get an amber stroke, and the title bar carries Untamed's mark.
+- /ut mem says how much memory Untamed is using (also a line in /ut doctor).
+
 ## v2.26.0
 A look of its own: "Savage Land".
 - The window drops Blizzard's stock frame, red buttons and gold bands for deep jungle green panels with thin moss lines and amber for what's selected or the thing to press. Its own title bar and close button; flat buttons (the main one on each page is amber); flat menus; green model boxes, pages and cards.

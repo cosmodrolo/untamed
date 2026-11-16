@@ -21,6 +21,24 @@ local function Try(f, ...)
   return true, a, b
 end
 
+-- How much memory Untamed holds right now, in MB (nil if the game won't say).
+function ns.MemoryMB()
+  local name = "Untamed"
+  if UpdateAddOnMemoryUsage and GetAddOnMemoryUsage then
+    local ok, kb = pcall(function() UpdateAddOnMemoryUsage(); return GetAddOnMemoryUsage(name) end)
+    if ok and type(kb) == "number" and not ns.IsSecret(kb) and kb > 0 then return kb / 1024 end
+  end
+  return nil
+end
+
+function ns.MemoryReport()
+  local mb = ns.MemoryMB()
+  local loaded = ns.SearchDBLoaded and ns.SearchDBLoaded() and true or false
+  ns.Print(mb and string.format("Untamed is using %.1f MB of memory.", mb) or "The game didn't say how much memory Untamed uses (try /ut mem again out of a fight).")
+  ns.Print(C.GREY .. (loaded and "The item and NPC search data is loaded (the biggest part; it loads the first time a page or alert needs it)."
+    or "The item and NPC search data isn't loaded yet (it loads the first time a page or alert needs it, and is the biggest part).") .. "|r")
+end
+
 function ns.Doctor()
   local build, iface = "?", "?"
   if GetBuildInfo then local _, b, _, i = GetBuildInfo(); build, iface = tostring(b), tostring(i) end
@@ -114,6 +132,8 @@ function ns.Doctor()
   Line(_G.ForeverDungeonJournal_NS ~= nil, "Dungeon Journal (loot card)", _G.ForeverDungeonJournal_NS and "connected" or "not loaded")
   local slot = ns.cdb and ns.cdb.petDefSlot
   Line(slot ~= nil, "Pet bar Defensive slot (Open macro)", slot or "not read yet (summon your pet)")
+  local mb = ns.MemoryMB()
+  Line(mb and (mb < 40) or nil, "Memory", mb and string.format("%.1f MB%s", mb, (ns.SearchDBLoaded and ns.SearchDBLoaded()) and ", search data loaded" or ", search data not loaded yet") or "not given")
   if ns.Pad_Status then
     local st = ns.Pad_Status()
     Line(not st:find("goes to", 1, true) and (st:find("bound", 1, true) and true or nil), "Controller in the window", st)

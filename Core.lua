@@ -611,6 +611,8 @@ SlashCmdList.UNTAMED = function(msg)
     if ns.PetSetOrigin then ns.PetSetOrigin(msg:match("^tamedfrom%s+(.+)$")) end
   elseif msg == "pad" or msg:match("^pad ") then
     if ns.PadCommand then ns.PadCommand(msg:match("^pad%s+(.+)$")) end
+  elseif msg == "mem" or msg == "memory" then
+    if ns.MemoryReport then ns.MemoryReport() end
   elseif msg == "doctor" then
     if ns.Doctor then ns.Doctor() end
   elseif msg == "scan" then
@@ -674,6 +676,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed chests  chest spots on the map (on, off, minimap)   |  /untamed scan  what the game marks on your minimap")
     ns.Print("/untamed recorded  what Untamed has noted for future data updates")
     ns.Print("/untamed doctor  self-check: what the game answers for each part of Untamed")
+    ns.Print("/untamed mem  how much memory Untamed is using")
     ns.Print("/untamed pad on | off  the controller in Untamed's window")
     ns.Print("/untamed tamedfrom <beast>  which beast the pet that's out was tamed from")
     ns.Print("/untamed range  the range meter and pet watch (off, on, alerts, always, pet off, pet on, leash 30)")
