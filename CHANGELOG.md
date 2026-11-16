@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.22.1
+- Stable page: a pet's attack speed is also read from its Faster Attack or Slower Attack passive, so renamed pets show it too (Untamed learns which speed each tier means from pets whose beast it knows). "Knows" lists its abilities only, not the pet bar's commands.
+- /ut tamedfrom <beast's name> tells Untamed which beast the pet that's out was tamed from (for pets you renamed before Untamed kept track).
+
 ## v2.22.0
 My Pets > Stable is a journal too.
 - Your pets on the left, the pet's page on the right: its model (the real one for the pet that's out; for the others the beast it was tamed from), which beast it was tamed from and that beast's attack speed, its family's damage, armor and health, what you can teach it right now, what to tame next for it (the next rank of each ability you don't know, with the nearest beast that teaches it), a faster beast of its family if one is within reach, and what it knows.

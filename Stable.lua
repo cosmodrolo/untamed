@@ -31,6 +31,58 @@ function ns.PetOrigin(p)
   return best, false
 end
 
+-- A pet's attack speed. From the beast it was tamed from when that's known; else from its
+-- "Faster Attack" / "Slower Attack" passive, once Untamed has seen which speed that tier means (it
+-- learns that from pets whose beast it does know; tier VI = 1.2 s was read off a Starving Mountain Lion).
+local TIER_SEED = { ["Faster Attack VI"] = 1.2 }
+local function SpeedTier(p)
+  for a in pairs(p.known or {}) do
+    if a:find("^Faster Attack") or a:find("^Slower Attack") then return a end
+  end
+end
+function ns.PetSpeed(p)
+  local from, sure = ns.PetOrigin(p)
+  local tier = SpeedTier(p)
+  ns.db.speedTiers = ns.db.speedTiers or {}
+  if sure and from and ns.Beasts[from][9] then
+    if tier then ns.db.speedTiers[tier] = ns.Beasts[from][9] end
+    return ns.Beasts[from][9]
+  end
+  if tier then return ns.db.speedTiers[tier] or TIER_SEED[tier], tier end
+  if p.known and next(p.known) and not tier then return 2.0 end     -- read, and no speed passive: the normal 2.0
+  return nil
+end
+
+-- /ut tamedfrom <beast>: tell Untamed which beast the pet that's out was tamed from
+function ns.PetSetOrigin(text)
+  text = (text or ""):lower():match("^%s*(.-)%s*$")
+  local info = UnitExists("pet") and ns.ScanPet()
+  if not info then ns.Print(L["Call the pet first, then: /ut tamedfrom <beast's name>"]) return end
+  local p = Pets()[ns.PetKey(info.name, info.family)]
+  if not p then return end
+  if text == "" then
+    local from, sure = ns.PetOrigin(p)
+    ns.Print(sure and string.format(L["%s was tamed from %s."], p.name, ns.Beasts[from][1]) or L["Not known yet. Type: /ut tamedfrom <beast's name>"])
+    return
+  end
+  local exact, partial, n = nil, nil, 0
+  for id, b in pairs(ns.Beasts) do
+    if b[4] == info.family then
+      local name = b[1]:lower()
+      if name == text then exact = id elseif name:find(text, 1, true) then partial = id; n = n + 1 end
+    end
+  end
+  local id = exact or (n == 1 and partial) or nil
+  if not id then
+    if n > 1 then ns.Print(string.format(L["%d %s beasts match '%s': type more of the name."], n, ns.FamilyLabel(info.family), text))
+    else ns.Print(string.format(L["No %s beast is called '%s'."], ns.FamilyLabel(info.family), text)) end
+    return
+  end
+  p.from = id
+  ns.Print(string.format(L["Noted: %s was tamed from %s."], p.name, ns.Beasts[id][1]))
+  ns.Refresh()
+end
+
 -- Remember the pet that is out right now.
 local function RecordActive()
   local info = ns.ScanPet()
@@ -174,8 +226,7 @@ end
 
 -- a faster beast of the same family you could tame now (nil if this one is already as fast as it gets)
 function ns.PetFasterKin(p)
-  local from, sure = ns.PetOrigin(p)
-  local mine = sure and from and ns.Beasts[from][9] or nil
+  local mine = ns.PetSpeed(p)
   local playerLevel = UnitLevel("player")
   local best
   for id, b in pairs(ns.Beasts) do
@@ -204,15 +255,19 @@ local function FillPage()
   page.sub:SetText(string.format("%s   %s %d   %s", ns.FamilyLabel(p.family), L["level"], p.level or 0, status))
 
   page.origin.value:SetText(from and sure and (ns.Beasts[from][1] .. C.GREY .. "   " .. ns.ZonesText(ns.Beasts[from]) .. "|r")
-    or (C.GREY .. L["not known (Untamed notes it when you tame a beast)"] .. "|r"))
-  local speed = from and sure and ns.Beasts[from][9]
-  page.speed.value:SetText(speed and (((speed < 2.0) and C.GREEN or (speed > 2.0 and C.ORANGE or C.WHITE)) .. string.format("%.1f s", speed) .. "|r") or (C.GREY .. L["not known"] .. "|r"))
+    or (C.GREY .. (p.active and L["not known: type /ut tamedfrom and its name"] or L["not known (Untamed notes it when you tame a beast)"]) .. "|r"))
+  local speed, tier = ns.PetSpeed(p)
+  page.speed.value:SetText(speed and (((speed < 2.0) and C.GREEN or (speed > 2.0 and C.ORANGE or C.WHITE)) .. string.format("%.1f s", speed) .. "|r")
+    or (C.GREY .. (tier and (tier .. ": " .. L["speed not learned yet"]) or L["not known"]) .. "|r"))
   local st = ns.FamilyStats and ns.FamilyStats[p.family]
   local function S(n) return (n > 0 and "+" or "") .. n end
   page.family.value:SetText(st and string.format(L["%s%% damage, %s%% armor, %s%% health"], S(st[1]), S(st[2]), S(st[3])) or "")
 
+  -- its abilities, not the pet bar's commands (Attack, Follow, Stay ...) or the speed passive
   local known = {}
-  for a, r in pairs(p.known or {}) do known[#known + 1] = (ns.AbilityLabel(a) or a) .. " " .. r end
+  for a, r in pairs(p.known or {}) do
+    if ns.AbilityFamilies[a] or ns.RankLevel(a, r) then known[#known + 1] = (ns.AbilityLabel(a) or a) .. " " .. r end
+  end
   table.sort(known)
   page.knows:SetText(#known > 0 and table.concat(known, ",  ") or (C.GREY .. L["Not read yet: summon it once."] .. "|r"))
 

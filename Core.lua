@@ -607,6 +607,8 @@ SlashCmdList.UNTAMED = function(msg)
     if ns.BookArrow then ns.BookArrow() end
   elseif msg == "librarian" then
     if ns.LibrarianArrow then ns.LibrarianArrow() end
+  elseif msg == "tamedfrom" or msg:match("^tamedfrom ") then
+    if ns.PetSetOrigin then ns.PetSetOrigin(msg:match("^tamedfrom%s+(.+)$")) end
   elseif msg == "pad" or msg:match("^pad ") then
     if ns.PadCommand then ns.PadCommand(msg:match("^pad%s+(.+)$")) end
   elseif msg == "doctor" then
@@ -673,6 +675,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed recorded  what Untamed has noted for future data updates")
     ns.Print("/untamed doctor  self-check: what the game answers for each part of Untamed")
     ns.Print("/untamed pad on | off  the controller in Untamed's window")
+    ns.Print("/untamed tamedfrom <beast>  which beast the pet that's out was tamed from")
     ns.Print("/untamed range  the range meter and pet watch (off, on, alerts, always, pet off, pet on, leash 30)")
     ns.Print("/untamed want <beast name>  put a beast on your wishlist (again to take it off)   |  /untamed wishlist  open it")
   else
