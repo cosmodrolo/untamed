@@ -120,6 +120,24 @@ function ns.RankCost(ability, rank)
   if t and t[rank] then return t[rank], false end
 end
 
+-- Do you know this spell? The newer function first (the old ones are on their way out), then
+-- the old ones. nil when the game has none of them (callers decide what that means).
+function ns.SpellKnown(spellID)
+  if not spellID then return nil end
+  local asked
+  for _, f in ipairs({ C_SpellBook and C_SpellBook.IsSpellKnown, C_SpellBook and C_SpellBook.IsSpellInSpellBook, IsPlayerSpell, IsSpellKnown }) do
+    if f then
+      local ok, v = pcall(f, spellID)
+      if ok and v ~= nil and not ns.IsSecret(v) then
+        asked = true
+        if v then return true end
+      end
+    end
+  end
+  if asked then return false end
+  return nil
+end
+
 function ns.HunterKnows(ability, rank)
   local k = ns.cdb and ns.cdb.known[ability]
   return k and k[rank] or false
@@ -589,6 +607,8 @@ SlashCmdList.UNTAMED = function(msg)
     if ns.BookArrow then ns.BookArrow() end
   elseif msg == "librarian" then
     if ns.LibrarianArrow then ns.LibrarianArrow() end
+  elseif msg == "doctor" then
+    if ns.Doctor then ns.Doctor() end
   elseif msg == "scan" then
     if ns.ScanReport then ns.ScanReport() end
   elseif msg == "chests" or msg:match("^chests ") then
@@ -649,6 +669,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed books  library books   |  /untamed book  arrow to the nearest one you need   |  /untamed librarian  arrow to yours")
     ns.Print("/untamed chests  chest spots on the map (on, off, minimap)   |  /untamed scan  what the game marks on your minimap")
     ns.Print("/untamed recorded  what Untamed has noted for future data updates")
+    ns.Print("/untamed doctor  self-check: what the game answers for each part of Untamed")
     ns.Print("/untamed range  the range meter and pet watch (off, on, alerts, always, pet off, pet on, leash 30)")
     ns.Print("/untamed want <beast name>  put a beast on your wishlist (again to take it off)   |  /untamed wishlist  open it")
   else

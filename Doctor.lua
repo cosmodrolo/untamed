@@ -1,0 +1,98 @@
+local _, ns = ...
+local C = ns.C
+
+---------------------------------------------------------------------------
+-- /ut doctor: a self-check you can run in game. It asks the game for the things Untamed relies
+-- on and prints what came back, so a part that quietly gets no answer on this client shows up
+-- as a red line instead of as a feature that silently does nothing. (English only: it's a
+-- report to send along when something looks off.)
+---------------------------------------------------------------------------
+
+local function Line(ok, what, detail)
+  local mark = (ok == nil and (C.GREY .. "?  ")) or (ok and (C.GREEN .. "ok ")) or (C.RED .. "NO ")
+  ns.Print(mark .. "|r" .. what .. (detail and (C.GREY .. "  " .. tostring(detail) .. "|r") or ""))
+end
+
+local function Try(f, ...)
+  if not f then return false, "function missing" end
+  local ok, a, b = pcall(f, ...)
+  if not ok then return false, "error: " .. tostring(a) end
+  if ns.IsSecret(a) then return nil, "hidden by the game right now" end
+  return true, a, b
+end
+
+function ns.Doctor()
+  local build, iface = "?", "?"
+  if GetBuildInfo then local _, b, _, i = GetBuildInfo(); build, iface = tostring(b), tostring(i) end
+  ns.Print(C.GOLD .. "Untamed self-check|r  (interface " .. iface .. ", build " .. build .. ")")
+
+  -- the pet's own abilities
+  local pet = ns.ScanPet and ns.ScanPet()
+  if pet then
+    local n, parts = 0, {}
+    for name, rank in pairs(pet.known) do n = n + 1; if #parts < 6 then parts[#parts + 1] = name .. " " .. rank end end
+    Line(n > 0, "Pet spellbook read", n .. " abilities: " .. table.concat(parts, ", "))
+    Line(pet.tpFree ~= nil, "Pet training points", pet.tpFree)
+  else
+    Line(nil, "Pet spellbook", "no pet out")
+  end
+
+  -- spells you know
+  local known, total = 0, 0
+  for _, name in ipairs({ "Auto Shot", "Serpent Sting", "Hunter's Mark", "Raptor Strike", "Aspect of the Hawk" }) do
+    total = total + 1
+    local info = C_Spell and C_Spell.GetSpellInfo and C_Spell.GetSpellInfo(name)
+    if info and ns.SpellKnown(info.spellID) then known = known + 1 end
+  end
+  Line(known > 0, "Spells you know", known .. " of " .. total .. " basic hunter spells recognized")
+
+  -- range checks (need an enemy targeted)
+  if UnitExists("target") then
+    local ok, r = Try(C_Spell and C_Spell.IsSpellInRange, "Auto Shot", "target")
+    Line(ok and r ~= nil, "Range check: Auto Shot", ok and tostring(r) or r)
+    local okH, has = Try(C_Spell and C_Spell.SpellHasRange, "Raptor Strike")
+    Line(okH, "Melee spell has its own range", okH and tostring(has) or has)
+    local zone, lo, hi = ns.RangeToTarget()
+    Line(zone ~= nil, "Range meter says", zone and (zone .. "  " .. ns.RangeYards(lo, hi)) or "nothing")
+    local d = ns.PetDistance and ns.PetDistance()
+    Line(d ~= nil or not UnitExists("pet"), "Distance to your pet", d and (math.floor(d) .. " yd") or "not given")
+  else
+    Line(nil, "Range checks", "target an enemy and run it again")
+  end
+  local slots = ns.RangeMeleeSlotList and ns.RangeMeleeSlotList() or {}
+  Line(#slots > 0, "Melee button on your bars", #slots > 0 and ("slot " .. table.concat(slots, ", ")) or "none found (put Raptor Strike or the Rapt macro on a bar)")
+
+  -- cooldowns and auras
+  local okC, dur = Try(C_Spell and C_Spell.GetSpellCooldownDuration, "Arcane Shot", true)
+  Line(okC and dur ~= nil, "Cooldown timers", okC and "duration object" or dur)
+  local okA = Try(C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID, 13165)
+  Line(okA, "Aura lookup (aspects)")
+
+  -- map and world positions
+  local map = C_Map.GetBestMapForUnit("player")
+  local spots = map and ns.ChestSpotsOn and ns.ChestSpotsOn(map)
+  Line(spots ~= nil and #spots > 0, "Chest spots on this map", spots and (#spots / 3) or 0)
+  local pc = ns.PlayerWorld and ns.PlayerWorld()
+  Line(pc ~= nil, "Your world position", pc and "ok" or "not given (indoors?)")
+  local okV, list = Try(C_VignetteInfo and C_VignetteInfo.GetVignettes)
+  Line(okV, "Minimap marks (rares)", okV and (#list .. " right now") or list)
+  local okS = Try(UnitExists, "softinteract")
+  Line(okS, "Interact target (chest right here)")
+
+  -- books, quests, items
+  local okQ, ids = Try(C_QuestLog and C_QuestLog.GetAllCompletedQuestIDs)
+  Line(okQ and type(ids) == "table", "Completed quests list (library books)", okQ and type(ids) == "table" and (#ids .. " quests") or ids)
+  if ns.BooksCount then
+    local done, bags = ns.BooksCount()
+    Line(true, "Library books", done .. " handed in, " .. bags .. " in your bags")
+  end
+  local okI = Try(C_Item and C_Item.GetItemStats, "item:2504")
+  Line(okI, "Item stats (gear the list doesn't know)")
+
+  -- other addons
+  Line(_G.OpenMapAPI ~= nil, "OpenMap", _G.OpenMapAPI and "connected" or "not loaded")
+  Line(_G.ForeverDungeonJournal_NS ~= nil, "Dungeon Journal (loot card)", _G.ForeverDungeonJournal_NS and "connected" or "not loaded")
+  local slot = ns.cdb and ns.cdb.petDefSlot
+  Line(slot ~= nil, "Pet bar Defensive slot (Open macro)", slot or "not read yet (summon your pet)")
+  ns.Print(C.GREY .. "Red lines are the parts to tell Claude about.|r")
+end

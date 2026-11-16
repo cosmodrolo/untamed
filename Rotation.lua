@@ -14,9 +14,7 @@ local C = ns.C
 local function Known(name)
   local ok, info = pcall(function() return C_Spell and C_Spell.GetSpellInfo and C_Spell.GetSpellInfo(name) end)
   if ok and info and info.spellID then
-    local ok2, known = pcall(IsPlayerSpell, info.spellID)
-    if ok2 and known then return true end
-    if IsSpellKnown and IsSpellKnown(info.spellID) then return true end
+    if ns.SpellKnown(info.spellID) then return true end
   end
   return false
 end

@@ -106,6 +106,7 @@ local function MeleeInRange()
   return nil
 end
 ns.RangeMeleeSlots = function() meleeSlots = nil end
+ns.RangeMeleeSlotList = function() if not meleeSlots then FindMeleeSlots() end return meleeSlots end
 
 -- Where the target is: zone ("melee", "dead", "range", "far") and a yard band (lo, hi).
 function ns.RangeToTarget()

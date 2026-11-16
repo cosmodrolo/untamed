@@ -224,7 +224,8 @@ do
     add(0, nil, ns.Count(#ids, L["item"], L["items"]), C.GREY .. L["click: arrow   right-click: remove"] .. "|r", nil, nil, { header = true })
     for _, id in ipairs(ids) do
       local it = db and db.I[id]
-      local have = (GetItemCount and GetItemCount(id) or 0) > 0
+      local have = ns.HaveItem and ns.HaveItem(id)
+      if have == nil then have = (GetItemCount and GetItemCount(id) or 0) > 0 end
       add(0, ns.ItemIcon(id), ns.QualityColor(id) .. (it and it[1] or ("item " .. id)) .. "|r" .. (have and (C.GREEN .. "  " .. L["you have it"] .. "|r") or ""),
         it and ns.SourceSummary(id) or "",
         function(_, button) if button == "RightButton" then ns.Wishlist_Toggle(id) else ns.ItemClick(id)() end end,

@@ -41,3 +41,18 @@ C_Traits = {
   GetDefinitionInfo = function(d) return { spellID = TRAIT_NODES[d].spell } end,
   GetTreeCurrencyInfo = function() return { { quantity = 3 } } end,
 }
+C_Item = C_Item or {}
+C_Item.GetItemInfoInstant = C_Item.GetItemInfoInstant or GetItemInfoInstant
+C_Item.GetItemStats = C_Item.GetItemStats or GetItemStats
+-- deprecated on the modern client: may or may not be there, so the Forever tests run without them
+IsPlayerSpell = nil; IsSpellKnown = nil; UnitBuff = nil; UnitDebuff = nil; GetMerchantItemInfo = nil
+GetFactionInfoByID = nil; RaidNotice_AddMessage = nil; IsActionInRange = nil; GetMacroSpell = nil
+ChatEdit_InsertLink = nil; CombatLogGetCurrentEventInfo = nil; GetItemStats = nil; GetItemInfoInstant = nil
+GetSpellInfo = nil; GetSpellTexture = nil; GetSpellCooldown = nil; GetItemInfo = GetItemInfo
+C_MerchantFrame = { GetItemInfo = function(i)
+  if GetMerchantItemInfo then
+    local n, _, p, q = GetMerchantItemInfo(i)
+    return { name = n, price = p, stackCount = q or 1 }
+  end
+  return { name = "x", price = ({ 1000, 250 })[i], stackCount = 1 }
+end }

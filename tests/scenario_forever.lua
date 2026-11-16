@@ -337,4 +337,6 @@ end
 assert(sawLow, "a level 10 pet can't use Bite 5 yet: Bite 2 still listed")
 ns.cdb.known = keepKnown
 print("RANKS OK")
+ns.Doctor()
+print("DOCTOR OK")
 print("DONE")

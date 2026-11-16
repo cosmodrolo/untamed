@@ -76,21 +76,25 @@ function ns.EdibleFood()
       end
     end
   end
-  -- Cheapest food that still makes your pet happy first, so your best food (and buff food) is
-  -- kept for you. Feed Pet gives full happiness for food under 10 levels below the pet and much
-  -- less for lower food, so among those the lowest level wins; if nothing is that close, the
-  -- highest level food you have.
+  -- Cheapest food that still does the most for your pet first, so your best food (and buff food)
+  -- is kept for you. How much a feeding gives depends on the food's level against your pet's:
+  -- within 5 levels full, within 10 half, within 14 a quarter, lower nothing. So: the best tier
+  -- you have, and inside it the lowest level food (bigger stack first on a tie).
   local petLevel = UnitLevel("pet") or 0
   if ns.IsSecret and ns.IsSecret(petLevel) then petLevel = 0 end
-  local function full(f) return petLevel - f[5] < 10 end
+  local function tier(f)
+    local d = petLevel - f[5]
+    if d <= 5 then return 3 elseif d <= 10 then return 2 elseif d <= 14 then return 1 end
+    return 0
+  end
   table.sort(out, function(a, b)
-    local fa, fb = full(a), full(b)
-    if fa ~= fb then return fa end
-    if fa then
-      if a[5] ~= b[5] then return a[5] < b[5] end
-      return a[4] > b[4]   -- same level: the bigger stack first
+    local ta, tb = tier(a), tier(b)
+    if ta ~= tb then return ta > tb end
+    if a[5] ~= b[5] then
+      if ta == 0 then return a[5] > b[5] end   -- nothing helps: the closest to helping first
+      return a[5] < b[5]
     end
-    return a[5] > b[5]
+    return a[4] > b[4]
   end)
   return out
 end
@@ -155,7 +159,7 @@ function ns.CreateFeedButton(parent, name, w, h)
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
     if self.food then
       GameTooltip:AddLine(L["Feed "] .. self.food[6], 1, 0.82, 0)
-      GameTooltip:AddLine(L["You have "] .. self.food[4] .. ". Picks your lowest level food that still makes your pet fully happy, so your best food stays in your bags.", 1, 1, 1, true)
+      GameTooltip:AddLine(L["You have "] .. self.food[4] .. ". Picks your lowest level food that still gives your pet the most happiness, so your best food stays in your bags.", 1, 1, 1, true)
     else
       GameTooltip:AddLine(L["Nothing in your bags matches your pet's diet."], 1, 1, 1, true)
     end

@@ -48,10 +48,8 @@ local function Known(name)
   local info = C_Spell and C_Spell.GetSpellInfo and C_Spell.GetSpellInfo(name)
   if not info then return false end
   local id = Plain(info.spellID)
-  if id and IsPlayerSpell then
-    local ok, yes = pcall(IsPlayerSpell, id)
-    if ok and yes ~= nil and not ns.IsSecret(yes) then return yes end
-  end
+  local known = id and ns.SpellKnown(id)
+  if known ~= nil then return known end
   return true
 end
 

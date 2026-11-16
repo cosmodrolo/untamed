@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.19.14
+- Full check of the addon against Forever's current game functions. Three quiet problems fixed:
+  - "Do you know this spell" now goes through one shared check that asks the newer game functions first. The Spells page, the Rotation page and the cooldown icons under your character each asked on their own, and on a client without the older functions could hide spells you know.
+  - Wishlist "you have it" used an older item count function that may be gone on Forever; it now uses the same count as the rest of Untamed.
+  - Feed Pet picks food by how much it helps: food within 5 levels of your pet gives full happiness, within 10 half, within 14 a quarter. It picks the lowest level food inside the best group you carry, so cheap food is used first without wasting a feeding.
+- New: /ut doctor. A self-check that prints what the game answers for each part of Untamed (pet spellbook, range checks, cooldowns, chest spots, books, OpenMap, the Open macro's pet bar slot). Green is fine, red is a part to report.
+
 ## v2.19.13
 - Range meter: no more "Melee 5 yd" stuck on a far target. For melee abilities Forever's spell range check answers "yes" at any distance, so melee is now read from your action bar instead (the button with Raptor Strike, Wing Clip or Mongoose Bite, or a macro that shows one, like Rapt). If none of them is on your bars, point-blank shows "Too close" instead of guessing.
 - Abilities page with "Hide ranks above my pet's level" checked: an ability your pet has at the best rank for its level said "nothing usable yet"; it now says "pet has Rank 5, best for its level".

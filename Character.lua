@@ -19,15 +19,7 @@ end
 ns.Money = Money
 
 local function Known(spellID)
-  if IsPlayerSpell then
-    local ok, v = pcall(IsPlayerSpell, spellID)
-    if ok and v then return true end
-  end
-  if IsSpellKnown then
-    local ok, v = pcall(IsSpellKnown, spellID)
-    if ok and v then return true end
-  end
-  return false
+  return ns.SpellKnown(spellID) == true
 end
 
 local function NotForever(add, what)
