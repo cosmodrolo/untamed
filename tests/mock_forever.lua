@@ -3,7 +3,10 @@ GetSpellInfo = nil; GetCraftDisplaySkillLine = nil; GetNumCrafts = nil; GetCraft
 GetPetHappiness = nil; GetPetFoodTypes = nil; GetPetTrainingPoints = nil; GetSpellBookItemName = nil
 C_Spell = { GetSpellInfo = function(id) local n = SPELLS and SPELLS[id] if n then return { name = n } end end }
 Enum = { SpellBookSpellBank = { Pet = 1 }, TrainerType = { Pet = 3 }, TooltipDataType = { Unit = 2 } }
-C_SpellBook = { GetSpellBookItemName = function(i) local s = PET.spells[i]; return s[1], s[2] end }
+-- Forever has no global HasPetSpells: the count comes from C_SpellBook
+HasPetSpells = nil
+C_SpellBook = { GetSpellBookItemName = function(i) local s = PET.spells[i]; return s[1], s[2] end,
+  HasPetSpells = function() return #PET.spells, "PET" end }
 C_PetInfo = {
   GetPetHappiness = function() return PET.happy or 3, 100, 1 end,
   GetPetFoodTypes = function() return { "Meat" } end,

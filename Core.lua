@@ -166,14 +166,37 @@ function ns.ScanPet()
   if not family then return nil end
   if family == "Owl" and FOREVER then family = "Bird of Prey" end
   local info = { name = UnitName("pet"), family = family, level = UnitLevel("pet"), known = {} }
-  local num = HasPetSpells and HasPetSpells() or 0
-  for i = 1, (num or 0) do
-    local name, sub = GetPetSpellName(i)
-    if name and not ns.IsSecret(name) then
+  -- how many spells the pet's spellbook page has (Forever: C_SpellBook; older clients: the global)
+  local num
+  if C_SpellBook and C_SpellBook.HasPetSpells then
+    local ok, n = pcall(C_SpellBook.HasPetSpells)
+    if ok and n and not ns.IsSecret(n) then num = n end
+  end
+  if not num and HasPetSpells then num = HasPetSpells() end
+  local waiting
+  for i = 1, (tonumber(num) or 0) do
+    local ok, name, sub = pcall(GetPetSpellName, i)
+    if ok and name and not ns.IsSecret(name) then
+      -- "Rank 5" arrives a moment after the name the first time: ask the spell itself, and
+      -- if it still isn't there, look again shortly
+      if (not sub or sub == "") and C_SpellBook and C_SpellBook.GetSpellBookItemInfo and C_Spell and C_Spell.GetSpellSubtext then
+        local okI, item = pcall(C_SpellBook.GetSpellBookItemInfo, i, Enum.SpellBookSpellBank.Pet)
+        local id = okI and item and (item.actionID or item.spellID)
+        if id and not ns.IsSecret(id) then
+          local okS, text = pcall(C_Spell.GetSpellSubtext, id)
+          if okS and text and not ns.IsSecret(text) and text ~= "" then sub = text
+          elseif C_Spell.RequestLoadSpellData then pcall(C_Spell.RequestLoadSpellData, id); waiting = true end
+        end
+      end
       name = ns.ToEnglish(name)
       local r = ParseRank(sub) or 1
       if r > (info.known[name] or 0) then info.known[name] = r end
     end
+  end
+  if waiting and not ns.petRescan and (ns.petRescans or 0) < 4 then
+    ns.petRescan = true
+    ns.petRescans = (ns.petRescans or 0) + 1
+    C_Timer.After(1.5, function() ns.petRescan = nil; if ns.Refresh then ns.Refresh() end end)
   end
   info.tpFree = ns.PetTrainingPoints()
   return info

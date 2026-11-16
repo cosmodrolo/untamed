@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.12
+- Untamed reads your pet's own abilities again. On Forever the number of spells on the pet's spellbook page comes from a newer game function; Untamed asked the old one, got nothing, and so every ability said "pet does not know it" and the plan started from rank 1. The pet's ranks are now read from its spellbook (with the rank text asked for again if it hasn't arrived yet), so the Abilities page, the plan, zone alerts and the training point math all start from what your pet really has.
+
 ## v2.19.11
 - No more "go learn Bite 1" when you already know Bite 5: ranks below one you know and your pet can use now are left off the plan, the map, the zone alerts and the tame hints. Lower ranks still show for a pet that's too low for the rank you know.
 
