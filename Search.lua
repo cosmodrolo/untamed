@@ -319,6 +319,61 @@ local function ItemClick(id)
 end
 ns.ItemClick, ns.ItemTooltip, ns.ItemIcon, ns.QualityColor = ItemClick, ItemTooltip, ItemIcon, QualityColor
 
+-- An item's journal page (Gear, Wishlist): its icon, how to get it, every source with distance,
+-- and Go get it / Wishlist / Item details. Call once on a journal; returns fill(id, forYou).
+function ns.ItemPageSetup(j)
+  local how = j:Tile(L["How to get it"])
+  local you = j:Tile(L["For you"])
+  local current
+  local buttons = j:Buttons({
+    { L["Go get it"], 110, function() if current then ItemClick(current)() elseif j.altGo then j.altGo() end end, { L["Go get it"], L["An arrow to the nearest place to get it."] } },
+    { L["Off the wishlist"], 130, function() if current and ns.Wishlist_Toggle then ns.Wishlist_Toggle(current) elseif j.altWish then j.altWish() end end,
+      { L["Wishlist"], L["Keeps its sources on your map and tells you when you're in a zone that has it."] } },
+    { L["Item details"], 120, function()
+        local _, link = ItemInfo(current)
+        if link then ns.Print(link) end
+      end },
+  })
+  -- the real item tooltip, on hover or when the controller's frame lands on the button
+  buttons[3]:SetScript("OnEnter", function(self) if current then ns.ShowTooltip(self, { "?", itemID = current }) end end)
+  buttons[3]:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  local sources = j:Section(L["Where it comes from"])
+  local notes = j:Section(L["Good to know"], "GameFontHighlightSmall")
+  j.itemButtons = buttons
+  return function(id, forYou)
+    current = id
+    buttons[3]:SetShown(id and true or false)
+    if not id then
+      -- not an item (a wished beast): the caller fills the page; the buttons call j.altGo / j.altWish
+      how.value:SetText(""); you.value:SetText(forYou or ""); sources:SetText(""); notes:SetText("")
+      buttons[2]:SetText(L["Off the wishlist"])
+      return how, you, sources, notes
+    end
+    local srcs, it = ns.ItemSources(id)
+    j.box:Picture(ItemIcon(id))
+    j.name:SetText(QualityColor(id) .. ((it and it[1]) or ("item " .. id)) .. "|r")
+    local level = UnitLevel("player")
+    local have = ns.HaveItem and ns.HaveItem(id)
+    j.sub:SetText(((it and it[3] > 0) and (((it[3] > level) and C.RED or C.WHITE) .. L["Requires level "] .. it[3] .. "|r") or "")
+      .. (have and (C.GREEN .. "   " .. L["you have it"] .. "|r") or ""))
+    how.value:SetText(it and (ns.SourceSummary(id)) or (C.GREY .. L["unknown"] .. "|r"))
+    you.value:SetText(forYou or "")
+    local lines = {}
+    for i = 1, math.min(7, #srcs) do lines[#lines + 1] = SourceLine(srcs[i]) end
+    if #srcs > 7 then lines[#lines + 1] = C.GREY .. string.format(L["and %d more"], #srcs - 7) .. "|r" end
+    local w = ns.ItemWays(id)
+    if #lines == 0 then lines[1] = C.GREY .. (w.world and L["World drop"] or L["crafted or unknown"]) .. "|r" end
+    sources:SetText(table.concat(lines, "\n"))
+    local n = {}
+    if w.world and it then n[#n + 1] = string.format(L["World drop: drops from %d different creatures."], it[8]) end
+    if w.ah then n[#n + 1] = L["Not bound when picked up, so you can often buy it on the Auction House."] end
+    if w.repVendor then n[#n + 1] = C.ORANGE .. L["Sold by a quartermaster: usually needs reputation."] .. "|r" end
+    if it and it[16] and it[16] > 0 and w.vendor and ns.Money then n[#n + 1] = L["Vendor price: "] .. ns.Money(it[16]) end
+    notes:SetText(C.GREY .. table.concat(n, "\n") .. "|r")
+    buttons[2]:SetText((ns.OnWishlist and ns.OnWishlist(id)) and L["Off the wishlist"] or L["Wishlist"])
+  end
+end
+
 local function NpcLine(n)
   local where = n[10] ~= "" and (C.ORANGE .. n[10] .. "|r") or (n[5] ~= 0 and ns.ZoneName(n[5]) or L["unknown location"])
   return where

@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.27.0
+Gear and Wishlist in the journal style.
+- Gear: your next upgrades on the left, grouped Now / Soon / Later with how much better each is; the item's page on the right: its icon, how to get it, which slot it's for and how much it beats what you wear, every source with its distance, and three buttons: Go get it, Wishlist, Item details (hover it, or move the controller onto it, for the real item tooltip).
+- Wishlist: your wished beasts and items on the left, the same item page on the right. A wished beast shows its model and the basics; click it again for its full page in the Bestiary.
+- On a controller: Cross on an item starts the arrow to it, Square puts it on (or takes it off) the wishlist.
+
 ## v2.26.1
 - The look gets some depth: panels, buttons and the window shade from top to bottom instead of sitting flat, list headings are an amber band that fades out, model boxes have a lit floor and amber corner brackets, page titles get an amber stroke, and the title bar carries Untamed's mark.
 - /ut mem says how much memory Untamed is using (also a line in /ut doctor).

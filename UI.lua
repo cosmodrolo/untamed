@@ -345,7 +345,7 @@ function ns.MakeModelBox(parent, size)
   box.icon:SetAlpha(0.35)
   box.model = CreateFrame("PlayerModel", nil, box)
   box.model:SetAllPoints()
-  box.facing = 0.5
+  box.facing, box.kind, box.what, box.tries, box.wait, box.picture = 0.5, false, false, 0, 0, false
   local function Apply()
     local m = box.model
     local ok
@@ -356,10 +356,10 @@ function ns.MakeModelBox(parent, size)
     return ok
   end
   local function Set(kind, what, icon)
-    if box.picture then box.picture = nil; box.icon:SetSize(64, 64); box.icon:SetAlpha(0.35) end
+    if box.picture then box.picture = false; box.icon:SetSize(64, 64); box.icon:SetAlpha(0.35) end
     box.icon:SetTexture(icon)
     if box.kind == kind and box.what == what then return end
-    box.kind, box.what, box.tries, box.wait, box.facing = kind, what, 0, 0, 0.5
+    box.kind, box.what, box.tries, box.wait, box.facing = kind or false, what or false, 0, 0, 0.5
     if box.model.ClearModel then pcall(box.model.ClearModel, box.model) end
     local ok = what and Apply()
     box.model:SetShown(ok and true or false)

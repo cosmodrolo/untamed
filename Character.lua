@@ -789,26 +789,37 @@ end
 ns.GearBestFor = BestFor
 
 do
-  local list
+  local list, j, fill
   local opt = { slot = "all", way = "any", near = false }
+  local info = {}        -- [item id] = { slot, gain, bucket }
   local function SlotOptions()
     local o = { { "all", L["All slots"] } }
     for _, s in ipairs(SLOTS) do o[#o + 1] = { s[1], SLOT_LABEL[s[1]] } end
     return o
   end
   local function Build(panel)
-    local tb = ns.Toolbar(panel)
+    j = ns.MakeJournal(panel, L["No upgrades found with these filters."])
+    local tb = ns.Toolbar(j.left)
     tb:Dropdown(140, SlotOptions, function() return opt.slot end, function(v) opt.slot = v end)
+    tb:Check(L["Near me"], function() return opt.near end, function(v) opt.near = v end, L["Only upgrades you can get on your continent."])
+    tb:Row()
     tb:Dropdown(200, WAYS, function() return opt.way end, function(v) opt.way = v end,
       { L["How you get it"], L["Buy or quest only skips dungeons, drops and the Auction House."] })
-    tb:Check(L["Near me"], function() return opt.near end, function(v) opt.near = v end, L["Only upgrades you can get on your continent."])
     list = tb:List()
+    j.list = list
+    fill = ns.ItemPageSetup(j)
+    j.onSelect = function(id)
+      local x = info[id]
+      fill(id, x and string.format("%s%s|r   %s+%d|r %s%s   %s|r", C.WHITE, SLOT_LABEL[x.slot], C.GREEN, x.gain, C.GREY, L["over what you wear"], x.bucket) or "")
+    end
   end
 
   local function Refresh()
-    local rows = {}
-    local function add(...) rows[#rows + 1] = { ... } end
-    if not ns.GearItems then NotForever(add, L["The gear guide"]); list:Set(rows) return end
+    local rows, keys, order = {}, {}, {}
+    if not ns.GearItems then
+      rows[1] = { 0, nil, C.GREY .. L["The gear guide"] .. "|r" }
+      list:Set(rows); j:Rows(keys, order) return
+    end
     local level = UnitLevel("player")
     local db = ns.SearchDB and ns.SearchDB()
     local buckets = {
@@ -820,33 +831,34 @@ do
     for _, s in ipairs(SLOTS) do if opt.slot == "all" or opt.slot == s[1] then slots[#slots + 1] = s[1] end end
     local beatBy = {}
     for _, slot in ipairs(slots) do beatBy[slot] = WornScore(slot) end
-    local any = false
+    wipe(info)
     for bi, b in ipairs(buckets) do
       if b[2] <= b[3] then
-        local bucketRows = {}
+        local found = {}
         for _, slot in ipairs(slots) do
           local id, score = BestFor(slot, b[2], b[3], beatBy[slot], opt.way, opt.near)
-          if id then
-            local worn = WornScore(slot)
-            local it = db and db.I[id]
-            bucketRows[#bucketRows + 1] = { 14, ns.ItemIcon(id),
-              string.format("%s%s|r  %s%s|r  %s+%d|r", C.GREY, SLOT_LABEL[slot], ns.QualityColor(id), it and it[1] or "?", C.GREEN, score - worn),
-              HowText(id), ns.ItemClick(id), ns.ItemTooltip(id),
-              { mid = ((bi > 1) and C.ORANGE or C.GREY) .. L["lvl "] .. ns.GearItems[id][2] .. "|r" } }
+          if id and not info[id] then
+            info[id] = { slot = slot, gain = score - WornScore(slot), bucket = b[4] }
+            found[#found + 1] = id
             beatBy[slot] = score   -- later buckets only show something better still
           end
         end
-        add(0, nil, b[1], C.GREY .. b[4] .. "|r", nil, nil, { header = true })
-        if #bucketRows == 0 then
-          add(14, nil, C.GREY .. L["No upgrades found with these filters."] .. "|r")
-        else
-          any = true
-          for _, r in ipairs(bucketRows) do rows[#rows + 1] = r end
+        if #found > 0 then
+          rows[#rows + 1] = { 0, nil, b[1], C.GREY .. ((bi == 1) and "" or (L["lvl "] .. b[2] .. "-" .. b[3])) .. "|r", nil, nil, { header = true } }
+          for _, id in ipairs(found) do
+            local it = db and db.I[id]
+            rows[#rows + 1] = { 0, ns.ItemIcon(id), ns.QualityColor(id) .. (it and it[1] or "?") .. "|r",
+              C.GREEN .. "+" .. info[id].gain .. "|r", j:RowClick(id, function(k) ns.ItemClick(k)() end, function(k) if ns.Wishlist_Toggle then ns.Wishlist_Toggle(k) end end),
+              j:RowHover(id) }
+            keys[#rows] = id
+            order[#order + 1] = id
+          end
         end
       end
     end
-    add(0, nil, C.GREY .. L["Score: agility x2.4, attack power x1, 1% crit x20, 1% hit x18, stamina x0.5, ranged DPS x14. Set bonuses and procs aren't counted."] .. "|r")
+    if #order == 0 then rows[#rows + 1] = { 0, nil, C.GREY .. L["No upgrades found with these filters."] .. "|r" } end
     list:Set(rows)
+    j:Rows(keys, order)
   end
   ns.RegisterTab("gear", L["Gear"], Build, Refresh)
 end

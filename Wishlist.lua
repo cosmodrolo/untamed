@@ -172,45 +172,69 @@ do
   end)
 end
 
--- Wishlist page
+-- Wishlist page: what you want on the left (beasts, then items); the item's page on the right
+-- (a wished beast opens its Bestiary page).
 do
-  local list
+  local list, j, fill
   local sort = "new"
   local SORTS = { { "new", L["Newest first"] }, { "near", L["Nearest source first"] }, { "level", L["By level"] } }
+  local function OpenBeast(id)
+    local f = ns.BrowserFilter()
+    f.family, f.fresh, f.teaches, f.where, f.rare, f.tameable = ns.Beasts[id][4], false, "any", "any", false, false
+    ns.UI_Show("browse")
+    if ns.BestiarySelect then ns.BestiarySelect(id) end
+  end
   local function Build(panel)
-    local tb = ns.Toolbar(panel)
+    j = ns.MakeJournal(panel, L["Your wishlist is empty. Alt-click an item anywhere in Untamed (Search, Gear, Supplies, Dungeons) to add it, or type /ut want and a beast's name."])
+    local tb = ns.Toolbar(j.left)
     tb:Dropdown(170, SORTS, function() return sort end, function(v) sort = v end)
+    tb:Row()
     tb:Check(L["Show sources on the world map"], function() return ns.db.wishPins end,
       function(v) ns.db.wishPins = v; if ns.Pins_Refresh then ns.Pins_Refresh() end end)
     list = tb:List()
+    j.list = list
+    fill = ns.ItemPageSetup(j)
+    j.onSelect = function(key)
+      if type(key) == "string" then
+        -- a beast: a short page, with its real one a click away
+        local id = tonumber(key:sub(3))
+        local b = ns.Beasts[id]
+        j.box:Beast(id, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"))
+        local how, you, sources, notes = fill(nil)
+        j.name:SetText((b[5] and C.ORANGE or "") .. b[1] .. (b[5] and "|r" or ""))
+        j.sub:SetText(string.format("%s   %s %s", ns.FamilyLabel(b[4]), L["level"], ns.LevelText(b)))
+        how.value:SetText(L["Tame it"] .. C.GREY .. "   " .. ns.ZonesText(b) .. "|r")
+        you.value:SetText(b[9] and (L["Attack speed: "] .. ((b[9] < 2.0) and C.GREEN or C.WHITE) .. string.format("%.1f s", b[9]) .. "|r") or "")
+        sources:SetText(L["Teaches: "] .. (#b[6] > 0 and ns.TeachesText(b) or (C.GREY .. L["nothing"] .. "|r")))
+        notes:SetText(C.GREY .. L["Click it again in the list (or press Cross) for its full page in the Bestiary."] .. "|r")
+        j.altGo = function() ns.Navigate(id) end
+        j.altWish = function() ns.WishBeast_Toggle(id) end
+      else
+        fill(key, "")
+      end
+    end
   end
   local function Refresh()
-    local rows = {}
-    local function add(...) rows[#rows + 1] = { ... } end
+    local rows, keys, order = {}, {}, {}
     local db = ns.SearchDB and ns.SearchDB()
     local level = UnitLevel("player")
     local beasts = {}
     for id in pairs(Beasts()) do if ns.Beasts[id] then beasts[#beasts + 1] = id end end
     if #beasts > 0 then
-      table.sort(beasts, function(a, b) return ns.Beasts[a][2] < ns.Beasts[b][2] end)
-      add(0, nil, ns.Count(#beasts, L["beast"], L["beasts"]), C.GREY .. L["click: arrow   right-click: remove"] .. "|r", nil, nil, { header = true })
+      table.sort(beasts, function(a, b) if ns.Beasts[a][2] ~= ns.Beasts[b][2] then return ns.Beasts[a][2] < ns.Beasts[b][2] end return a < b end)
+      rows[#rows + 1] = { 0, nil, ns.Count(#beasts, L["beast"], L["beasts"]), "", nil, nil, { header = true } }
       for _, id in ipairs(beasts) do
         local b = ns.Beasts[id]
-        local right = ns.ZonesText(b)
-        if b[9] then right = ((b[9] < 2.0) and C.GREEN or C.GREY) .. string.format("%.1f s", b[9]) .. "|r  " .. right end
-        add(0, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"),
-          (b[5] and C.ORANGE or C.WHITE) .. b[1] .. "|r" .. C.GREY .. "  " .. ns.FamilyLabel(b[4]) .. "|r", right,
-          function(_, button) if button == "RightButton" then ns.WishBeast_Toggle(id) else ns.Navigate(id) end end,
-          ns.BeastTooltip(id), { mid = ((b[2] > level) and C.RED or C.GREY) .. L["lvl "] .. ns.LevelText(b) .. "|r" })
+        local key = "b:" .. id
+        rows[#rows + 1] = { 0, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"),
+          (b[5] and C.ORANGE or C.WHITE) .. b[1] .. "|r", ((b[2] > level) and C.RED or C.GREY) .. ns.LevelText(b) .. "|r",
+          j:RowClick(key, function() OpenBeast(id) end, function() ns.WishBeast_Toggle(id) end), j:RowHover(key) }
+        keys[#rows] = key
+        order[#order + 1] = key
       end
     end
     local ids = {}
     for id in pairs(List()) do ids[#ids + 1] = id end
-    if #ids == 0 and #beasts > 0 then list:Set(rows) return end
-    if #ids == 0 then
-      add(0, nil, C.GREY .. L["Your wishlist is empty. Alt-click an item anywhere in Untamed (Search, Gear, Supplies, Dungeons) to add it, or type /ut want and a beast's name."] .. "|r")
-      list:Set(rows) return
-    end
     local dist = {}
     if sort == "near" then for _, id in ipairs(ids) do local s = ns.ItemSources(id)[1]; dist[id] = s and s.dist or 1e9 end end
     table.sort(ids, function(a, b)
@@ -219,19 +243,21 @@ do
         local x, y = db and db.I[a], db and db.I[b]
         if x and y and x[3] ~= y[3] then return x[3] < y[3] end
       end
-      return (List()[a] or 0) > (List()[b] or 0)
+      if (List()[a] or 0) ~= (List()[b] or 0) then return (List()[a] or 0) > (List()[b] or 0) end
+      return a < b
     end)
-    add(0, nil, ns.Count(#ids, L["item"], L["items"]), C.GREY .. L["click: arrow   right-click: remove"] .. "|r", nil, nil, { header = true })
+    if #ids > 0 then rows[#rows + 1] = { 0, nil, ns.Count(#ids, L["item"], L["items"]), "", nil, nil, { header = true } } end
     for _, id in ipairs(ids) do
       local it = db and db.I[id]
       local have = ns.HaveItem and ns.HaveItem(id)
-      if have == nil then have = (GetItemCount and GetItemCount(id) or 0) > 0 end
-      add(0, ns.ItemIcon(id), ns.QualityColor(id) .. (it and it[1] or ("item " .. id)) .. "|r" .. (have and (C.GREEN .. "  " .. L["you have it"] .. "|r") or ""),
-        it and ns.SourceSummary(id) or "",
-        function(_, button) if button == "RightButton" then ns.Wishlist_Toggle(id) else ns.ItemClick(id)() end end,
-        ns.ItemTooltip(id), { mid = it and it[3] > 0 and (((it[3] > level) and C.RED or C.GREY) .. L["lvl "] .. it[3] .. "|r") or "" })
+      rows[#rows + 1] = { 0, ns.ItemIcon(id), ns.QualityColor(id) .. (it and it[1] or ("item " .. id)) .. "|r" .. (have and (C.GREEN .. "  " .. L["you have it"] .. "|r") or ""),
+        it and it[3] > 0 and (((it[3] > level) and C.RED or C.GREY) .. it[3] .. "|r") or "",
+        j:RowClick(id, function(k) ns.ItemClick(k)() end, function(k) ns.Wishlist_Toggle(k) end), j:RowHover(id) }
+      keys[#rows] = id
+      order[#order + 1] = id
     end
     list:Set(rows)
+    j:Rows(keys, order)
   end
   ns.RegisterTab("wishlist", L["Wishlist"], Build, Refresh)
 end
