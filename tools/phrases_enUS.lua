@@ -808,7 +808,6 @@ L["beast"] = true
 L["beasts"] = true
 L["below your level"] = true
 L["best for its level"] = true
-L["best upgrades for you first; Alt-click to add to your wishlist"] = true
 L["bought from pet trainers"] = true
 L["click to include or skip"] = true
 L["click to make"] = true

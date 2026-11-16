@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.28.0
+The rest of the Gear section in the journal style: Dungeons, Reputation and Supplies.
+- Each keeps its list and filters on the left; picking an item opens its page on the right (icon, how to get it, every source with distance, Go get it / Wishlist / Item details). What used to stand at the end of the row (the boss that drops it, the standing it needs, the vendor that sells it) is the page's "For you" line.
+- Dungeons: the dungeon's own row still gives the arrow to its entrance, and the beasts inside are still listed.
+- On a controller: Cross on an item does what clicking it did (the arrow to it), Square puts it on the wishlist.
+
 ## v2.27.1
 - Gear: each row names its slot again, the "For you" line no longer runs off the page, and item and ability pictures are shown at their real size (they went soft when blown up).
 

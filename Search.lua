@@ -276,8 +276,10 @@ local function GoTo(s)
   ns.Arrow_Set(s.map, s.x, s.y, label)
 end
 
+local tipItem = setmetatable({}, { __mode = "k" })     -- [an item's tooltip function] = its id
 local function ItemTooltip(id)
-  return function()
+  local fn
+  fn = function()
     local srcs, it = ns.ItemSources(id)
     local lines = { (it and it[1]) or "?", itemID = id }
     if it and it[3] > 0 then lines[#lines + 1] = L["Requires level "] .. it[3] end
@@ -301,6 +303,8 @@ local function ItemTooltip(id)
     lines[#lines + 1] = C.GREY .. L["Click: arrow to the nearest source.  Shift-click: link in chat.  Alt-click: wishlist."] .. "|r"
     return lines
   end
+  tipItem[fn] = id
+  return fn
 end
 
 local function ItemClick(id)
@@ -372,6 +376,45 @@ function ns.ItemPageSetup(j)
     notes:SetText(C.GREY .. table.concat(n, "\n") .. "|r")
     buttons[2]:SetText((ns.OnWishlist and ns.OnWishlist(id)) and L["Off the wishlist"] or L["Wishlist"])
   end
+end
+
+-- A journal whose list is item rows built the old way ({ indent, icon, text, right, onClick,
+-- ItemTooltip(id), opts }): j:SetItemRows(rows) turns every item row into one that opens the item's
+-- page (what stood on the right of the row moves to the page's "For you" line; clicking the open
+-- row, or Cross, does what the row's click did). Other rows stay as they are.
+function ns.ItemJournal(panel, empty)
+  local j = ns.MakeJournal(panel, empty or "")
+  local fill = ns.ItemPageSetup(j)
+  local forYou = {}
+  j.onSelect = function(id) fill(id, forYou[id]) end
+  function j:SetItemRows(rows)
+    local keys, order = {}, {}
+    wipe(forYou)
+    for i, r in ipairs(rows) do
+      local id = r[6] and tipItem[r[6]]
+      local header = r[7] and r[7].header
+      if id then
+        forYou[id] = r[4]
+        local again = r[5]
+        r[4] = (r[7] and r[7].mid) or ""
+        r[5] = j:RowClick(id, function() if again then again(nil, "LeftButton") end end, function(k) if ns.Wishlist_Toggle then ns.Wishlist_Toggle(k) end end)
+        r[6] = j:RowHover(id)
+        r[1], r[7] = 0, nil
+        keys[i] = id
+        order[#order + 1] = id
+      elseif not header then
+        -- the list is narrow now: long notes on the right would squeeze the name out
+        if r[7] and r[7].mid then r[4] = r[7].mid; r[7].mid = nil
+        elseif r[4] and #r[4] > 44 then r[4] = "" end
+        r[1] = math.min(r[1] or 0, 14)
+      elseif r[4] and #r[4] > 60 then
+        r[4] = ""
+      end
+    end
+    j.list:Set(rows)
+    j:Rows(keys, order)
+  end
+  return j
 end
 
 local function NpcLine(n)
@@ -625,14 +668,18 @@ local function VendorRow(add, id, extra, playerLevel)
 end
 
 do
-  local list
-  local function Build(panel) list = ns.NewList(panel, 0) end
+  local list, j
+  local function Build(panel)
+    j = ns.ItemJournal(panel, L["Search data is missing."])
+    list = ns.NewList(j.left, 4)
+    j.list = list
+  end
 
   local function Refresh()
     local rows = {}
     local function add(...) rows[#rows + 1] = { ... } end
     local db = ns.SearchDB()
-    if not db then add(0, nil, C.RED .. L["Search data is missing."] .. "|r"); list:Set(rows) return end
+    if not db then add(0, nil, C.RED .. L["Search data is missing."] .. "|r"); j:SetItemRows(rows) return end
     local playerLevel = UnitLevel("player")
 
     -- Ammo
@@ -735,7 +782,7 @@ do
       for i = 1, math.min(5, #foods) do VendorRow(add, foods[i], nil, playerLevel) end
       if #foods == 0 then add(14, nil, C.GREY .. L["No vendor food found for this diet."] .. "|r") end
     end
-    list:Set(rows)
+    j:SetItemRows(rows)
   end
 
   ns.RegisterTab("supplies", L["Supplies"], Build, Refresh)

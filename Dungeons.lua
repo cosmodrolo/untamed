@@ -51,7 +51,7 @@ local function Worn(slot)
 end
 
 do
-  local list
+  local list, j
   local opt = { name = nil, slot = "all", upgrades = false }
   local function Options()
     local o = {}
@@ -67,8 +67,10 @@ do
     return best or (level >= 58 and "Stratholme") or DUNGEONS[1][1]
   end
   local function Build(panel)
-    local tb = ns.Toolbar(panel)
+    j = ns.ItemJournal(panel, L["No hunter gear found for this dungeon."])
+    local tb = ns.Toolbar(j.left)
     tb:Dropdown(250, Options, function() return opt.name or Suggested() end, function(v) opt.name = v end)
+    tb:Row()
     tb:Dropdown(130, function()
       local o = { { "all", L["All slots"] } }
       for _, s in ipairs({ "HEAD", "NECK", "SHOULDER", "BACK", "CHEST", "WRIST", "HANDS", "WAIST", "LEGS", "FEET", "FINGER", "TRINKET", "RANGED", "WEAPON" }) do
@@ -78,6 +80,7 @@ do
     end, function() return opt.slot end, function(v) opt.slot = v end)
     tb:Check(L["Only upgrades"], function() return opt.upgrades end, function(v) opt.upgrades = v end)
     list = tb:List()
+    j.list = list
   end
 
   local function Refresh()
@@ -87,7 +90,7 @@ do
     local def
     for _, d in ipairs(DUNGEONS) do if d[1] == name then def = d end end
     local info = Info(name)
-    if not info then add(0, nil, C.RED .. L["Search data is missing."] .. "|r"); list:Set(rows) return end
+    if not info then add(0, nil, C.RED .. L["Search data is missing."] .. "|r"); j:SetItemRows(rows) return end
     local db = ns.SearchDB()
     local level = UnitLevel("player")
     local lvlText = def[4] and L["Raid, level 60"] or string.format(L["Levels %d to %d"], def[2], def[3])
@@ -109,7 +112,7 @@ do
     end
     table.sort(loot, function(a, b) if a.gain ~= b.gain then return a.gain > b.gain end return a.score > b.score end)
     local seenItem = {}
-    add(0, nil, L["Hunter loot"], C.GREY .. L["best upgrades for you first; Alt-click to add to your wishlist"] .. "|r", nil, nil, { header = true })
+    add(0, nil, L["Hunter loot"], "", nil, nil, { header = true })
     local shown = 0
     for _, e in ipairs(loot) do
       if shown >= 20 then break end
@@ -151,7 +154,7 @@ do
           ns.BeastClick(id), ns.BeastTooltip(id), { mid = C.GREY .. ns.LevelText(b) .. "|r" })
       end
     end
-    list:Set(rows)
+    j:SetItemRows(rows)
   end
   ns.RegisterTab("dungeons", L["Dungeons"], Build, Refresh)
 end

@@ -255,7 +255,7 @@ do
 end
 
 -- the other journal pages build and fill
-ns.UI_Show("recommend"); ns.UI_Show("rares"); ns.UI_Show("abilities"); ns.UI_Show("care"); ns.UI_Show("builds"); ns.UI_Show("gear"); ns.UI_Show("wishlist"); ns.UI_Show("home")
+ns.UI_Show("recommend"); ns.UI_Show("rares"); ns.UI_Show("abilities"); ns.UI_Show("care"); ns.UI_Show("builds"); ns.UI_Show("gear"); ns.UI_Show("wishlist"); ns.UI_Show("dungeons"); ns.UI_Show("reputation"); ns.UI_Show("supplies"); ns.UI_Show("home")
 check(select(3, ns.UI_Sections()) == "home", "Find a Pet, Rares and Today open without a hitch")
 
 -- Wishlist

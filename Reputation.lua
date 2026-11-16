@@ -60,7 +60,7 @@ local function Standing(fac)
 end
 
 do
-  local list
+  local list, j
   local opt = { onlyGear = true, fac = "all" }
   local function FactionOptions()
     local o = { { "all", L["All factions"] } }
@@ -74,17 +74,20 @@ do
     return o
   end
   local function Build(panel)
-    local tb = ns.Toolbar(panel)
+    j = ns.ItemJournal(panel, L["No reputation rewards found."])
+    local tb = ns.Toolbar(j.left)
     tb:Dropdown(210, FactionOptions, function() return opt.fac end, function(v) opt.fac = v end)
+    tb:Row()
     tb:Check(L["Only gear I can use"], function() return opt.onlyGear end, function(v) opt.onlyGear = v end)
     list = tb:List()
+    j.list = list
   end
 
   local function Refresh()
     local rows = {}
     local function add(...) rows[#rows + 1] = { ... } end
     local db = ns.SearchDB and ns.SearchDB()
-    if not db then add(0, nil, C.RED .. L["Search data is missing."] .. "|r"); list:Set(rows) return end
+    if not db then add(0, nil, C.RED .. L["Search data is missing."] .. "|r"); j:SetItemRows(rows) return end
     local level = UnitLevel("player")
     local rewards = Rewards()
     local facs = {}
@@ -138,7 +141,7 @@ do
         end
       end
     end
-    list:Set(rows)
+    j:SetItemRows(rows)
   end
   ns.RegisterTab("reputation", L["Reputation"], Build, Refresh)
 end
