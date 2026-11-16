@@ -158,7 +158,6 @@ L["Clear"] = true
 L["Clear the arrow and map focus"] = true
 L["Click a beast for an arrow and map pins. Right-click opens the map."] = true
 L["Click a beast, item or NPC for an arrow to it. Right-click a beast to see it on the world map."] = true
-L["Click a result for an arrow to the nearest place to get it. Hover for every source."] = true
 L["Click for an arrow to the entrance."] = true
 L["Click for an arrow to the librarian."] = true
 L["Click for an arrow to the nearest hunter trainer."] = true

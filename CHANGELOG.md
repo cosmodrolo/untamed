@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.29.1
+- Spells: a spell's page shows the game's own description of it (what the rank does), and a row keeps its status ("needs talent") instead of showing the level.
+- Search: the checkboxes wrap inside the left column (one sat on top of the page), and the hints are on the empty page instead of cut-off rows.
+- Library books: the heading and long book titles are no longer squeezed by notes on the right (the distance is on the book's page).
+- Pages built from a picture (items, spells, abilities, quests, books) use a smaller box, so the facts sit next to it instead of under a big empty square; the "Click for ..." hints are gone from pages that have a button for it.
+
 ## v2.29.0
 More pages in the journal style.
 - Hunter > Spells: the spells on the left (train now, later, optional), the spell's page on the right with its cost, the trainer level and why it's marked the way it is, and an Arrow to trainer button.

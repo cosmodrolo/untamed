@@ -408,7 +408,7 @@ function ns.ItemJournal(panel, empty)
         if r[7] and r[7].mid then r[4] = r[7].mid; r[7].mid = nil
         elseif Shown(r[4]) > 22 then r[4] = "" end
         r[1] = math.min(r[1] or 0, 14)
-      elseif Shown(r[4]) > 18 then
+      elseif Shown(r[4]) > 12 then
         -- a heading keeps its whole name; a long note beside it goes
         r[4] = ""
       end
@@ -485,7 +485,8 @@ do
   local function FiltersActive() return f.kind ~= "any" or f.source ~= "any" or f.quality > 0 or f.usable or f.type == "beasts" or f.type == "vendors" end
 
   local function Build(panel)
-    j = ns.ItemJournal(panel, L["Type at least 3 letters: an item (Heavy Shot, Hawkeye's Tunic), an NPC (Hogor Thunderhoof) or a beast."])
+    j = ns.ItemJournal(panel, L["Type at least 3 letters: an item (Heavy Shot, Hawkeye's Tunic), an NPC (Hogor Thunderhoof) or a beast."]
+      .. "\n\n" .. L["Or leave the box empty and just pick filters, like Bows + Vendor + Near me."])
     local tb = ns.Toolbar(j.left)
     box = tb:Search(L["Item, NPC or beast name"], 190, function(t) query = t end)
     tb:Dropdown(130, TYPES, function() return f.type end, function(v) f.type = v end)
@@ -510,9 +511,6 @@ do
     local function add(...) rows[#rows + 1] = { ... } end
     if #query < 3 and not FiltersActive() then
       add(0, nil, L["Search everything"], "", nil, nil, { header = true })
-      add(0, nil, C.GREY .. L["Type at least 3 letters: an item (Heavy Shot, Hawkeye's Tunic), an NPC (Hogor Thunderhoof) or a beast."] .. "|r")
-      add(0, nil, C.GREY .. L["Or leave the box empty and just pick filters, like Bows + Vendor + Near me."] .. "|r")
-      add(0, nil, C.GREY .. L["Click a result for an arrow to the nearest place to get it. Hover for every source."] .. "|r")
       j:SetItemRows(rows) return
     end
     local db = ns.SearchDB()

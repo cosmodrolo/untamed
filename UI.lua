@@ -356,7 +356,7 @@ function ns.MakeModelBox(parent, size)
     return ok
   end
   local function Set(kind, what, icon)
-    if box.picture then box.picture = false; box.icon:SetSize(64, 64); box.icon:SetAlpha(0.35) end
+    if box.picture then box.picture = false; box.icon:SetSize(64, 64); box.icon:SetAlpha(0.35); box:SetSize(size, size) end
     box.icon:SetTexture(icon)
     if box.kind == kind and box.what == what then return end
     box.kind, box.what, box.tries, box.wait, box.facing = kind or false, what or false, 0, 0, 0.5
@@ -373,6 +373,7 @@ function ns.MakeModelBox(parent, size)
     Set(nil, nil, icon)
     box.picture = true
     box.icon:SetSize(64, 64); box.icon:SetAlpha(1); box.icon:Show()      -- the icons are 64 px art: bigger goes soft
+    box:SetSize(math.min(size, 140), math.min(size, 140))                -- and a small picture doesn't need the big box
   end
   box.model:SetScript("OnUpdate", function(self, e)
     box.facing = (box.facing + e * 0.35) % (2 * math.pi)
@@ -563,8 +564,21 @@ function ns.TipJournal(panel, empty, goLabel, defaultClick)
     local tip = d.tip
     if type(tip) == "function" then tip = tip() end
     local lines = {}
+    -- a spell's own description, from the game (it can take a moment the first time)
+    if tip and tip.spellID and C_Spell and C_Spell.GetSpellDescription then
+      local ok, desc = pcall(C_Spell.GetSpellDescription, tip.spellID)
+      if ok and desc and desc ~= "" and not ns.IsSecret(desc) then
+        lines[#lines + 1] = desc
+        lines[#lines + 1] = " "
+      elseif not d.asked then
+        d.asked = true
+        if C_Spell.RequestLoadSpellData then pcall(C_Spell.RequestLoadSpellData, tip.spellID) end
+        if C_Timer and C_Timer.After then C_Timer.After(0.6, function() if j.selected == key and j.onSelect then j.onSelect(key) end end) end
+      end
+    end
     for i, line in ipairs(tip or {}) do
-      if i > 1 and line and line ~= "" then lines[#lines + 1] = line end
+      -- not the name again, and not the "Click for ..." hints (the page has buttons for that)
+      if i > 1 and line and line ~= "" and not line:gsub("|c%x%x%x%x%x%x%x%x", ""):find("^Click") then lines[#lines + 1] = line end
     end
     body:SetText(table.concat(lines, "\n"))
     go[1]:SetShown((d.click or defaultClick) and true or false)
@@ -580,7 +594,7 @@ function ns.TipJournal(panel, empty, goLabel, defaultClick)
         if data[key] then key = key .. "#" .. i end
         local click = r[5]
         data[key] = { icon = r[2], name = r[3], right = r[4], mid = opts and opts.mid, click = click, tip = r[6] }
-        if ns.ShownLen(r[4]) > 20 then r[4] = (opts and opts.mid) or "" end
+        if ns.ShownLen(r[4]) > (j.maxRight or 14) then r[4] = (opts and opts.mid) or "" end
         r[5] = j:RowClick(key, function() local f = click or defaultClick; if f then f(nil, "LeftButton") end end,
           function() if click then click(nil, "RightButton") end end)
         r[6] = j:RowHover(key)
@@ -588,7 +602,7 @@ function ns.TipJournal(panel, empty, goLabel, defaultClick)
         keys[i] = key
         order[#order + 1] = key
       elseif header then
-        if ns.ShownLen(r[4]) > 18 then r[4] = "" end
+        if ns.ShownLen(r[4]) > 12 then r[4] = "" end
         opts.mid = nil
       else
         r[1] = math.min(r[1] or 0, 14)
@@ -753,7 +767,10 @@ function ns.Toolbar(panel)
     local c = ns.MakeCheck(panel, label, tb.x, y(), get, set, tip)
     local fs = c.label
     local w = 24 + ((fs and fs.GetStringWidth and fs:GetStringWidth()) or (#label * 6))
-    place(w + 4)
+    -- placed once its width is known, so it wraps to the next row instead of running off a narrow column
+    local x = place(w + 4)
+    c:ClearAllPoints()
+    c:SetPoint("TOPLEFT", x, y())
     return c
   end
   function tb:Button(text, width, onClick)
@@ -1511,7 +1528,7 @@ do
     tiles.next = j:Tile(L["Next"])
     tiles.who = j:Tile(L["Who can learn it"])
     tiles.who.value:SetWordWrap(true)
-    if tiles.who.value.SetMaxLines then tiles.who.value:SetMaxLines(4) end
+    if tiles.who.value.SetMaxLines then tiles.who.value:SetMaxLines(2) end
     j.buttons = j:Buttons({
       { L["Hunt the next rank"], 150, function()
           local e = Entry(j.selected)

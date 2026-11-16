@@ -66,6 +66,7 @@ do
   local showAll = false
   local function Build(panel)
     j = ns.TipJournal(panel, L["The spell guide"], L["Arrow to trainer"], function() ns.NavigateService("T", L["Hunter trainer"]) end)
+    j.maxRight = 28
     local tb = ns.Toolbar(j.left)
     tb:Dropdown(190, { { false, L["What's next"] }, { true, L["Every level, 1 to 60"] } }, function() return showAll end, function(v) showAll = v end)
     list = tb:List()
@@ -110,7 +111,7 @@ do
       local icon = (C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(id)) or (GetSpellTexture and GetSpellTexture(id)) or nil
       add(indent or 14, icon, (known and C.GREY or C.WHITE) .. label .. "|r" .. (rank > 0 and (C.GREY .. "  " .. L["Rank "] .. rank .. "|r") or ""),
         status .. "   " .. Money(cost), nil,
-        { label .. (rank > 0 and (" " .. L["Rank "] .. rank) or ""), L["Trainer level "] .. lvl .. ", " .. Money(cost),
+        { spellID = id, label .. (rank > 0 and (" " .. L["Rank "] .. rank) or ""), L["Trainer level "] .. lvl .. ", " .. Money(cost),
           OPTIONAL[name] and (C.GREY .. L["Many hunters skip this while leveling to save gold and buy it later if they need it."] .. "|r")
             or (NeedsTalent(name) and (C.GREY .. L["The trainer sells this rank once you have the talent."] .. "|r")) or "",
           cost < 0 and (C.GREY .. L["Cost not known yet for this WoW Forever spell."] .. "|r") or "" },
