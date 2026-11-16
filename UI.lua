@@ -465,7 +465,7 @@ local TAB_META = {
   recommend = { icon = "Ability_Hunter_BeastTaming", sub = L["Pick a role and get the best family and beasts for it"] },
   plan      = { icon = "INV_Misc_Map_01", sub = L["A route to tame the beasts your pet still needs"] },
   rares     = { icon = "Ability_Hunter_SniperShot", sub = L["Rares near you, and the ones you've seen"] },
-  browse    = { icon = "INV_Misc_Spyglass_03", sub = L["Every tameable beast: filter by family, ability and place"] },
+  browse    = { icon = "INV_Misc_Spyglass_03", sub = L["Every tameable beast: its model, what it teaches and where it is"] },
   search    = { icon = "INV_Misc_Spyglass_02", sub = L["Find any item, NPC or beast and where to get it"] },
   supplies  = { icon = "INV_Ammo_Arrow_02", sub = L["Ammo, quivers and food for your pet"] },
   spells    = { icon = "INV_Misc_Book_11", sub = L["What to train at each level and what it costs"] },

@@ -142,8 +142,13 @@ local function SetFocus(w)
   ring:SetPoint("TOPLEFT", w, "TOPLEFT", -2, 2)
   ring:SetPoint("BOTTOMRIGHT", w, "BOTTOMRIGHT", 2, -2)
   ring:Show()
+  -- pages can tell the controller's frame from the mouse (the Bestiary turns its pages with it)
   local f = w:GetScript("OnEnter")
-  if f then pcall(f, w) end
+  if f then
+    ns.padFocusing = true
+    pcall(f, w)
+    ns.padFocusing = nil
+  end
 end
 
 local function Find(list, w)
@@ -200,6 +205,10 @@ local function Move(dir)
       if ok then pool[#pool + 1] = r end
     end
   end
+  -- a widget can say where a direction leads (the Bestiary's buttons go back to the open beast's row)
+  local to = focus.padNeighbor and focus.padNeighbor[dir]
+  to = to and to()
+  if to and to.IsVisible and to:IsVisible() then SetFocus(to) return end
   local i = ns.PadPick(cur, pool, dir)
   if i then SetFocus(pool[i].w) end
 end

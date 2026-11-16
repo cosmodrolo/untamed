@@ -216,6 +216,25 @@ do
   check(true, "pad: every button runs without a controller")
 end
 
+-- Bestiary: plain-word search, and the page follows the list
+do
+  local p = ns.BestiaryParse("fast cat")
+  check(p.family == "Cat" and p.fast and #p.words == 0, "search: 'fast cat' is a family and a speed")
+  p = ns.BestiaryParse("bite 6")
+  check(#p.abilities == 1 and p.abilities[1][1] == "Bite" and p.abilities[1][2] == 6 and not p.lo, "search: 'bite 6' is an ability and its rank")
+  p = ns.BestiaryParse("rare badlands 30-40")
+  check(p.rare and p.lo == 30 and p.hi == 40 and p.words[1] == "badlands", "search: rare, a zone word and a level range")
+  p = ns.BestiaryParse("furious howl wolves new")
+  check(#p.abilities == 1 and p.abilities[1][1] == "Furious Howl" and p.family == "Wolf" and p.fresh, "search: a two-word ability, a plural family, new")
+  check(ns.BestiaryMatches("starving mountain", 2384) and not ns.BestiaryMatches("starving wolf", 2384), "search: name words must all match")
+  check(ns.BestiaryMatches("cat 23", 2384) == (ns.Beasts[2384][2] <= 23 and ns.Beasts[2384][3] >= 23), "search: a level on its own")
+  ns.UI_Show("browse")
+  local first = ns.BestiarySelected()
+  check(first ~= nil, "bestiary: opens on a beast's page")
+  ns.BestiarySelect(2384)
+  check(ns.BestiarySelected() == 2384, "bestiary: picking a beast turns the page")
+end
+
 -- Wishlist
 ALT = true
 IsAltKeyDown = function() return ALT end

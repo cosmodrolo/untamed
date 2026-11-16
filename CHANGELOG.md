@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.21.0
+The Bestiary is a journal now (the second step of the overhaul). It replaces All Beasts.
+- A list of beasts on the left, the beast's page on the right: its 3D model (it turns slowly), family, level, attack speed, where it's found and the nearest spot, what it teaches and whether each rank is new to you (and whether the pet you're viewing can use it), the family's damage, armor and health, its look, when you last saw it if it's a rare, and three buttons: Hunt it, Show on map, Wishlist.
+- The search box reads plain words: "fast cat", "bite 6", "rare badlands", "furious howl wolves", "new" (teaches a rank you don't know), "30-40" or a single level. The Family and Teaches dropdowns and four switches (This zone, Tame now, Rare, New) do the same without typing, for the controller.
+- On a controller, moving through the list turns the pages; D-pad right goes to the page's buttons and left comes back to the same beast. Cross on a beast starts the hunt, Square shows it on the map. With a mouse: click a beast to open its page, click it again for the arrow, right-click for the map.
+- In the list: rares in orange, a star for wishlist beasts, "new" in green when it teaches something you don't know, the level in red when it's too high to tame.
+
 ## v2.20.1
 - L1 and R1 reach Settings too: it's the stop after World.
 - The Home page describes the new sections.
