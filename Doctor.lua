@@ -52,10 +52,24 @@ function ns.Doctor()
     Line(ok and r ~= nil, "Range check: Auto Shot", ok and tostring(r) or r)
     local okH, has = Try(C_Spell and C_Spell.SpellHasRange, "Raptor Strike")
     Line(okH, "Melee spell has its own range", okH and tostring(has) or has)
+    for _, name in ipairs({ "Auto Shot", "Raptor Strike", "Wing Clip" }) do
+      local info = C_Spell.GetSpellInfo(name)
+      if info then
+        local _, inr = Try(C_Spell.IsSpellInRange, name, "target")
+        Line(nil, "  " .. name, "min " .. tostring(info.minRange) .. ", max " .. tostring(info.maxRange) .. ", in range: " .. tostring(inr))
+      end
+    end
+    local barCheck = (C_ActionBar and C_ActionBar.IsActionInRange) or IsActionInRange
+    for _, slot in ipairs(ns.RangeMeleeSlotList and ns.RangeMeleeSlotList() or {}) do
+      local _, r = Try(barCheck, slot, "target")
+      Line(nil, "  Bar slot " .. slot .. " in range", tostring(r))
+    end
     local zone, lo, hi = ns.RangeToTarget()
     Line(zone ~= nil, "Range meter says", zone and (zone .. "  " .. ns.RangeYards(lo, hi)) or "nothing")
     local d = ns.PetDistance and ns.PetDistance()
-    Line(d ~= nil or not UnitExists("pet"), "Distance to your pet", d and (math.floor(d) .. " yd") or "not given")
+    local okPet = d ~= nil or not UnitExists("pet")
+    if not okPet and InCombatLockdown() then okPet = nil end
+    Line(okPet, "Distance to your pet", d and (math.floor(d) .. " yd") or (InCombatLockdown() and "hidden in a fight" or "not given"))
   else
     Line(nil, "Range checks", "target an enemy and run it again")
   end

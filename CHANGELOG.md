@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.19.15
+- Range meter: still said "Melee 5 yd" on a far target. On Forever both the spell check and the action bar say "yes" for Raptor Strike at any distance. Now a shot with a minimum range (Auto Shot) that says "in range" wins over a melee "yes", so a target you can shoot shows "In range".
+- /ut doctor prints the raw range answers (Auto Shot, Raptor Strike, Wing Clip, your melee bar slot) and no longer marks the pet distance red when the game hides it in a fight.
+
 ## v2.19.14
 - Full check of the addon against Forever's current game functions. Three quiet problems fixed:
   - "Do you know this spell" now goes through one shared check that asks the newer game functions first. The Spells page, the Rotation page and the cooldown icons under your character each asked on their own, and on a client without the older functions could hide spells you know.

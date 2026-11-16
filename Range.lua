@@ -124,7 +124,6 @@ function ns.RangeToTarget()
     end
   end
   if melee == nil then melee = MeleeInRange() end
-  if melee ~= nil then facts[#facts + 1] = { 0, 5, melee } end
   local auto, autoMin, autoMax
   for _, s in ipairs(CHECKS) do
     local sp = SpellRange(s)
@@ -136,6 +135,15 @@ function ns.RangeToTarget()
       end
     end
   end
+  -- On Forever the melee check can say "yes" at any distance. A shot with a minimum range that
+  -- says "in range" proves you're not in melee, so it wins over a melee "yes".
+  if melee then
+    for _, f in ipairs(facts) do
+      if f[3] and f[1] >= 5 then melee = false break end
+    end
+  end
+  ns.rangeMeleeRaw = melee
+  if melee ~= nil then facts[#facts + 1] = { 0, 5, melee } end
   if not InCombatLockdown() and CheckInteractDistance then
     for i, yd in pairs(INTERACT) do
       local ok, r = pcall(CheckInteractDistance, "target", i)
