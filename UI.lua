@@ -248,6 +248,7 @@ function ns.MakeModelBox(parent, size)
     return ok
   end
   local function Set(kind, what, icon)
+    if box.picture then box.picture = nil; box.icon:SetSize(64, 64); box.icon:SetAlpha(0.35) end
     box.icon:SetTexture(icon)
     if box.kind == kind and box.what == what then return end
     box.kind, box.what, box.tries, box.wait, box.facing = kind, what, 0, 0, 0.5
@@ -259,6 +260,12 @@ function ns.MakeModelBox(parent, size)
   function box:Beast(npcId, icon) Set("beast", npcId, icon) end
   function box:Unit(unit, icon) Set("unit", unit, icon) end
   function box:Nothing(icon) Set(nil, nil, icon) end
+  -- a plain picture instead of a model (an ability's icon)
+  function box:Picture(icon)
+    Set(nil, nil, icon)
+    box.picture = true
+    box.icon:SetSize(96, 96); box.icon:SetAlpha(1); box.icon:Show()
+  end
   box.model:SetScript("OnUpdate", function(self, e)
     box.facing = (box.facing + e * 0.35) % (2 * math.pi)
     if self.SetFacing then self:SetFacing(box.facing) end
@@ -1201,132 +1208,183 @@ function ns.UI_Toggle()
 end
 
 ---------------------------------------------------------------------------
--- Tab: Abilities
+-- Page: Abilities. What the pet you're viewing can learn, on the left; the ability's page on the
+-- right: the rank it has, every rank still ahead with its pet level and cost, and for each whether
+-- you can teach it now or which beasts to tame for it.
 ---------------------------------------------------------------------------
 do
-  local list
-  local collapsed, expanded, trainerOpen = {}, {}, false
+  local list, j
+  local tiles, ranksText, tipsText = {}, nil, nil
+  local todoOnly = false
+  local plan, target = {}, nil
 
-  local function RankStatus(e, r)
-    if r.known then
-      local tp = ns.RankCost(e.ability, r.rank)
-      if r.tooHigh then return C.GREY .. L["You know it. Pet needs level "] .. r.level .. "|r" end
-      return C.GREEN .. L["You know it: teach at Beast Training"] .. (tp and (" (" .. tp .. " TP)") or "") .. "|r"
-    end
-    local n = #r.beasts
-    if n == 0 then
-      local fa = ns.ForeverAbilities and ns.ForeverAbilities[e.ability]
-      if fa and fa.source == "innate" then return C.GREY .. "No known teacher. May come with pet level|r" end
-      return C.RED .. "No beast known yet|r"
-    end
-    return C.WHITE .. L["Tame 1 of "] .. n .. " beast" .. (n > 1 and "s" or "") .. "|r"
+  local function Entry(key)
+    for _, e in ipairs(plan) do if e.ability == key then return e end end
   end
 
-  local view = "all"
-  local VIEWS = { { "all", L["Every ability and rank"] }, { "todo", L["Ranks still to learn"] },
-    { "now", L["Beasts I can tame now"] }, { "teach", L["Ready to teach my pet"] } }
-  local function Keep(r)
-    if view == "all" then return true end
-    if view == "teach" then return r.known and not r.tooHigh end
-    if r.known then return false end
-    if view == "now" then
-      local lvl = UnitLevel("player")
-      for _, id in ipairs(r.beasts) do if ns.Beasts[id][2] <= lvl then return true end end
-      return false
+  -- the next rank worth going for: the first one you don't know that the pet can use
+  local function NextRank(e)
+    for _, r in ipairs(e.ranks) do if not r.known and not r.tooHigh and #r.beasts > 0 then return r end end
+  end
+  local function Teachable(e)
+    local best
+    for _, r in ipairs(e.ranks) do if r.known and not r.tooHigh then best = r end end
+    return best
+  end
+
+  local function NearestTeacher(r)
+    local level = UnitLevel("player")
+    local best, bd
+    for _, id in ipairs(r.beasts) do
+      if ns.Beasts[id][2] <= level then
+        local _, _, _, d = ns.NearestSpawn(id)
+        d = d or 9e8
+        if not bd or d < bd then best, bd = id, d end
+      end
     end
-    return true
+    return best
+  end
+
+  local function Fill(key)
+    local trainer = type(key) == "string" and key:match("^T:(.+)$")
+    local ab = trainer or key
+    j.box:Picture(ns.Icon(ns.AbilityIcons[ab] or (trainer and "Ability_Hunter_BeastTraining") or "Ability_Hunter_BeastTaming"))
+    j.name:SetText(ns.AbilityLabel(ab))
+    local who = target and (target.name or ns.FamilyLabel(target.family)) or L["Your pet"]
+    local cur = target and target.known and target.known[ab] or 0
+    j.sub:SetText(cur > 0 and string.format(L["%s has Rank %d"], who, cur) or string.format(L["%s doesn't know it"], who))
+    local e = not trainer and Entry(ab)
+    for _, b in ipairs(j.buttons) do b:SetShown(e and true or false) end
+    if not e then
+      tiles.next.value:SetText(C.GREY .. L["bought from pet trainers"] .. "|r")
+      tiles.who.value:SetText(L["Every family"])
+      ranksText:SetText(L["Buy higher ranks from any Hunter pet trainer in a capital or major town, then teach them at Beast Training."])
+      tipsText:SetText("")
+      return
+    end
+    local nxt, teach = NextRank(e), Teachable(e)
+    if teach then
+      local tp = ns.RankCost(ab, teach.rank)
+      tiles.next.value:SetText(C.GREEN .. string.format(L["Rank %d: you know it, teach it now"], teach.rank) .. "|r" .. (tp and (C.GREY .. "   " .. tp .. " TP|r") or ""))
+    elseif nxt then
+      tiles.next.value:SetText(string.format(L["Rank %d: tame a beast for it"], nxt.rank) .. C.GREY .. "   " .. ns.Count(#nxt.beasts, L["beast"], L["beasts"]) .. "|r")
+    elseif #e.ranks == 0 then
+      tiles.next.value:SetText(C.GREEN .. ((e.current >= (ns.MaxRank[ab] or 0)) and L["maxed"] or L["best for its level"]) .. "|r")
+    else
+      tiles.next.value:SetText(C.GREY .. L["nothing it can use yet"] .. "|r")
+    end
+    local fams = {}
+    for _, f in ipairs(ns.Families) do if ns.AbilityFamilies[ab] and ns.AbilityFamilies[ab][f] then fams[#fams + 1] = ns.FamilyLabel(f) end end
+    tiles.who.value:SetText(#fams >= #ns.Families and L["Every family"] or table.concat(fams, ", "))
+    j.buttons[1]:SetShown(nxt and NearestTeacher(nxt) and true or false)
+    j.buttons[2]:SetShown(nxt and true or false)
+
+    local level = UnitLevel("player")
+    local lines = {}
+    for _, r in ipairs(e.ranks) do
+      local tp = ns.RankCost(ab, r.rank)
+      local head = string.format("%s%s %d|r%s%s", r.tooHigh and C.GREY or C.WHITE, L["Rank"], r.rank,
+        r.level and (C.GREY .. "   " .. string.format(L["pet level %d"], r.level) .. "|r") or "", tp and (C.GREY .. "   " .. tp .. " TP|r") or "")
+      local status
+      if r.known then
+        status = r.tooHigh and (C.GREY .. L["you know it; the pet is too low"] .. "|r") or (C.GREEN .. L["you know it: teach it at Beast Training"] .. "|r")
+      elseif #r.beasts == 0 then
+        local fa = ns.ForeverAbilities and ns.ForeverAbilities[ab]
+        status = (fa and fa.source == "innate") and (C.GREY .. L["no known teacher: may come with pet level"] .. "|r") or (C.RED .. L["no beast known yet"] .. "|r")
+      else
+        local names, more = {}, 0
+        for _, id in ipairs(r.beasts) do
+          if #names < 2 then names[#names + 1] = ((ns.Beasts[id][2] > level) and C.RED or C.GOLD) .. ns.Beasts[id][1] .. "|r" else more = more + 1 end
+        end
+        status = L["tame"] .. " " .. table.concat(names, ", ") .. (more > 0 and (C.GREY .. " +" .. more .. "|r") or "")
+      end
+      lines[#lines + 1] = head .. "\n     " .. status
+      if #lines >= 6 then break end
+    end
+    if #lines == 0 then lines[1] = C.GREY .. L["No ranks ahead of it right now."] .. "|r" end
+    if #e.ranks > 6 then lines[#lines + 1] = C.GREY .. string.format(L["and %d more ranks later"], #e.ranks - 6) .. "|r" end
+    ranksText:SetText(table.concat(lines, "\n"))
+    local tips = { L["You don't need lower ranks first: the highest rank your pet's level allows is enough."],
+      L["Tame a beast that knows the rank, fight with it until you learn it, then teach it to any pet that can use it."] }
+    local fa = ns.ForeverAbilities and ns.ForeverAbilities[ab]
+    if fa and fa.note and fa.note ~= "" then tips[#tips + 1] = C.ORANGE .. fa.note .. "|r" end
+    tipsText:SetText(C.GREY .. table.concat(tips, "\n") .. "|r")
   end
 
   local function Build(panel)
-    local tb = ns.Toolbar(panel)
-    tb:Dropdown(200, VIEWS, function() return view end, function(v) view = v end,
-      { L["Show"], L["Ranks still to learn: hides what you or your pet already have."], L["Beasts I can tame now: only ranks taught by a beast at or below your level."],
-        L["Ready to teach my pet: ranks you know that your pet can use but doesn't have yet."] })
+    j = ns.MakeJournal(panel, L["Summon your pet, or use Viewing at the top right to pick a family or a stabled pet."])
+    local tb = ns.Toolbar(j.left)
+    tb:Check(L["Still to learn only"], function() return todoOnly end, function(v) todoOnly = v end)
+    tb:Row()
     tb:Check(L["Hide ranks above my pet's level"], function() return ns.db.hideTooHigh end, function(v) ns.db.hideTooHigh = v end)
-    tb:Button(L["Collapse all"], 100, function()
-      local any = false
-      for _, v in pairs(collapsed) do if v then any = true end end
-      if any then wipe(collapsed) else for _, a in ipairs(ns.AbilityOrder) do collapsed[a] = true end end
-      ns.UI_Refresh()
-    end)
     list = tb:List()
+    j.list = list
+    tiles.next = j:Tile(L["Next"])
+    tiles.who = j:Tile(L["Who can learn it"])
+    tiles.who.value:SetWordWrap(true)
+    if tiles.who.value.SetMaxLines then tiles.who.value:SetMaxLines(4) end
+    j.buttons = j:Buttons({
+      { L["Hunt the next rank"], 150, function()
+          local e = Entry(j.selected)
+          local r = e and NextRank(e)
+          local id = r and NearestTeacher(r)
+          if id then ns.Navigate(id) end
+        end, { L["Hunt the next rank"], L["An arrow to the nearest beast you can tame that teaches the next rank."] } },
+      { L["Teachers on map"], 130, function()
+          local e = Entry(j.selected)
+          local r = e and NextRank(e)
+          if r then ns.Pins_Focus(r.beasts, e.ability .. " " .. r.rank, true) end
+        end },
+      { L["In the Bestiary"], 120, function()
+          if not Entry(j.selected) then return end
+          local f = ns.BrowserFilter()
+          f.family, f.fresh, f.teaches, f.where, f.rare, f.tameable = "any", false, j.selected, "any", false, false
+          ns.UI_Show("browse")
+        end, { L["In the Bestiary"], L["Every beast that teaches this ability."] } },
+    })
+    ranksText = j:Section(L["Ranks ahead"])
+    tipsText = j:Section(L["Good to know"], "GameFontHighlightSmall")
+    j.onSelect = Fill
   end
 
   local function Refresh(panel, t)
-    local rows = {}
-    local function add(...) rows[#rows + 1] = { ... } end
-    local playerLevel = UnitLevel("player")
-    if not t then
-      add(0, nil, C.GREY .. L["Summon your pet, or use Viewing at the top right to pick a family or a stabled pet."] .. "|r")
-    end
+    target = t
+    plan = t and ns.Plan(t.family, t.level, t.known) or {}
+    local rows, keys, order = {}, {}, {}
     if t then
-      for _, e in ipairs(ns.Plan(t.family, t.level, t.known)) do
+      rows[1] = { 0, nil, string.format(L["%s can learn"], t.name or ns.FamilyLabel(t.family)), "", nil, nil, { header = true } }
+      for _, e in ipairs(plan) do
         local ab = e.ability
-        local shownRanks = {}
-        for _, r in ipairs(e.ranks) do if Keep(r) then shownRanks[#shownRanks + 1] = r end end
-        if view == "all" or #shownRanks > 0 then
-        local maxR = ns.MaxRank[ab] or 0
-        local rightTxt
-        if #e.ranks == 0 then
-          if e.current >= maxR then rightTxt = C.GREEN .. "maxed|r"
-          elseif e.current > 0 then rightTxt = C.GREY .. "pet has Rank " .. e.current .. "|r" .. C.GREEN .. "  " .. L["best for its level"] .. "|r"
-          else rightTxt = C.GREY .. "nothing usable yet|r" end
-        else
-          rightTxt = C.GREY .. (e.current > 0 and ("pet has Rank " .. e.current) or "pet does not know it") .. "|r"
-        end
-        add(0, ns.Icon(ns.AbilityIcons[ab] or "Ability_Hunter_BeastTaming"), ns.AbilityLabel(ab), rightTxt,
-          function() collapsed[ab] = not collapsed[ab]; ns.UI_Refresh() end, nil, { header = true, toggle = not collapsed[ab] })
-        if not collapsed[ab] then
-          local firstOpen = true
-          for _, r in ipairs(shownRanks) do
-            local key = ab .. "#" .. r.rank
-            local isOpen = expanded[key]
-            if isOpen == nil then
-              isOpen = firstOpen and not r.known and not r.tooHigh and #r.beasts > 0
-              if isOpen then firstOpen = false end
-            end
-            local lvlTxt = r.level and (" (pet lvl " .. (r.levelExact and "" or "~") .. r.level .. ")") or ""
-            local color = r.tooHigh and C.GREY or C.WHITE
-            local beasts = r.beasts
-            local label = string.format("%sRank %d%s|r", color, r.rank, lvlTxt)
-            local canOpen = #beasts > 0 and not r.known
-            add(14, nil, label, RankStatus(e, r), function()
-              expanded[key] = not isOpen
-              if #beasts > 0 then ns.Pins_Focus(beasts, ab .. " " .. r.rank, false) end
-              ns.UI_Refresh()
-            end, { ab .. " Rank " .. r.rank,
-              r.level and (L["Your pet must be level "] .. r.level .. " to use this rank" .. (r.levelExact and "." or " (approximate until you open Beast Training).")) or L["Level unknown."],
-              r.known and L["You already know this rank. Teach it to your pet from the Beast Training window."]
-                or L["Tame one of these beasts, then fight with it until you learn the ability. Then teach it to any pet that can use it."],
-              L["You don't need lower ranks first: the highest rank your pet's level allows is enough."],
-              (ns.ForeverAbilities and ns.ForeverAbilities[ab] and ns.ForeverAbilities[ab].note ~= "")
-                and (C.ORANGE .. L["Forever data note: "] .. ns.ForeverAbilities[ab].note .. "|r") or "",
-              L["Click to pin these beasts on your map."] }, canOpen and { toggle = isOpen and true or false } or { toggleSpace = true })
-            if isOpen and not r.known then
-              for _, npcId in ipairs(beasts) do
-                local b = ns.Beasts[npcId]
-                local lvColor = (b[2] > playerLevel) and C.RED or C.WHITE
-                add(50, ns.Icon(ns.FamilyIcons[b[4]] or "Ability_Hunter_BeastTaming"),
-                  C.WHITE .. b[1] .. "|r", ns.ZonesText(b),
-                  ns.BeastClick(npcId), ns.BeastTooltip(npcId), { mid = lvColor .. ns.LevelText(b) .. "|r" })
-              end
-            end
-          end
-        end
+        local nxt, teach = NextRank(e), Teachable(e)
+        if not todoOnly or nxt or teach then
+          local right
+          if teach then right = C.GREEN .. L["teach"] .. " " .. teach.rank .. "|r"
+          elseif nxt then right = C.WHITE .. L["tame"] .. " " .. nxt.rank .. "|r"
+          elseif e.current > 0 then right = C.GREY .. L["Rank"] .. " " .. e.current .. "|r"
+          else right = C.GREY .. "-|r" end
+          rows[#rows + 1] = { 0, ns.Icon(ns.AbilityIcons[ab] or "Ability_Hunter_BeastTaming"), ns.AbilityLabel(ab), right,
+            j:RowClick(ab, function(k)
+              local en = Entry(k)
+              local r = en and NextRank(en)
+              local id = r and NearestTeacher(r)
+              if id then ns.Navigate(id) end
+            end), j:RowHover(ab) }
+          keys[#rows] = ab
+          order[#order + 1] = ab
         end
       end
-      add(0, ns.Icon("Ability_Hunter_BeastTraining"), L["From Hunter pet trainers"],
-        C.GREY .. L["Growl, armor, stamina, resistances"] .. "|r", function() trainerOpen = not trainerOpen; ns.UI_Refresh() end,
-        nil, { header = true, toggle = trainerOpen })
-      if trainerOpen then
+      if not todoOnly then
         for _, ab in ipairs(ns.TrainerAbilities) do
           local cur = t.known[ab]
-          add(32, nil, C.WHITE .. ns.AbilityLabel(ab) .. "|r", C.GREY .. (cur and ("pet has Rank " .. cur) or "not learned") .. "|r", nil,
-            { ab, L["Buy higher ranks from any Hunter pet trainer in a capital or major town, then teach them at Beast Training."] })
+          rows[#rows + 1] = { 0, ns.Icon(ns.AbilityIcons[ab] or "Ability_Hunter_BeastTraining"), C.GREY .. ns.AbilityLabel(ab) .. "|r",
+            C.GREY .. (cur and (L["Rank"] .. " " .. cur) or L["trainer"]) .. "|r", j:RowClick("T:" .. ab), j:RowHover("T:" .. ab) }
+          keys[#rows] = "T:" .. ab
+          order[#order + 1] = "T:" .. ab
         end
       end
     end
     list:Set(rows)
+    j:Rows(keys, order)
   end
 
   ns.RegisterTab("abilities", L["Abilities"], Build, Refresh)

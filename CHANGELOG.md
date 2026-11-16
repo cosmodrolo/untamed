@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.25.0
+The rest of My Pets.
+- Abilities is a journal: what the pet you're viewing can learn on the left (with "teach 5" in green when you already know a rank it can use, "tame 6" when the next rank needs a beast), the ability's page on the right: the rank it has, what's next, which families can learn it, every rank ahead with its pet level and training point cost and whether to teach it or which beasts to tame, and three buttons: Hunt the next rank, Teachers on map, In the Bestiary.
+- Pet Care is one page: your pet's model, happiness and what it does to damage, experience and how fast it's coming, training points, diet, the Feed button, the food in your bags it will eat (the one fed first marked), and where to level it.
+- Builds is unchanged: it's a planner you tick ranks in, and a list suits that.
+
 ## v2.24.1
 - The window can't be made narrower than the journal pages need (about 1160 wide, less only on a screen that small), so nothing runs off the page. A window saved smaller than that opens at the new smallest size.
 

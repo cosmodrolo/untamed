@@ -6,56 +6,103 @@ local C = ns.C
 -- Tab: Pet Care (happiness, diet, food, leveling)
 ---------------------------------------------------------------------------
 do
-  local list, feedBtn
-  local function Build(panel)
-    feedBtn = ns.CreateFeedButton(panel, "UntamedTabFeedButton", 220, 22)
-    feedBtn:SetPoint("TOPLEFT", 4, -2)
-    list = ns.NewList(panel, 36)
+  local page, feedBtn
+  local function Tile(parent, label, anchor, first)
+    local t = {}
+    t.label = parent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    t.label:SetText(label)
+    if first then t.label:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -16) else t.label:SetPoint("TOPLEFT", anchor.label, "BOTTOMLEFT", 0, -30) end
+    t.value = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    t.value:SetPoint("TOPLEFT", t.label, "BOTTOMLEFT", 0, -3)
+    t.value:SetPoint("RIGHT", parent, "RIGHT", -10, 0)
+    t.value:SetJustifyH("LEFT")
+    t.value:SetWordWrap(false)
+    return t
   end
-  local function Refresh()
-    local rows = {}
-    local function add(...) rows[#rows + 1] = { ... } end
-    local info = ns.PetCareInfo()
-    if not info then
-      add(0, nil, C.GREY .. "Summon your pet to see its care info.|r")
-      list:Set(rows)
-      return
-    end
-    add(0, nil, L["Status"], "", nil, nil, { header = true })
-    add(0, ns.Icon("Ability_Hunter_BeastTraining"), C.GOLD .. "Happiness|r", info.happyText ..
-      (info.damage and (C.GREY .. "  (" .. info.damage .. "% damage)|r") or ""), nil,
-      { L["Happiness"], "Happy pets deal 125% damage, content 100%, unhappy 75%. Unhappy pets lose loyalty and can run away." })
-    if info.loyalty then add(0, nil, C.GOLD .. "Loyalty|r", C.WHITE .. info.loyalty .. "|r") end
-    if info.xp and info.nextXP and info.nextXP > 0 then
-      add(0, nil, C.GOLD .. "Experience|r", string.format("%s%d / %d (%d%%)|r", C.WHITE, info.xp, info.nextXP, info.xp * 100 / info.nextXP))
-      local rate, eta = ns.PetXPRate()
-      if rate then
-        add(14, nil, C.WHITE .. string.format("%d XP per hour", rate) .. "|r", eta and (C.GREY .. string.format("next level in about %d min", eta) .. "|r") or "")
-      end
-    end
-    if info.tpFree then add(0, nil, C.GOLD .. "Training points|r", string.format("%s%d free of %d|r", C.WHITE, info.tpFree, info.tpTotal or 0)) end
-    add(0, nil, C.GOLD .. L["Diet"] .. "|r", C.WHITE .. (#info.diet > 0 and table.concat(info.diet, ", ") or "?") .. "|r")
-    add(0, nil, L["Food in your bags it will eat"], C.GREY .. (#info.food == 0 and L["none"] or "") .. "|r", nil, nil, { header = true })
-    for _, f in ipairs(info.food) do
-      add(14, nil, C.WHITE .. f[6] .. "|r", C.GREY .. "x" .. f[4] .. "   item level " .. f[5] .. "|r")
-    end
+  local function Para(parent, title, anchor, gap)
+    local h = ns.MakeHeading(parent, title)
+    h:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, gap or -18)
+    local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    fs:SetPoint("TOPLEFT", h, "BOTTOMLEFT", 0, -10)
+    fs:SetPoint("RIGHT", parent, "RIGHT", -12, 0)
+    fs:SetJustifyH("LEFT")
+    fs:SetSpacing(5)
+    return fs, h
+  end
 
+  local function Build(panel)
+    page = CreateFrame("Frame", nil, panel)
+    page:SetPoint("TOPLEFT", 4, -4)
+    page:SetPoint("BOTTOMRIGHT", -4, 4)
+    local bg = page:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints()
+    bg:SetColorTexture(0, 0, 0, 0.28)
+    page.empty = page:CreateFontString(nil, "OVERLAY", "GameFontDisable")
+    page.empty:SetPoint("CENTER")
+    page.empty:SetText(L["Summon your pet to see its care info."])
+    local body = CreateFrame("Frame", nil, page)
+    body:SetAllPoints()
+    page.body = body
+    page.box = ns.MakeModelBox(body, 210)
+    page.box:SetPoint("TOPLEFT", 12, -12)
+    page.name = body:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    page.name:SetPoint("TOPLEFT", page.box, "TOPRIGHT", 14, -2)
+    page.sub = body:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    page.sub:SetPoint("TOPLEFT", page.name, "BOTTOMLEFT", 0, -5)
+    page.happy = Tile(body, L["Happiness"], page.sub, true)
+    page.xp = Tile(body, L["Experience"], page.happy)
+    page.tp = Tile(body, L["Training points"], page.xp)
+    page.diet = Tile(body, L["Diet"], page.tp)
+    feedBtn = ns.CreateFeedButton(body, "UntamedTabFeedButton", 220, 24)
+    feedBtn:SetPoint("TOPLEFT", page.box, "BOTTOMLEFT", 0, -12)
+    page.food = Para(body, L["Food in your bags it will eat"], feedBtn)
+    page.level = Para(body, L["Where to level your pet"], page.food)
+  end
+
+  local function Refresh()
+    local info = ns.PetCareInfo()
+    page.empty:SetShown(not info)
+    page.body:SetShown(info and true or false)
+    if not info then return end
+    local family = ns.ToEnglish and ns.ToEnglish(UnitCreatureFamily("pet")) or UnitCreatureFamily("pet")
+    page.box:Unit("pet", ns.Icon(ns.FamilyIcons[family] or "Ability_Hunter_BeastTaming"))
+    page.name:SetText(UnitName("pet") or L["Pet"])
     local petLevel, playerLevel = UnitLevel("pet"), UnitLevel("player")
+    page.sub:SetText(string.format("%s   %s %d%s", ns.FamilyLabel(family or "?"), L["level"], petLevel or 0,
+      info.loyalty and (C.GREY .. "   " .. L["loyalty"] .. " " .. info.loyalty .. "|r") or ""))
+    page.happy.value:SetText(info.happyText .. (info.damage and (C.GREY .. "   " .. string.format(L["%d%% damage"], info.damage) .. "|r") or ""))
+    if info.xp and info.nextXP and info.nextXP > 0 then
+      local rate, eta = ns.PetXPRate()
+      page.xp.value:SetText(string.format("%d / %d   %d%%", info.xp, info.nextXP, info.xp * 100 / info.nextXP)
+        .. (rate and (C.GREY .. "   " .. string.format(L["%d an hour"], rate) .. (eta and (", " .. string.format(L["next level in about %d min"], eta)) or "") .. "|r") or ""))
+    else
+      page.xp.value:SetText(C.GREY .. "-|r")
+    end
+    page.tp.value:SetText(info.tpFree and string.format(L["%d free of %d"], info.tpFree, info.tpTotal or 0) or (C.GREY .. "-|r"))
+    page.diet.value:SetText(#info.diet > 0 and table.concat(info.diet, ", ") or "?")
+
+    local lines = {}
+    for i, f in ipairs(info.food) do
+      if i > 8 then lines[#lines + 1] = C.GREY .. string.format(L["and %d more"], #info.food - 8) .. "|r" break end
+      lines[#lines + 1] = string.format("%s%s|r%s   x%d   %s %d|r%s", C.WHITE, f[6], C.GREY, f[4], L["item level"], f[5],
+        i == 1 and (C.GREEN .. "   " .. L["fed first"] .. "|r") or "")
+    end
+    page.food:SetText(#lines > 0 and table.concat(lines, "\n") or (C.RED .. L["None. Buy or loot something from its diet."] .. "|r"))
+
+    lines = {}
     if petLevel and petLevel > 0 then
       if petLevel >= playerLevel then
-        add(0, nil, L["Leveling"], C.GREY .. "your pet is at your level and gains no more XP until you level|r", nil, nil, { header = true })
+        lines[1] = C.GREY .. L["Your pet is at your level and gains no more experience until you level."] .. "|r"
       else
         local zones, lo = ns.LevelingZones(petLevel, playerLevel)
-        add(0, nil, L["Where to level your pet"], C.GREY .. "mobs level " .. lo .. "+ give it XP|r", nil,
-          { L["Pet experience"], L["Pets only gain experience from mobs that aren't grey to them, and never above your own level."],
-            L["Zones are listed by how well their mobs fit your pet's level."] }, { header = true })
+        lines[1] = C.GREY .. string.format(L["Mobs level %d and up give it experience (never above your own level)."], lo) .. "|r"
         for i = 1, math.min(5, #zones) do
           local z = zones[i]
-          add(14, nil, C.WHITE .. ns.ZoneName(z.mapID) .. "|r", C.GREY .. "mobs " .. z.min .. "-" .. z.max .. "|r")
+          lines[#lines + 1] = C.WHITE .. ns.ZoneName(z.mapID) .. "|r" .. C.GREY .. "   " .. string.format(L["mobs %d-%d"], z.min, z.max) .. "|r"
         end
       end
     end
-    list:Set(rows)
+    page.level:SetText(table.concat(lines, "\n"))
   end
   ns.RegisterTab("care", L["Pet Care"], Build, Refresh)
 end
