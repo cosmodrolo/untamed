@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.11
+- No more "go learn Bite 1" when you already know Bite 5: ranks below one you know and your pet can use now are left off the plan, the map, the zone alerts and the tame hints. Lower ranks still show for a pet that's too low for the rank you know.
+
 ## v2.19.10
 - Eye macro chains now: "!" keeps a second press from ending the view (Alejandro's find), and [@cursor] places it without a click, so it works from a controller button.
 

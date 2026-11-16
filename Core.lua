@@ -317,10 +317,20 @@ function ns.Plan(family, petLevel, knownRanks)
     if fams and fams[family] then
       local cur = knownRanks[ability] or 0
       local entry = { ability = ability, current = cur, ranks = {} }
+      -- the best rank you already know that this pet can use now: lower ranks you don't know
+      -- aren't worth taming for (you'd teach the higher one), so they're left out
+      local bestUsable = 0
+      for r = (ns.MaxRank[ability] or 0), cur + 1, -1 do
+        if ns.HunterKnows(ability, r) then
+          local lvl = ns.RankLevel(ability, r)
+          if not (petLevel and lvl and lvl > petLevel) then bestUsable = r break end
+        end
+      end
       for r = cur + 1, (ns.MaxRank[ability] or 0) do
         local lvl, exact = ns.RankLevel(ability, r)
         local tooHigh = petLevel and lvl and lvl > petLevel
-        if not (tooHigh and ns.db.hideTooHigh) then
+        local covered = r < bestUsable and not ns.HunterKnows(ability, r)
+        if not covered and not (tooHigh and ns.db.hideTooHigh) then
           table.insert(entry.ranks, {
             rank = r, level = lvl, levelExact = exact, tooHigh = tooHigh,
             known = ns.HunterKnows(ability, r),

@@ -299,4 +299,26 @@ for _, m in ipairs(ns.HUNTER_MACROS) do if m[1] == "Open" then open = m end end
 assert(open[4]:find("/click PetActionButton6\n/petattack", 1, true), "Open clicks the Defensive slot: " .. open[4])
 assert(ns.cdb.petDefSlot == 6, "slot remembered")
 print("OPEN OK")
+-- lower ranks than one you already know (and the pet can use) aren't asked for
+local keepKnown = ns.cdb.known
+ns.cdb.known = { Bite = { [5] = true } }
+local sawLow, sawHigh
+for _, e in ipairs(ns.Plan("Cat", 40, {})) do
+  if e.ability == "Bite" then
+    for _, r in ipairs(e.ranks) do
+      if r.rank < 5 then sawLow = true end
+      if r.rank == 6 then sawHigh = true end
+    end
+  end
+end
+assert(not sawLow, "Bite 1-4 not asked for when you know Bite 5")
+assert(sawHigh, "Bite 6 still on the list")
+-- a rank the pet is too low for doesn't cover the lower ones
+sawLow = nil
+for _, e in ipairs(ns.Plan("Cat", 10, {})) do
+  if e.ability == "Bite" then for _, r in ipairs(e.ranks) do if r.rank == 2 then sawLow = true end end end
+end
+assert(sawLow, "a level 10 pet can't use Bite 5 yet: Bite 2 still listed")
+ns.cdb.known = keepKnown
+print("RANKS OK")
 print("DONE")
