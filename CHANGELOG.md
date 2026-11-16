@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.37.0
+- Gear: the list now opens with your weakest slot: the slot where what you wear ranks lowest among everything you could wear at your level, what you wear there and its rank, and the item to go and get for it (one you can buy or quest for when there is one). Rings count by the weaker of the two; trinkets are left out, since their effects don't show up in a score.
+
 ## v2.36.1
 - Restock: "Ammo to carry" has a new choice, Fill my quiver, and it is the default. Untamed reads the quiver or ammo pouch you wear and buys exactly what still fits in it (a 14 slot quiver holds 2,800), in whole stacks so nothing spills into your bags. Slots holding a different kind of ammo are left alone. With no quiver worn it tops up to 1,000 as before.
 - If your amount was still the old default of 1,000 it moves to Fill my quiver once; an amount you picked yourself stays.

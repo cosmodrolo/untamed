@@ -743,29 +743,39 @@ end
 -- Where an item stands among everything you can wear in its slot right now: rank (1 = best),
 -- how many there are, and the best one. Only the shipped list is ranked against (items that exist
 -- for everyone), at your level, mail from 40.
-local rankPool = {}
-function ns.GearRank(id, link)
-  if not ns.GearScoreOf then return nil end
-  local score, g = ns.GearScoreOf(id, link)
-  if not g then return nil end
-  local level = UnitLevel("player") or 1
-  local key = g[1] .. ":" .. level
-  local pool = rankPool[key]
+local rankPool = { level = 0 }
+-- everything on the shipped list you can wear in a slot at a level: scores (best first) and the best item
+local function Pool(slot, level)
+  if rankPool.level ~= level then rankPool = { level = level } end
+  local pool = rankPool[slot]
   if not pool then
     pool = { scores = {}, best = nil, bestScore = 0 }
     local db = ns.SearchDB and ns.SearchDB()
     for iid, gg in pairs(ns.GearItems) do
-      if gg[1] == g[1] and gg[2] <= level and (gg[4] == 0 or level >= 40) and (not db or db.I[iid]) then
+      if gg[1] == slot and gg[2] <= level and (gg[4] == 0 or level >= 40) and (not db or db.I[iid]) then
         pool.scores[#pool.scores + 1] = gg[3]
         if gg[3] > pool.bestScore then pool.best, pool.bestScore = iid, gg[3] end
       end
     end
     table.sort(pool.scores, function(a, b) return a > b end)
-    rankPool = { [key] = pool }      -- one slot at a time is enough to keep
+    rankPool[slot] = pool
   end
+  return pool
+end
+
+local function RankOfScore(slot, score, level)
+  local pool = Pool(slot, level)
   local rank = 1
   for _, s in ipairs(pool.scores) do if s > score then rank = rank + 1 else break end end
-  return rank, math.max(#pool.scores, rank), pool.best, score
+  return rank, math.max(#pool.scores, rank), pool.best
+end
+
+function ns.GearRank(id, link)
+  if not ns.GearScoreOf then return nil end
+  local score, g = ns.GearScoreOf(id, link)
+  if not g then return nil end
+  local rank, total, best = RankOfScore(g[1], score, UnitLevel("player") or 1)
+  return rank, total, best, score
 end
 
 -- "Rank 3 of 41 shoulders you can wear at level 38."
@@ -832,6 +842,38 @@ local function BestFor(slot, minLvl, maxLvl, beat, way, near)
 end
 ns.GearBestFor = BestFor
 
+-- The slot that is furthest behind for your level: what you wear there ranks lowest among what you
+-- could wear, and there is something better to go and get. Returns
+-- { slot, rank, total, worn = item id or nil, fix = item id, gain } or nil.
+function ns.GearWeakest()
+  if not ns.GearItems then return nil end
+  local level = UnitLevel("player") or 1
+  local worst
+  for _, s in ipairs(SLOTS) do
+    local slot = s[1]
+    -- trinkets rarely carry stats a score can see, so they'd always look weakest
+    if slot ~= "TRINKET" then
+      -- for rings, the weaker of the two
+      local inv, score = s[2], WornAt(s[2])
+      if s[3] and WornAt(s[3]) < score then inv, score = s[3], WornAt(s[3]) end
+      local rank, total = RankOfScore(slot, score, level)
+      if total >= 3 and rank > 1 then
+        local beat = WornScore(slot)
+        local fix, fixScore = BestFor(slot, 1, level, beat, "easy", false)
+        if not fix then fix, fixScore = BestFor(slot, 1, level, beat, "any", false) end
+        if fix then
+          local behind = (rank - 1) / total
+          if not worst or behind > worst.behind then
+            worst = { slot = slot, rank = rank, total = total, worn = GetInventoryItemID("player", inv), fix = fix, gain = fixScore - beat, behind = behind }
+          end
+        end
+      end
+    end
+  end
+  return worst
+end
+
+
 do
   local list, j, fill
   local opt = { slot = "all", way = "any", near = false }
@@ -876,6 +918,21 @@ do
     local beatBy = {}
     for _, slot in ipairs(slots) do beatBy[slot] = WornScore(slot) end
     wipe(info)
+    -- first of all: the slot that is furthest behind, and the thing to go and get for it
+    if opt.slot == "all" then
+      local okW, weak = pcall(ns.GearWeakest)
+      if okW and weak then
+        local it = db and db.I[weak.fix]
+        local wornName = weak.worn and db and db.I[weak.worn] and db.I[weak.worn][1]
+        rows[#rows + 1] = { 0, nil, L["Weakest slot"], C.GREY .. SLOT_LABEL[weak.slot] .. "|r", nil,
+          { L["Weakest slot"], L["The slot where what you wear ranks lowest among everything you could wear at your level, and where there is something better to get."] }, { header = true } }
+        rows[#rows + 1] = { 0, nil, C.WHITE .. (wornName and string.format(L["%s is rank %d of %d"], wornName, weak.rank, weak.total)
+          or string.format(L["Nothing worn: rank %d of %d"], weak.rank, weak.total)) .. "|r", "" }
+        rows[#rows + 1] = { 0, ns.ItemIcon(weak.fix), C.GREY .. L["Get: "] .. "|r" .. ns.QualityColor(weak.fix) .. (it and it[1] or "?") .. "|r",
+          C.GREEN .. "+" .. weak.gain .. "|r", j:RowClick(weak.fix, function(k) ns.ItemClick(k)() end, function(k) if ns.Wishlist_Toggle then ns.Wishlist_Toggle(k) end end),
+          j:RowHover(weak.fix) }
+      end
+    end
     for bi, b in ipairs(buckets) do
       if b[2] <= b[3] then
         local found = {}

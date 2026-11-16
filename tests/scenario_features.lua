@@ -547,4 +547,10 @@ do
   GetInventoryItemID, C_Item.GetItemInfoInstant, C_Container.GetContainerItemInfo, C_Container.GetContainerNumSlots = kInv, kInstant, kInfo, kSlots
   check(ns.QuiverRoom(2515) == nil, "restock: no quiver worn, no quiver amount")
 end
+-- Weakest slot
+do
+  local w = ns.GearWeakest()
+  check(w and w.slot and w.rank > 1 and w.total >= w.rank and w.fix and w.gain > 0, "weakest slot: a slot, its rank and something to get")
+  ns.UI_Show("gear")
+end
 print("DONE")
