@@ -235,6 +235,25 @@ do
   check(ns.BestiarySelected() == 2384, "bestiary: picking a beast turns the page")
 end
 
+-- Stable: the pets journal
+do
+  ns.cdb.pets = ns.cdb.pets or {}
+  ns.cdb.pets["Rex|Cat"] = { name = "Rex", family = "Cat", level = 20, known = { Bite = 1 }, stabled = true, seen = 0 }
+  ns.cdb.pets["Starving Mountain Lion|Cat"] = { name = "Starving Mountain Lion", family = "Cat", level = 23, known = {}, stabled = true, seen = 0 }
+  ns.UI_Show("stable")
+  check(ns.StableSelected() ~= nil, "stable: opens on a pet's page")
+  local id, sure = ns.PetOrigin(ns.cdb.pets["Starving Mountain Lion|Cat"])
+  check(id == 2384 and sure, "stable: a pet that kept its name is matched to its beast")
+  local id2, sure2 = ns.PetOrigin(ns.cdb.pets["Rex|Cat"])
+  check(id2 and ns.Beasts[id2][4] == "Cat" and not sure2, "stable: a renamed pet gets a stand-in of its family")
+  local nextUp = ns.PetNextToLearn(ns.cdb.pets["Rex|Cat"], 5)
+  check(type(nextUp) == "table" and #nextUp <= 5, "stable: what to tame next (" .. #nextUp .. ")")
+  for _, n in ipairs(nextUp) do check(ns.Beasts[n.beast] and not ns.HunterKnows(n.ability, n.rank), "stable: next-to-learn is a rank you don't know") end
+  local kin, mine = ns.PetFasterKin(ns.cdb.pets["Starving Mountain Lion|Cat"])
+  check(kin == nil or (ns.Beasts[kin][4] == "Cat" and (not mine or ns.Beasts[kin][9] < mine)), "stable: a faster beast of the family, if there is one")
+  ns.cdb.pets["Rex|Cat"], ns.cdb.pets["Starving Mountain Lion|Cat"] = nil, nil
+end
+
 -- Wishlist
 ALT = true
 IsAltKeyDown = function() return ALT end

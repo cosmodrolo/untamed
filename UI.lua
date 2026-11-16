@@ -221,6 +221,71 @@ function ns.MakeButton(parent, text, w, onClick)
   return b
 end
 
+-- A dark box with a slowly turning 3D model, for journal pages. box:Beast(npcId, icon) shows a
+-- creature, box:Unit("pet", icon) a unit; the icon stands in while the game has no model to show
+-- (the first look at a beast comes up empty: it asks again until it's there).
+function ns.MakeModelBox(parent, size)
+  local box = CreateFrame("Frame", nil, parent)
+  box:SetSize(size, size)
+  local bg = box:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  bg:SetColorTexture(0, 0, 0, 0.45)
+  box.icon = box:CreateTexture(nil, "BORDER")
+  box.icon:SetSize(64, 64)
+  box.icon:SetPoint("CENTER")
+  box.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  box.icon:SetAlpha(0.35)
+  box.model = CreateFrame("PlayerModel", nil, box)
+  box.model:SetAllPoints()
+  box.facing = 0.5
+  local function Apply()
+    local m = box.model
+    local ok
+    if box.kind == "unit" then ok = m.SetUnit and pcall(m.SetUnit, m, box.what)
+    elseif box.kind == "beast" then ok = m.SetCreature and pcall(m.SetCreature, m, box.what) end
+    if ok and m.SetCamDistanceScale then pcall(m.SetCamDistanceScale, m, 1.55) end
+    if ok and m.SetFacing then pcall(m.SetFacing, m, box.facing) end
+    return ok
+  end
+  local function Set(kind, what, icon)
+    box.icon:SetTexture(icon)
+    if box.kind == kind and box.what == what then return end
+    box.kind, box.what, box.tries, box.wait, box.facing = kind, what, 0, 0, 0.5
+    if box.model.ClearModel then pcall(box.model.ClearModel, box.model) end
+    local ok = what and Apply()
+    box.model:SetShown(ok and true or false)
+    box.icon:SetShown(not ok)
+  end
+  function box:Beast(npcId, icon) Set("beast", npcId, icon) end
+  function box:Unit(unit, icon) Set("unit", unit, icon) end
+  function box:Nothing(icon) Set(nil, nil, icon) end
+  box.model:SetScript("OnUpdate", function(self, e)
+    box.facing = (box.facing + e * 0.35) % (2 * math.pi)
+    if self.SetFacing then self:SetFacing(box.facing) end
+    if not self.GetModelFileID then return end
+    local ok, file = pcall(self.GetModelFileID, self)
+    if not ok then return end
+    box.icon:SetShown(not file)
+    if not file and box.what and (box.tries or 0) < 20 then
+      box.wait = (box.wait or 0) + e
+      if box.wait >= 0.5 then box.wait, box.tries = 0, box.tries + 1; Apply() end
+    end
+  end)
+  return box
+end
+
+-- A small heading with a thin rule under it, for journal pages.
+function ns.MakeHeading(parent, text)
+  local h = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  h:SetText(text)
+  local rule = parent:CreateTexture(nil, "ARTWORK")
+  rule:SetPoint("TOPLEFT", h, "BOTTOMLEFT", 0, -3)
+  rule:SetPoint("RIGHT", parent, "RIGHT", -12, 0)
+  rule:SetHeight(1)
+  rule:SetColorTexture(1, 0.82, 0, 0.25)
+  return h
+end
+
 -- A sunken Blizzard inset panel (falls back to a dark backdrop).
 function ns.MakeInset(parent)
   local ok, f = pcall(CreateFrame, "Frame", nil, parent, "InsetFrameTemplate")

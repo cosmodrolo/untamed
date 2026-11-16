@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.22.0
+My Pets > Stable is a journal too.
+- Your pets on the left, the pet's page on the right: its model (the real one for the pet that's out; for the others the beast it was tamed from), which beast it was tamed from and that beast's attack speed, its family's damage, armor and health, what you can teach it right now, what to tame next for it (the next rank of each ability you don't know, with the nearest beast that teaches it), a faster beast of its family if one is within reach, and what it knows.
+- Three buttons: Plan for this pet (the Abilities, Builds and Planner pages switch to it), Beasts for it (opens the Bestiary on its family, on beasts that teach something new), and Forget.
+- Untamed now notes which beast you tame a pet from. Pets you already have are matched by name if they kept the beast's name; renamed ones show a beast of their family as a stand-in until you tame something new.
+
 ## v2.21.2
 - Bestiary: a beast's model shows the first time you open its page (the game is still fetching it then; Untamed now asks again until it's there).
 

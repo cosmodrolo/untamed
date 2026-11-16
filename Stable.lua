@@ -11,12 +11,37 @@ local function Pets()
   return ns.cdb.pets
 end
 
+-- Which beast a pet was tamed from: noted when you cast Tame Beast (the beast you had targeted), and
+-- pinned to the pet that shows up right after. Older pets: a beast of the same name and family.
+local taming = {}
+function ns.PetOrigin(p)
+  if not p then return nil end
+  if p.from and ns.Beasts[p.from] then return p.from, true end
+  for id, b in pairs(ns.Beasts) do
+    if b[1] == p.name and b[4] == p.family then return id, true end
+  end
+  -- not known: a beast of its family near its level, to have something to show
+  local best, bd
+  for id, b in pairs(ns.Beasts) do
+    if b[4] == p.family then
+      local d = math.abs(((b[2] + b[3]) / 2) - (p.level or 1))
+      if not bd or d < bd or (d == bd and id < best) then best, bd = id, d end
+    end
+  end
+  return best, false
+end
+
 -- Remember the pet that is out right now.
 local function RecordActive()
   local info = ns.ScanPet()
   if not info then return end
   local key = ns.PetKey(info.name, info.family)
+  local isNew = Pets()[key] == nil
   local p = Pets()[key] or {}
+  if taming.id and (isNew or not p.from) and GetTime() - (taming.at or 0) < 45 then
+    local b = ns.Beasts[taming.id]
+    if b and b[4] == info.family then p.from = taming.id; taming.id = nil end
+  end
   p.name, p.family, p.level, p.known, p.seen = info.name, info.family, info.level, info.known, time()
   p.active = true
   Pets()[key] = p
@@ -63,8 +88,15 @@ end
 ns.On("REFRESH", function() if UnitExists("pet") then RecordActive() end end)
 
 local ev = CreateFrame("Frame")
-for _, e in ipairs({ "PET_STABLE_SHOW", "PET_STABLE_UPDATE", "PET_STABLE_CLOSED" }) do pcall(ev.RegisterEvent, ev, e) end
-ev:SetScript("OnEvent", function(_, event)
+for _, e in ipairs({ "PET_STABLE_SHOW", "PET_STABLE_UPDATE", "PET_STABLE_CLOSED", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_START" }) do pcall(ev.RegisterEvent, ev, e) end
+ev:SetScript("OnEvent", function(_, event, unit, _, spellID)
+  if event == "UNIT_SPELLCAST_CHANNEL_START" or event == "UNIT_SPELLCAST_START" then
+    if unit ~= "player" or not spellID or ns.IsSecret(spellID) or spellID ~= 1515 then return end
+    local ok, guid = pcall(UnitGUID, "target")
+    local id = ok and guid and not ns.IsSecret(guid) and ns.NpcIdFromGUID(guid)
+    if id and ns.Beasts[id] then taming.id, taming.at = id, GetTime() end
+    return
+  end
   if event == "PET_STABLE_CLOSED" then
     ns.cdb.hasActivePet = UnitExists("pet") and true or ns.cdb.hasActivePet
     ns.Fire("STABLE_CLOSED")
@@ -95,57 +127,269 @@ function ns.ReadyUpgrades(p)
 end
 
 ---------------------------------------------------------------------------
--- Tab
+-- Page: your pets as a journal. The list on the left, the pet's page on the right: its model,
+-- what it knows, what you can teach it right now, what to tame next for it, and whether a faster
+-- beast of its family is within reach.
 ---------------------------------------------------------------------------
-local list
-local function Build(panel)
-  list = ns.NewList(panel, 4)
-end
+local list, page, left
+local selected
+local rowKeys = {}
 
-local function Refresh()
-  local rows = {}
-  local function add(...) rows[#rows + 1] = { ... } end
+local function Keys()
   local keys = {}
   for k in pairs(Pets()) do keys[#keys + 1] = k end
   table.sort(keys, function(a, b)
     local x, y = Pets()[a], Pets()[b]
     if (x.active and 1 or 0) ~= (y.active and 1 or 0) then return x.active and true or false end
-    return (x.level or 0) > (y.level or 0)
+    if (x.level or 0) ~= (y.level or 0) then return (x.level or 0) > (y.level or 0) end
+    return a < b
   end)
-  if #keys == 0 then
-    add(0, nil, C.GREY .. "No pets recorded yet. Summon each pet once, or open the stable at a stable master.|r")
-  else
-    add(0, nil, L["Your pets"], C.GREY .. L["click to plan for that pet, right-click to forget"] .. "|r", nil, nil, { header = true })
+  return keys
+end
+
+-- what to tame next for a pet: the next rank of each ability you don't know yet, with a beast for it
+function ns.PetNextToLearn(p, max)
+  local out = {}
+  local playerLevel = UnitLevel("player")
+  for _, e in ipairs(ns.Plan(p.family, p.level, p.known or {})) do
+    for _, r in ipairs(e.ranks) do
+      if not r.known and not r.tooHigh and r.beasts and #r.beasts > 0 then
+        local best, bd
+        for _, id in ipairs(r.beasts) do
+          local b = ns.Beasts[id]
+          if b and b[2] <= playerLevel then
+            local _, _, _, d = ns.NearestSpawn(id)
+            d = d or 9e8
+            if not bd or d < bd then best, bd = id, d end
+          end
+        end
+        if best then out[#out + 1] = { ability = e.ability, rank = r.rank, beast = best, dist = bd < 9e8 and bd or nil } end
+        break
+      end
+    end
+    if max and #out >= max then break end
   end
+  return out
+end
+
+-- a faster beast of the same family you could tame now (nil if this one is already as fast as it gets)
+function ns.PetFasterKin(p)
+  local from, sure = ns.PetOrigin(p)
+  local mine = sure and from and ns.Beasts[from][9] or nil
+  local playerLevel = UnitLevel("player")
+  local best
+  for id, b in pairs(ns.Beasts) do
+    if b[4] == p.family and b[9] and b[2] <= playerLevel and (not mine or b[9] < mine) then
+      if not best or b[9] < ns.Beasts[best][9] or (b[9] == ns.Beasts[best][9] and b[3] > ns.Beasts[best][3]) then best = id end
+    end
+  end
+  return best, mine
+end
+
+local function FillPage()
+  if not page then return end
+  local p = selected and Pets()[selected]
+  page.empty:SetShown(not p)
+  page.body:SetShown(p and true or false)
+  if not p then return end
+  local icon = ns.Icon(ns.FamilyIcons[p.family] or "Ability_Hunter_BeastTaming")
+  local from, sure = ns.PetOrigin(p)
+  if p.active and UnitExists("pet") then page.box:Unit("pet", icon)
+  elseif from then page.box:Beast(from, icon)
+  else page.box:Nothing(icon) end
+
+  page.name:SetText(p.name or "?")
+  local status = p.active and (C.GREEN .. L["out now"] .. "|r") or (p.stabled and (C.GREY .. L["in your stable"] .. "|r")
+    or (C.GREY .. string.format(L["last seen %s"], date("%b %d", p.seen or 0)) .. "|r"))
+  page.sub:SetText(string.format("%s   %s %d   %s", ns.FamilyLabel(p.family), L["level"], p.level or 0, status))
+
+  page.origin.value:SetText(from and sure and (ns.Beasts[from][1] .. C.GREY .. "   " .. ns.ZonesText(ns.Beasts[from]) .. "|r")
+    or (C.GREY .. L["not known (Untamed notes it when you tame a beast)"] .. "|r"))
+  local speed = from and sure and ns.Beasts[from][9]
+  page.speed.value:SetText(speed and (((speed < 2.0) and C.GREEN or (speed > 2.0 and C.ORANGE or C.WHITE)) .. string.format("%.1f s", speed) .. "|r") or (C.GREY .. L["not known"] .. "|r"))
+  local st = ns.FamilyStats and ns.FamilyStats[p.family]
+  local function S(n) return (n > 0 and "+" or "") .. n end
+  page.family.value:SetText(st and string.format(L["%s%% damage, %s%% armor, %s%% health"], S(st[1]), S(st[2]), S(st[3])) or "")
+
+  local known = {}
+  for a, r in pairs(p.known or {}) do known[#known + 1] = (ns.AbilityLabel(a) or a) .. " " .. r end
+  table.sort(known)
+  page.knows:SetText(#known > 0 and table.concat(known, ",  ") or (C.GREY .. L["Not read yet: summon it once."] .. "|r"))
+
+  local ups = ns.ReadyUpgrades(p)
+  local lines = {}
+  for _, u in ipairs(ups) do lines[#lines + 1] = C.GREEN .. u .. "|r" end
+  page.ready:SetText(#lines > 0 and (table.concat(lines, ",  ") .. "\n" .. C.GREY .. L["You know these ranks already: teach them in Beast Training."] .. "|r")
+    or (C.GREY .. L["Nothing waiting: it has every rank you know that it can use."] .. "|r"))
+
+  lines = {}
+  for _, n in ipairs(ns.PetNextToLearn(p, 5)) do
+    local b = ns.Beasts[n.beast]
+    lines[#lines + 1] = string.format("%s%s %d|r   %s%s|r%s", C.WHITE, ns.AbilityLabel(n.ability) or n.ability, n.rank, C.GOLD, b[1],
+      C.GREY .. "   " .. ns.ZonesText(b) .. (n.dist and (", " .. ns.FormatDistance(n.dist)) or "") .. "|r")
+  end
+  local kin, mine = ns.PetFasterKin(p)
+  if kin and (not mine or ns.Beasts[kin][9] < mine) then
+    local b = ns.Beasts[kin]
+    lines[#lines + 1] = C.GREY .. string.format(mine and L["A faster %s you could tame: %s (%.1f s), %s."] or L["The fastest %s you could tame: %s (%.1f s), %s."],
+      ns.FamilyLabel(p.family), C.GOLD .. b[1] .. "|r" .. C.GREY, b[9], ns.ZonesText(b)) .. "|r"
+  end
+  page.next:SetText(#lines > 0 and table.concat(lines, "\n") or (C.GREY .. L["Nothing left to tame for it at your level."] .. "|r"))
+
+  local viewing = (ns.state.mode == "stable" and ns.state.key == selected) or (ns.state.mode == "pet" and p.active)
+  page.plan:SetText(viewing and L["Planning for it"] or L["Plan for this pet"])
+end
+
+local function PaintRow(i, on)
+  local r = list and list.rows[i]
+  if not r or not rowKeys[i] then return end
+  if on then r.bg:SetColorTexture(1, 0.82, 0, 0.20); r.bg:Show()
+  elseif (i - 1) % 2 == 0 then r.bg:SetColorTexture(1, 1, 1, 0.04); r.bg:Show()
+  else r.bg:Hide() end
+end
+
+local function Select(key)
+  if selected == key then return end
+  for i, k in pairs(rowKeys) do if k == selected then PaintRow(i, false) end end
+  selected = key
+  for i, k in pairs(rowKeys) do if k == key then PaintRow(i, true) end end
+  FillPage()
+end
+ns.StableSelected = function() return selected end
+
+local function PlanFor(key)
+  local p = Pets()[key]
+  if not p then return end
+  if p.active then ns.state.mode, ns.state.key, ns.state.family = "pet", nil, nil
+  else ns.state.mode, ns.state.key = "stable", key end
+  ns.Print(string.format(L["Planning for %s: the Abilities, Builds and Planner pages now show this pet."], p.name))
+  ns.Refresh()
+end
+
+local function Tile(parent, label)
+  local t = {}
+  t.label = parent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+  t.label:SetText(label)
+  t.value = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  t.value:SetPoint("TOPLEFT", t.label, "BOTTOMLEFT", 0, -3)
+  t.value:SetPoint("RIGHT", parent, "RIGHT", -10, 0)
+  t.value:SetJustifyH("LEFT")
+  t.value:SetWordWrap(false)
+  return t
+end
+
+local function Para(parent, anchor, font)
+  local fs = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight")
+  fs:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -10)
+  fs:SetPoint("RIGHT", parent, "RIGHT", -12, 0)
+  fs:SetJustifyH("LEFT")
+  fs:SetSpacing(5)
+  return fs
+end
+
+local function Build(panel)
+  left = CreateFrame("Frame", nil, panel)
+  left:SetPoint("TOPLEFT", 0, 0)
+  left:SetPoint("BOTTOMLEFT", 0, 0)
+  left:SetWidth(340)
+  list = ns.NewList(left, 4)
+
+  page = CreateFrame("Frame", nil, panel)
+  page:SetPoint("TOPLEFT", left, "TOPRIGHT", 10, 0)
+  page:SetPoint("BOTTOMRIGHT", -4, 4)
+  local bg = page:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  bg:SetColorTexture(0, 0, 0, 0.28)
+  page.empty = page:CreateFontString(nil, "OVERLAY", "GameFontDisable")
+  page.empty:SetPoint("CENTER")
+  page.empty:SetWidth(300)
+  page.empty:SetText(L["No pets recorded yet. Summon each pet once, or open the stable at a stable master."])
+  local body = CreateFrame("Frame", nil, page)
+  body:SetAllPoints()
+  page.body = body
+
+  page.box = ns.MakeModelBox(body, 210)
+  page.box:SetPoint("TOPLEFT", 12, -12)
+  page.name = body:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+  page.name:SetPoint("TOPLEFT", page.box, "TOPRIGHT", 14, -2)
+  page.name:SetPoint("RIGHT", body, "RIGHT", -10, 0)
+  page.name:SetJustifyH("LEFT")
+  page.name:SetWordWrap(false)
+  page.sub = body:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  page.sub:SetPoint("TOPLEFT", page.name, "BOTTOMLEFT", 0, -5)
+  page.sub:SetPoint("RIGHT", body, "RIGHT", -10, 0)
+  page.sub:SetJustifyH("LEFT")
+  page.sub:SetWordWrap(false)
+  page.origin = Tile(body, L["Tamed from"])
+  page.origin.label:SetPoint("TOPLEFT", page.sub, "BOTTOMLEFT", 0, -16)
+  page.speed = Tile(body, L["Attack speed"])
+  page.speed.label:SetPoint("TOPLEFT", page.origin.label, "BOTTOMLEFT", 0, -30)
+  page.family = Tile(body, L["Its family"])
+  page.family.label:SetPoint("TOPLEFT", page.speed.label, "BOTTOMLEFT", 0, -30)
+
+  page.plan = ns.MakeButton(body, L["Plan for this pet"], 130, function() if selected then PlanFor(selected) end end)
+  page.plan:SetPoint("TOPLEFT", page.box, "BOTTOMLEFT", 0, -12)
+  page.plan:SetScript("OnEnter", function(self) ns.ShowTooltip(self, { L["Plan for this pet"], L["The Abilities, Builds and Planner pages show this pet instead of the one that is out."] }) end)
+  page.plan:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  page.find = ns.MakeButton(body, L["Beasts for it"], 110, function()
+    local p = selected and Pets()[selected]
+    if not p then return end
+    local f = ns.BrowserFilter()
+    f.family, f.fresh, f.teaches, f.where, f.rare = p.family, true, "any", "any", false
+    ns.UI_Show("browse")
+  end)
+  page.find:SetPoint("LEFT", page.plan, "RIGHT", 6, 0)
+  page.find:SetScript("OnEnter", function(self) ns.ShowTooltip(self, { L["Beasts for it"], L["Opens the Bestiary on its family, showing beasts that teach a rank you don't know."] }) end)
+  page.find:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  page.forget = ns.MakeButton(body, L["Forget"], 80, function()
+    if not selected then return end
+    Pets()[selected] = nil
+    if ns.state.key == selected then ns.state.mode, ns.state.key = "pet", nil end
+    selected = nil
+    ns.Refresh()
+  end)
+  page.forget:SetPoint("LEFT", page.find, "RIGHT", 6, 0)
+  page.forget:SetScript("OnEnter", function(self) ns.ShowTooltip(self, { L["Forget"], L["Takes this pet off the list (for pets you've abandoned). It comes back if you summon it."] }) end)
+  page.forget:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  local function BackToRow()
+    for i, k in pairs(rowKeys) do if k == selected then return list.rows[i] end end
+  end
+  page.plan.padNeighbor = { left = BackToRow }
+
+  local h1 = ns.MakeHeading(body, L["Teach it now"])
+  h1:SetPoint("TOPLEFT", page.plan, "BOTTOMLEFT", 0, -18)
+  page.ready = Para(body, h1)
+  local h2 = ns.MakeHeading(body, L["Tame next for it"])
+  h2:SetPoint("TOPLEFT", page.ready, "BOTTOMLEFT", 0, -18)
+  page.next = Para(body, h2)
+  local h3 = ns.MakeHeading(body, L["Knows"])
+  h3:SetPoint("TOPLEFT", page.next, "BOTTOMLEFT", 0, -18)
+  page.knows = Para(body, h3, "GameFontHighlightSmall")
+end
+
+local function Refresh()
+  local keys = Keys()
+  local keep = false
+  for _, k in ipairs(keys) do if k == selected then keep = true end end
+  if not keep then selected = keys[1] end
+  wipe(rowKeys)
+  local rows = {}
+  if #keys > 0 then rows[1] = { 0, nil, ns.Count(#keys, L["pet"], L["pets"]), "", nil, nil, { header = true } } end
   for _, k in ipairs(keys) do
     local p = Pets()[k]
     local ups = ns.ReadyUpgrades(p)
-    local status = p.active and (C.GREEN .. "out now|r") or (p.stabled and (C.GREY .. "in stable|r") or (C.GREY .. "seen " .. date("%b %d", p.seen or 0) .. "|r"))
-    local right = (#ups > 0 and (C.GREEN .. #ups .. " ready to teach|r   ") or "") .. status
-    local selected = ns.state.mode == "stable" and ns.state.key == k
-    add(0, ns.Icon(ns.FamilyIcons[p.family] or "Ability_Hunter_BeastTaming"),
-      string.format("%s%s|r  %s, level %d", selected and C.GOLD or C.WHITE, p.name, ns.FamilyLabel(p.family), p.level or 0), right,
+    local name = (p.active and C.GREEN or C.WHITE) .. (p.name or "?") .. "|r" .. C.GREY .. "  " .. ns.FamilyLabel(p.family) .. "|r"
+    if #ups > 0 then name = name .. C.GREEN .. "  " .. string.format(L["%d to teach"], #ups) .. "|r" end
+    rows[#rows + 1] = { 0, ns.Icon(ns.FamilyIcons[p.family] or "Ability_Hunter_BeastTaming"), name, C.GREY .. (p.level or 0) .. "|r",
       function(_, button)
-        if button == "RightButton" then
-          Pets()[k] = nil
-          if ns.state.key == k then ns.state.mode = "pet"; ns.state.key = nil end
-        else
-          ns.state.mode = "stable"; ns.state.key = k
-          ns.Print(L["Planning for "] .. p.name .. ". The Abilities and Planner tabs now show this pet. Click My Pet to switch back.")
-        end
-        ns.Refresh()
+        if button == "RightButton" or selected == k then PlanFor(k) else Select(k) end
       end,
-      function()
-        local lines = { p.name, p.family .. ", level " .. (p.level or 0) }
-        local known = {}
-        for a, r in pairs(p.known or {}) do known[#known + 1] = a .. " " .. r end
-        table.sort(known)
-        lines[#lines + 1] = L["Knows: "] .. (#known > 0 and table.concat(known, ", ") or "unknown until it has been out once")
-        if #ups > 0 then lines[#lines + 1] = C.GREEN .. L["You can teach it now: "] .. table.concat(ups, ", ") .. "|r" end
-        return lines
-      end)
+      function() if ns.padFocusing then Select(k) end return nil end }
+    rowKeys[#rows] = k
   end
   list:Set(rows)
+  for i, k in pairs(rowKeys) do if k == selected then PaintRow(i, true) end end
+  FillPage()
 end
 
 ns.RegisterTab("stable", L["Stable"], Build, Refresh)
