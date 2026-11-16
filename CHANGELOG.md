@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.19.17
+- Untamed's map icons show on OpenMap's controller view (its Gamepad UI mode). That view is OpenMap's own map drawn over Blizzard's, which hides everything Untamed drew on Blizzard's map. OpenMap puts other addons' HereBeDragons map icons on its view, so Untamed now hands it its icons in that shape: chests, books, rares, wishlist, the beast you're hunting and beasts your pet can learn from. They appear once you zoom in to zone level (the beast you're hunting shows from further out), for the zone the map is on and the zone you're in. Put the controller's cursor on an icon for its info box. The switches in OpenMap's menu turn each group off or on.
+
 ## v2.19.16
 - Your pet's buffs now show as small icons with timers next to its health bar under your character, the one running out soonest first. Frenzy appears there the moment it starts and counts down. In a fight Forever hides which buff is which from addons, so Untamed shows them all (up to four) instead of picking out Frenzy; when the game does give the name, Frenzy gets a gold edge. /ut range buffs turns the icons off or on.
 

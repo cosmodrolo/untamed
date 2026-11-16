@@ -41,9 +41,11 @@ local function AcquirePin()
   return p
 end
 
+local buildMap                -- the map the pins being added are on
 local function AddPin(info, size, iconPath, r, g, b, a)
   local p = AcquirePin()
   p.x, p.y, p.size, p.info = info.x, info.y, size, info
+  p.map, p.tex, p.r, p.g, p.b, p.a = buildMap, iconPath, r, g, b, a or 1
   p.icon:SetTexture(iconPath)
   p.border:SetVertexColor(r, g, b, a or 1)
   -- Focused pins draw above the small automatic ones.
@@ -102,10 +104,20 @@ local function AddServicePins(mapID)
   end
 end
 
-local function Refresh()
-  used = 0
-  local mapID = WorldMapFrame:GetMapID()
-  if mapID then
+-- OpenMap's controller view (its Gamepad UI mode) draws its own map on a frame over Blizzard's and
+-- makes Blizzard's canvas see-through, so nothing on the canvas shows. That's how it's told here.
+local function PadMode()
+  if not (_G.OpenMapAPI and canvas and canvas.GetAlpha) then return false end
+  local ok, a = pcall(canvas.GetAlpha, canvas)
+  return ok and not ns.IsSecret(a) and a == 0
+end
+
+local PadSync
+local collectPad              -- 1, 2: which pass of the controller view's collecting this is
+
+local function Collect(mapID)
+  buildMap = mapID
+  do
     local need = ns.NeededSet() or {}
     if focus then
       for npcId in pairs(focus.npcs) do AddBeastPins(mapID, npcId, true, need[npcId], nil) end
@@ -121,9 +133,12 @@ local function Refresh()
         for _, p in ipairs(pts) do
           if p.x and p.x ~= 0 then
             local x, y = p.x, p.y
+            local pinMap = mapID
             if p.map ~= mapID then
               x = nil
-              if stitched then
+              if collectPad == 1 and p.map then
+                x, y, pinMap = p.x, p.y, p.map      -- the controller view places it on its own map
+              elseif stitched then
                 local okw, u, v = pcall(api.WorldFromMap, p.map, p.x / 100, p.y / 100)
                 if okw and u then
                   local okm, hx, hy = pcall(api.MapFromWorld, mapID, u, v)
@@ -132,9 +147,11 @@ local function Refresh()
               end
             end
             if x then
+              buildMap = pinMap
               local c = p.border or { 0.64, 0.21, 0.93, 1 }
               AddPin({ point = true, x = x, y = y, name = p.name, lines = p.lines }, p.size or 14,
                 p.icon or "Interface\\Icons\\INV_Misc_QuestionMark", c[1], c[2], c[3], c[4])
+              buildMap = mapID
             end
           end
         end
@@ -146,9 +163,24 @@ local function Refresh()
       end
     end
   end
+end
+
+local function Refresh()
+  used = 0
+  local mapID = WorldMapFrame:GetMapID()
+  local pad = PadMode()
+  collectPad = pad and 1 or nil
+  if mapID then Collect(mapID) end
+  if pad then
+    collectPad = 2
+    -- the controller view shows the whole world: your own zone's pins too
+    local here = C_Map.GetBestMapForUnit("player")
+    if here and not ns.IsSecret(here) and here ~= mapID then Collect(here) end
+  end
   for i = used + 1, #pins do pins[i].icon:Hide(); pins[i].border:Hide() end
-  view.mapID, dirty, lastRefresh = mapID, false, GetTime()
+  view.mapID, view.pad, dirty, lastRefresh = mapID, pad, false, GetTime()
   Layout()
+  if PadSync then PadSync(pad) end
 end
 
 ---------------------------------------------------------------------------
@@ -204,12 +236,11 @@ end
 
 local tipLines = {}
 local shownInfo
-local function UpdateTip()
-  local pin, cx, cy = PickPin()
-  if not pin then tip:Hide(); shownInfo = nil; return end
-  if pin.info ~= shownInfo then
-    shownInfo = pin.info
-    local rows, w, h = Describe(pin.info), 0, 8
+local padTip                  -- the controller view's icon whose box is up
+local function ShowTip(info, cx, cy)
+  if info ~= shownInfo then
+    shownInfo = info
+    local rows, w, h = Describe(info), 0, 8
     for i, row in ipairs(rows) do
       local fs = tipLines[i]
       if not fs then
@@ -230,12 +261,91 @@ local function UpdateTip()
   tip:Show()
 end
 
+local function UpdateTip()
+  if view.pad then return end           -- the controller view's icons bring their own (below)
+  local pin, cx, cy = PickPin()
+  if not pin then tip:Hide(); shownInfo = nil; return end
+  ShowTip(pin.info, cx, cy)
+end
+
+---------------------------------------------------------------------------
+-- OpenMap's controller view. It has no way to hand it points, but it puts every addon's
+-- HereBeDragons map icons on its own map (it reads each copy's list of icons and where they
+-- are). So Untamed keeps a list of that shape, with plain frames of its own made at login, and
+-- OpenMap places them, shows them and tells them when the controller's cursor is on them.
+-- Nothing of OpenMap's or Blizzard's is changed.
+---------------------------------------------------------------------------
+local PAD_LIB = "HereBeDragons-Untamed-Pins-2.0"
+local PAD_MAX = 160
+local padHolder, padLib
+local padFrames = {}
+
+local function PadBuild()
+  if padHolder or not _G.OpenMapAPI then return end
+  padHolder = CreateFrame("Frame", nil, UIParent)
+  padHolder:Hide()
+  for i = 1, PAD_MAX do
+    local f = CreateFrame("Frame", nil, padHolder)
+    f:SetSize(14, 14)
+    f.border = f:CreateTexture(nil, "BACKGROUND")
+    f.border:SetAllPoints()
+    f.border:SetTexture("Interface\\Buttons\\WHITE8X8")
+    f.tex = f:CreateTexture(nil, "ARTWORK")
+    f.tex:SetPoint("TOPLEFT", 1.5, -1.5); f.tex:SetPoint("BOTTOMRIGHT", -1.5, 1.5)
+    f.tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    f:SetScript("OnEnter", function(self)
+      if not self.info then return end
+      local x, y = self:GetCenter()
+      if not x then return end
+      local s = self:GetEffectiveScale()
+      padTip = self
+      ShowTip(self.info, x * s, y * s)
+    end)
+    f:SetScript("OnLeave", function(self)
+      if padTip == self then padTip, shownInfo = nil, nil; tip:Hide() end
+    end)
+    f:Hide()
+    padFrames[i] = f
+  end
+end
+
+function PadSync(pad)
+  if not padHolder then return end
+  if pad and not padLib and LibStub and LibStub.NewLibrary then
+    local ok, lib = pcall(LibStub.NewLibrary, LibStub, PAD_LIB, 1)
+    padLib = (ok and lib) or (LibStub.GetLibrary and select(2, pcall(LibStub.GetLibrary, LibStub, PAD_LIB, true))) or nil
+    if type(padLib) ~= "table" then padLib = nil end
+    if padLib then padLib.worldmapPins = padLib.worldmapPins or {} end
+  end
+  if not padLib then return end
+  wipe(padLib.worldmapPins)
+  local n = pad and math.min(used, PAD_MAX) or 0
+  for i = 1, n do
+    local p, f = pins[i], padFrames[i]
+    f.UiMapID, f.x, f.y, f.info = p.map, p.x, p.y, p.info
+    f:SetSize(p.size + 3, p.size + 3)
+    f.tex:SetTexture(p.tex)
+    f.border:SetVertexColor(p.r, p.g, p.b, p.a)
+    -- 2: shown from far out too (what you're hunting); 0: once you're zoomed to zones
+    padLib.worldmapPins[f] = { uiMapID = p.map, worldMapShowFlag = p.info.focus and 2 or 0 }
+  end
+  for i = n + 1, PAD_MAX do
+    local f = padFrames[i]
+    if f.info then
+      f.info = nil
+      if padTip == f then padTip, shownInfo = nil, nil; tip:Hide() end
+      f:Hide()
+    end
+  end
+end
+ns.Pins_Pad = function() return padLib, padFrames, view.pad end
+
 ---------------------------------------------------------------------------
 -- Driver
 ---------------------------------------------------------------------------
 local function OnUpdate()
   local mapID = WorldMapFrame:GetMapID()
-  if mapID ~= view.mapID or (dirty and GetTime() - lastRefresh >= REFRESH_THROTTLE) then
+  if mapID ~= view.mapID or PadMode() ~= view.pad or (dirty and GetTime() - lastRefresh >= REFRESH_THROTTLE) then
     Refresh()
   elseif canvas:GetWidth() ~= view.width or canvas:GetHeight() ~= view.height or canvas:GetScale() ~= view.scale then
     Layout()
@@ -270,7 +380,7 @@ local function Init()
   overlay:SetFrameLevel(OverlayFrameLevel())
   overlay:EnableMouse(false)
   overlay:SetScript("OnUpdate", OnUpdate)          -- only runs while the map is shown
-  overlay:SetScript("OnHide", function() if tip then tip:Hide() end end)
+  overlay:SetScript("OnHide", function() if tip then tip:Hide() end padTip, shownInfo = nil, nil end)
   tip = CreateFrame("Frame", "UntamedMapInfo", UIParent, "BackdropTemplate")
   tip:SetFrameStrata("TOOLTIP")
   tip:EnableMouse(false)
@@ -280,6 +390,7 @@ local function Init()
     tip:SetBackdropColor(0.05, 0.05, 0.05, 0.92)
   end
   tip:Hide()
+  PadBuild()
   return true
 end
 

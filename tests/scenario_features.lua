@@ -4,6 +4,13 @@ local function clean(s) return (tostring(s or ""):gsub("|c%x%x%x%x%x%x%x%x", "")
 local function check(cond, label) print((cond and "ok   " or "FAIL ") .. label); if not cond then error("check failed: " .. label) end end
 
 FIRE("ADDON_LOADED", "Untamed")
+-- OpenMap is installed (its controller view is tested with the map pins below)
+OpenMapAPI = { version = 4 }
+do
+  local libs = {}
+  LibStub = setmetatable({ NewLibrary = function(self, name) libs[name] = libs[name] or {} return libs[name] end,
+    GetLibrary = function(self, name) return libs[name] end, libs = libs }, { __call = function(self, name) return libs[name] end })
+end
 FIRE("PLAYER_LOGIN")
 FIRE("CRAFT_SHOW")
 
@@ -184,6 +191,27 @@ local drawn = ns.Pins_Drawn()
 check(#drawn > 0 and drawn[1].npcId == 2384, "focused beast drawn on the map (" .. #drawn .. " pins)")
 check(MAP_FRAMES_WHILE_OPEN == 0, "no frames created inside the open map")
 check(WorldMapFrame._scripts.OnShow == nil, "Untamed doesn't hook the world map")
+-- OpenMap's controller view: Blizzard's canvas goes see-through, and the pins are handed over as a
+-- HereBeDragons-shaped list of Untamed's own frames
+do
+  local child = WorldMapFrame.ScrollContainer.Child
+  local lib0 = ns.Pins_Pad()
+  check(lib0 == nil, "no icon list for OpenMap until its controller view is up")
+  child.GetAlpha = function() return 0 end
+  TICK(2)
+  local lib, frames, pad = ns.Pins_Pad()
+  local n, sample = 0, nil
+  for icon, data in pairs(lib and lib.worldmapPins or {}) do n = n + 1; sample = sample or { icon, data } end
+  check(pad and lib == LibStub.libs["HereBeDragons-Untamed-Pins-2.0"] and n > 0, "controller view: pins handed to OpenMap (" .. n .. ")")
+  check(sample and sample[1].UiMapID == sample[2].uiMapID and type(sample[1].x) == "number" and sample[1].SetPoint ~= nil,
+    "controller view: each icon says its map and place")
+  check(MAP_FRAMES_WHILE_OPEN == 0, "controller view: still no frames created inside the open map")
+  child.GetAlpha = function() return 1 end
+  TICK(2)
+  n = 0
+  for _ in pairs(lib.worldmapPins) do n = n + 1 end
+  check(n == 0 and not select(3, ns.Pins_Pad()), "controller view off: the list is emptied")
+end
 InputUtil = { IsGamepadUIEnabled = function() return true end }
 WorldMapFrame.SetMapID(WorldMapFrame, 1429)
 ns.OpenMapTo(1424)
