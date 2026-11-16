@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.30.1
+- Checkboxes show their mark again (since 2.30.0 a ticked box looked empty; the settings themselves were never changed).
+
 ## v2.30.0
 - The last stock pieces get the Savage Land look: scroll bars are a thin dark track with an amber thumb (drag it, or use the mouse wheel; it hides when everything fits), checkboxes are a dark box with an amber square (the label is clickable too), and search boxes are flat.
 - Hunter Quests: a quest that isn't part of a chain no longer shows its name twice. Spells: the page no longer repeats the cost under the description.

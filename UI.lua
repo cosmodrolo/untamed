@@ -304,7 +304,15 @@ function ns.MakeCheck(parent, label, x, y, get, set, tip)
   local mark = boxFrame:CreateTexture(nil, "OVERLAY")
   mark:SetPoint("TOPLEFT", 3, -3); mark:SetPoint("BOTTOMRIGHT", -3, 3)
   mark:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 1)
-  if c.SetCheckedTexture then c:SetCheckedTexture(mark) end
+  -- shown and hidden by hand: the mark sits on the box (a frame above the checkbox's own layers,
+  -- where the game's own checked-texture would be hidden behind the box)
+  mark:Hide()
+  local setChecked = c.SetChecked
+  c.SetChecked = function(self, on)
+    setChecked(self, on and true or false)
+    mark:SetShown(on and true or false)
+  end
+  c:SetScript("PostClick", function(self) mark:SetShown(self:GetChecked() and true or false) end)
   local hl = c:CreateTexture(nil, "HIGHLIGHT")
   hl:SetAllPoints(boxFrame)
   hl:SetColorTexture(1, 1, 1, 0.12)
