@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.20.1
+- L1 and R1 reach Settings too: it's the stop after World.
+- The Home page describes the new sections.
+
 ## v2.20.0
 The first step of the overhaul: a tidier window, and the controller works in it.
 - Six sections along the top instead of one long list of 21 pages: Today, Bestiary, My Pets, Hunter, Gear, World. The list on the left shows only the pages of the section you're in, and each section remembers the page you were on. Settings is the gear at the right end. The pages themselves are unchanged for now.

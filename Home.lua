@@ -98,14 +98,16 @@ local function Refresh(panel, t)
 
   -- Where things are.
   add(0, nil, L["How Untamed is organized"], C.GREY .. L["click to open"] .. "|r", nil, nil, { header = true })
-  add(14, ns.Icon("Ability_Hunter_BeastTraining"), C.GOLD .. L["My Pet"] .. "|r  " .. C.WHITE .. L["what your pet can learn, its build, food and happiness, and your stable"] .. "|r", "", Go("abilities"))
-  add(14, ns.Icon("Ability_Hunter_BeastTaming"), C.GOLD .. L["Taming"] .. "|r  " .. C.WHITE .. L["which pet to tame, every beast, a taming route, and rares"] .. "|r", "", Go("recommend"))
-  add(14, ns.Icon("INV_Weapon_Bow_07"), C.GOLD .. L["Gear"] .. "|r  " .. C.WHITE .. L["search anything, your wishlist, upgrades, dungeons and supplies"] .. "|r", "", Go("gear"))
-  add(14, ns.Icon("INV_Misc_Book_11"), C.GOLD .. L["Hunter"] .. "|r  " .. C.WHITE .. L["spells to train, talents, reputation and class quests"] .. "|r", "", Go("spells"))
+  add(14, ns.Icon("Ability_Hunter_BeastTaming"), C.GOLD .. L["Bestiary"] .. "|r  " .. C.WHITE .. L["every beast, which pet to tame, rares, and a taming route"] .. "|r", "", Go("browse"))
+  add(14, ns.Icon("Ability_Hunter_BeastCall"), C.GOLD .. L["My Pets"] .. "|r  " .. C.WHITE .. L["what your pet can learn, its build, food and happiness, and your stable"] .. "|r", "", Go("abilities"))
+  add(14, ns.Icon("Ability_Hunter_RunningShot"), C.GOLD .. L["Hunter"] .. "|r  " .. C.WHITE .. L["spells to train, talents, rotation and class quests"] .. "|r", "", Go("spells"))
+  add(14, ns.Icon("INV_Weapon_Bow_07"), C.GOLD .. L["Gear"] .. "|r  " .. C.WHITE .. L["upgrades, your wishlist, dungeons, reputation and supplies"] .. "|r", "", Go("gear"))
+  add(14, ns.Icon("INV_Misc_Map_01"), C.GOLD .. L["World"] .. "|r  " .. C.WHITE .. L["library books, and a search for any item, NPC or beast"] .. "|r", "", Go("books"))
 
   -- Good to know.
   add(0, nil, L["Good to know"], "", nil, nil, { header = true })
   local tips = {
+    L["On a controller: D-pad moves, Cross selects, Square is the second action, Circle goes back, L1 and R1 change sections."],
     L["Click a beast, item or NPC for an arrow to it. Right-click a beast to see it on the world map."],
     L["If a beast isn't at a spawn spot, the arrow moves on to the next closest one. Shift-right-click the arrow to skip ahead."],
     L["Hover anything for details: where to get it, what it teaches, what it needs."],

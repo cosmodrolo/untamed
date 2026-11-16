@@ -963,11 +963,17 @@ function ns.UI_PadHints(on)
   ns.UI_Refresh()
 end
 function ns.UI_StepSection(dir)
+  -- the six sections, then Settings, then round again
+  local n = #SECTIONS + 1
   local cur = sectionByKey[activeSection]
-  local i = cur and cur.index or (dir > 0 and 0 or 1)
-  for _ = 1, #SECTIONS do
-    i = (i - 1 + dir) % #SECTIONS + 1
-    if #SectionPages(SECTIONS[i].key) > 0 then SelectSection(SECTIONS[i].key) return end
+  local i = cur and cur.index or (activeSection == "settings" and n) or (dir > 0 and 0 or 1)
+  for _ = 1, n do
+    i = (i - 1 + dir) % n + 1
+    if i == n then
+      if tabs.settings then SelectTab("settings") return end
+    elseif #SectionPages(SECTIONS[i].key) > 0 then
+      SelectSection(SECTIONS[i].key) return
+    end
   end
 end
 function ns.UI_StepPage(dir)
