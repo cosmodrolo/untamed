@@ -259,7 +259,8 @@ local function FillLooks(b)
       if m.ClearModel then pcall(m.ClearModel, m) end
       local ok = m.SetDisplayInfo and pcall(m.SetDisplayInfo, m, e.display)
       if not ok and m.SetCreature then pcall(m.SetCreature, m, e.ids[1]) end
-      if m.SetCamDistanceScale then pcall(m.SetCamDistanceScale, m, 1.55) end
+      -- closer than the big model box: these are small tiles
+      if m.SetCamDistanceScale then pcall(m.SetCamDistanceScale, m, 0.95) end
       if m.SetFacing then pcall(m.SetFacing, m, 0.6) end
     end
     local on = e.look == mine

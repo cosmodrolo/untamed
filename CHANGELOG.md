@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.34.1
+- Looks: the models in the gallery tiles are drawn closer, so they fill the tile instead of sitting small in the middle.
+
 ## v2.34.0
 Looks: every skin a family comes in.
 - A beast's page in the Bestiary has a new Looks button. It swaps the lower half of the page for a gallery: one small 3D model per look in that beast's family (16 for cats, 11 for wolves, 13 for spiders...), each with how many beasts wear it and their level range.
