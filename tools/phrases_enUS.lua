@@ -828,6 +828,7 @@ L["Weakest slot"] = true
 L["What Untamed draws on your world map (and OpenMap) and around your minimap."] = true
 L["What to press in a fight, macros and where they go on the controller"] = true
 L["What to train at each level and what it costs"] = true
+L["What you wear"] = true
 L["What you wear, as Untamed scores it:"] = true
 L["What your pet can learn, and which beasts teach it"] = true
 L["What's next"] = true

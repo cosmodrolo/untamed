@@ -1108,7 +1108,7 @@ function ns.GearWeakest()
         if fix then
           local behind = (rank - 1) / total
           if not worst or behind > worst.behind then
-            worst = { slot = slot, rank = rank, total = total, worn = GetInventoryItemID("player", inv), fix = fix, gain = fixScore - beat, behind = behind }
+            worst = { slot = slot, rank = rank, total = total, worn = GetInventoryItemID("player", inv), inv = inv, fix = fix, gain = fixScore - beat, behind = behind }
           end
         end
       end
@@ -1171,6 +1171,11 @@ do
         weakInfo[weak.fix] = { slot = weak.slot, gain = weak.gain }
         local it = db and db.I[weak.fix]
         local wornName = weak.worn and db and db.I[weak.worn] and db.I[weak.worn][1]
+        -- an item the data doesn't know (new in Forever): its name is in its link
+        if weak.worn and not wornName then
+          local link = GetInventoryItemLink and GetInventoryItemLink("player", weak.inv)
+          wornName = type(link) == "string" and not ns.IsSecret(link) and link:match("%[(.-)%]") or L["What you wear"]
+        end
         rows[#rows + 1] = { 0, nil, L["Weakest slot"], C.GREY .. SLOT_LABEL[weak.slot] .. "|r", nil,
           { L["Weakest slot"], L["The slot where what you wear ranks lowest among everything you could wear at your level, and where there is something better to get."] }, { header = true } }
         rows[#rows + 1] = { 0, nil, C.WHITE .. (wornName and string.format(L["%s is rank %d of %d"], wornName, weak.rank, weak.total)

@@ -14,6 +14,8 @@ check(applied["InsetFrameTemplate"], "panels wear the game's inner border")
 local b = ns.MakeButton(ns.UI_Frame(), "Go", 80, function() end)
 check(rawget(b, "primaryGlow") ~= nil, "buttons are the game's red ones, with a glow for the one to press")
 b:SetPrimary(true); b:SetPrimary(false)
+local dd = ns.MakeDropdown(ns.UI_Frame(), 120, { { "a", "A" } }, function() return "a" end, function() end)
+check(rawget(dd, "primaryGlow") == nil, "dropdowns are boxes, not red buttons")
 -- every look has every color, and switching puts them in place
 local seen = {}
 for _, th in ipairs(ns.THEMES) do

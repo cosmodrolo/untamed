@@ -400,10 +400,19 @@ function ns.MakeCheck(parent, label, x, y, get, set, tip)
   local boxFrame = CreateFrame("Frame", nil, c)
   boxFrame:SetSize(16, 16)
   boxFrame:SetPoint("CENTER")
-  Skin(boxFrame, T.deep, 1, T.line)
   local mark = boxFrame:CreateTexture(nil, "OVERLAY")
-  mark:SetPoint("TOPLEFT", 3, -3); mark:SetPoint("BOTTOMRIGHT", -3, 3)
-  mark:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 1)
+  if T.blizzard then
+    -- the game's own box and tick
+    local box = boxFrame:CreateTexture(nil, "ARTWORK")
+    box:SetSize(26, 26); box:SetPoint("CENTER")
+    box:SetTexture("Interface\\Buttons\\UI-CheckBox-Up")
+    mark:SetSize(26, 26); mark:SetPoint("CENTER")
+    mark:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+  else
+    Skin(boxFrame, T.deep, 1, T.line)
+    mark:SetPoint("TOPLEFT", 3, -3); mark:SetPoint("BOTTOMRIGHT", -3, 3)
+    mark:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 1)
+  end
   -- shown and hidden by hand: the mark sits on the box (a frame above the checkbox's own layers,
   -- where the game's own checked-texture would be hidden behind the box)
   mark:Hide()
@@ -456,10 +465,10 @@ ns.TextWidth = TextWidth
 
 -- A flat button: moss at rest, a little lighter under the cursor. b:SetPrimary(true) makes it the
 -- amber one (the thing to press on a page).
-function ns.MakeButton(parent, text, w, onClick)
+function ns.MakeButton(parent, text, w, onClick, plain)
   local b = CreateFrame("Button", nil, parent)
   b:SetSize(w, 24)
-  if not T.blizzard then Skin(b, T.button, 1, T.line, 1, 0.22) end
+  if plain or not T.blizzard then Skin(b, T.button, 1, T.line, 1, 0.22) end
   if b.SetFontString then
     local fs = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     fs:SetPoint("CENTER", 0, 0)
@@ -470,10 +479,9 @@ function ns.MakeButton(parent, text, w, onClick)
     b:SetHighlightFontObject("GameFontHighlight")
     b:SetDisabledFontObject("GameFontDisable")
   end
-  local native = BlizzardButton(b)
+  -- plain: a box, not a button to press (dropdowns), so it never wears the red button art
+  local native = not plain and BlizzardButton(b)
   if native then
-    -- a dark red plate under the art, so the button reads even where the art is missing
-    Skin(b, { 0.30, 0.04, 0.03 }, 1, { 0.10, 0.02, 0.02 }, 1, 0.25)
     b.primaryGlow = b:CreateTexture(nil, "OVERLAY")
     b.primaryGlow:SetPoint("TOPLEFT", -1, 1); b.primaryGlow:SetPoint("BOTTOMRIGHT", 1, -1)
     b.primaryGlow:SetTexture(BTN .. "Highlight")
@@ -835,7 +843,7 @@ end
 -- options: { { key, label }, ... } (a label of false makes a heading-less divider)
 local ddMenu, ddButtons = nil, {}
 function ns.MakeDropdown(parent, width, options, get, set, tip)
-  local b = ns.MakeButton(parent, "", width, nil)
+  local b = ns.MakeButton(parent, "", width, nil, true)
   local arrow = b:CreateTexture(nil, "OVERLAY")
   arrow:SetTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
   arrow:SetSize(16, 16)

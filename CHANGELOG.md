@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.41.1
+- Gear: "Weakest slot" said "Nothing worn" when the item you wear isn't in Untamed's item data (items new in Forever, such as Replica Crescent Necklace). It now names the item from the game.
+- Blizzard look: dropdowns are dark boxes again instead of red buttons, the dark red box behind each button is gone, and checkboxes use the game's own box and tick.
+
 ## v2.41.0
 Six looks for the window, and the Blizzard look goes further.
 - Settings, Basics, "Look of the window" now offers six: Savage Land (green and amber, still the default), Blizzard, Midnight (navy and ice blue), Ember (charcoal and orange), Slate (grey and hunter green) and Twilight (purple and lilac). Type /reload after switching.
