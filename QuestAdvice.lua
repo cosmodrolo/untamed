@@ -86,19 +86,28 @@ local function Row(i)
   return r
 end
 
--- Stand beside the quest window (read only), or in a fixed spot when it can't be read.
+-- Stand under the quest window (read only), clear of the item tooltips, which open to its right
+-- and cover anything beside it. The controller's button prompts sit just under the window, so the
+-- box starts below those. Without room underneath it goes beside the window; if the window can't
+-- be read, a fixed spot.
 local function Place()
   box:ClearAllPoints()
   local ok = pcall(function()
     local q = _G.QuestFrame
     if not (q and q:IsShown()) then error("no quest window") end
-    local right, top = Plain(q:GetRight()), Plain(q:GetTop())
+    local left, right, top, bottom = Plain(q:GetLeft()), Plain(q:GetRight()), Plain(q:GetTop()), Plain(q:GetBottom())
     local qs, us = Plain(q:GetEffectiveScale()), Plain(UIParent:GetEffectiveScale())
-    if not (right and top and qs and us) then error("hidden") end
-    local x, y = right * qs / us + 12, top * qs / us
-    local screenW = UIParent:GetWidth()
-    if x + box:GetWidth() > screenW then x = screenW - box:GetWidth() - 8 end
-    box:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
+    if not (left and right and top and bottom and qs and us) then error("hidden") end
+    local k = qs / us
+    local under = bottom * k - 62
+    if under - box:GetHeight() > 4 then
+      box:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", math.max(4, left * k + 4), under)
+    else
+      local x = right * k + 12
+      local screenW = UIParent:GetWidth()
+      if x + box:GetWidth() > screenW then x = screenW - box:GetWidth() - 8 end
+      box:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, top * k)
+    end
   end)
   if not ok then box:SetPoint("CENTER", UIParent, "CENTER", 260, 120) end
 end

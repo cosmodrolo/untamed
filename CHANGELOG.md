@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.37.6
+- Quest reward advice: the box sat beside the quest window, right where the item tooltips open, so they covered it. It now sits under the quest window, below the controller's button prompts (beside the window only when there's no room underneath).
+
 ## v2.37.5
 - Talents: the leveling build could not reach Bestial Wrath. Bestial Wrath needs Intimidation, and Intimidation needs Bestial Swiftness (the arrows in the talent window), and the build skipped both. The build now takes Bestial Swiftness and Intimidation on the way and leaves out Spirit Bond, so Bestial Wrath is the 31st point at level 40.
 - Every build is now checked against the talent window's rules (points needed per tier, and the arrows) whenever Untamed is tested, so a build that can't be followed can't ship again.
