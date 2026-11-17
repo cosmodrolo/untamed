@@ -196,6 +196,37 @@ local TREES = {
 }
 local TREE_NAME = { L["Beast Mastery"], L["Marksmanship"], L["Survival"] }
 
+-- The arrows in the talent window: a talent that needs another one maxed first (read off the
+-- Forever talent window, Nov 16 2026). A build that skips one of these can never reach its talent.
+local PREREQ = {
+  ["Intimidation"] = "Bestial Swiftness", ["Bestial Wrath"] = "Intimidation",
+  ["Mortal Shots"] = "Careful Aim", ["Rapid Recuperation"] = "Rapid Killing", ["Sniper Shot"] = "Trueshot Aura",
+  ["Counterattack"] = "Deterrence", ["Lacerating Strikes"] = "Expose Prey",
+}
+
+-- Is a build possible? Every talent's tier needs 5 points per tier above it in the same tree, and
+-- an arrow's source must be maxed first. Returns nil when fine, else what is wrong.
+local function BuildProblem(build)
+  local tier, max = {}, {}
+  for tab, tree in ipairs(TREES) do
+    for row, talents in ipairs(tree) do
+      for _, t in ipairs(talents) do tier[t[1]] = row; max[t[1]] = t[2] end
+    end
+  end
+  local spent, have = { 0, 0, 0 }, {}
+  for _, s in ipairs(build.steps) do
+    local tab, name, pts = s[1], s[2], s[3]
+    if not tier[name] then return name .. ": not in the trees" end
+    if spent[tab] < (tier[name] - 1) * 5 then return string.format("%s: needs %d points in its tree first, the build has %d", name, (tier[name] - 1) * 5, spent[tab]) end
+    local need = PREREQ[name]
+    if need and (have[need] or 0) < max[need] then return name .. ": needs " .. need .. " maxed first" end
+    have[name] = (have[name] or 0) + pts
+    if have[name] > max[name] then return name .. ": more points than it has ranks" end
+    spent[tab] = spent[tab] + pts
+  end
+  return nil
+end
+
 -- Builds as steps of { tab, talent, points } in the order to take them.
 local BUILDS = {
   {
@@ -207,11 +238,13 @@ local BUILDS = {
     -- health back to 115%), Spirit Bond and Bestial Discipline less downtime (health, pet Focus and
     -- your mana while casting), Deadly Aspects about 2% more Auto Shot a point. Marksmanship after
     -- 40: your crit, mana (Summon Hawk and Arcane Shot cost 11% of base mana each since Nov 10) and
-    -- Attack Power. Skipped: Intimidation, Bestial Swiftness, Pathfinding, Improved Revive Pet.
+    -- Attack Power. Bestial Wrath needs Intimidation, which needs Bestial Swiftness (the arrows in
+    -- the talent window), so both are taken on the way: 30 points, then Bestial Wrath at level 40.
+    -- That leaves no room for Spirit Bond. Skipped: Spirit Bond, Pathfinding, Improved Revive Pet.
     steps = {
       { 1, "Endurance Training", 5 }, { 1, "Focused Fire", 2 }, { 1, "Deadly Aspects", 3 },
-      { 1, "Unleashed Fury", 5 }, { 1, "Summon Hawk", 1 }, { 1, "Ferocity", 5 },
-      { 1, "Bestial Discipline", 2 }, { 1, "Spirit Bond", 2 }, { 1, "Frenzy", 5 }, { 1, "Bestial Wrath", 1 },
+      { 1, "Unleashed Fury", 5 }, { 1, "Bestial Swiftness", 1 }, { 1, "Summon Hawk", 1 }, { 1, "Ferocity", 5 },
+      { 1, "Bestial Discipline", 2 }, { 1, "Intimidation", 1 }, { 1, "Frenzy", 5 }, { 1, "Bestial Wrath", 1 },
       { 2, "Lethal Attacks", 5 }, { 2, "Efficiency", 5 }, { 2, "Careful Aim", 5 }, { 2, "Improved Stings", 3 },
       { 2, "Rapid Killing", 2 },
     },
@@ -1202,4 +1235,4 @@ do
   ns.RegisterTab("quests", L["Hunter Quests"], Build, Refresh)
 end
 
-ns.CharacterTest = { BuildProgress = BuildProgress, SelectedBuild = SelectedBuild, Score = Score, OnItemTooltip = OnItemTooltip, Money = Money, Builds = BUILDS, Trees = TREES }
+ns.CharacterTest = { BuildProblem = BuildProblem, BuildProgress = BuildProgress, SelectedBuild = SelectedBuild, Score = Score, OnItemTooltip = OnItemTooltip, Money = Money, Builds = BUILDS, Trees = TREES }

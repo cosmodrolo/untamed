@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.37.5
+- Talents: the leveling build could not reach Bestial Wrath. Bestial Wrath needs Intimidation, and Intimidation needs Bestial Swiftness (the arrows in the talent window), and the build skipped both. The build now takes Bestial Swiftness and Intimidation on the way and leaves out Spirit Bond, so Bestial Wrath is the 31st point at level 40.
+- Every build is now checked against the talent window's rules (points needed per tier, and the arrows) whenever Untamed is tested, so a build that can't be followed can't ship again.
+
 ## v2.37.4
 - Fixed an "Untamed tried to call a protected function" error when a rare was spotted with "Put a skull on rares" on. WoW Forever doesn't let addons place raid markers, so the option is removed. The rare alert itself (sound, banner, chat line) is unchanged.
 

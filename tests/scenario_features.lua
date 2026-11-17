@@ -567,4 +567,16 @@ do
   check(w and w.slot and w.rank > 1 and w.total >= w.rank and w.fix and w.gain > 0, "weakest slot: a slot, its rank and something to get")
   ns.UI_Show("gear")
 end
+-- Talent builds must be possible: tier gates and the arrows between talents
+do
+  for _, b in ipairs(ns.CharacterTest.Builds) do
+    local problem = ns.CharacterTest.BuildProblem(b)
+    check(problem == nil, "talent build " .. b.key .. " can be followed: " .. tostring(problem))
+  end
+  local bm = 0
+  for _, s in ipairs(ns.CharacterTest.Builds[1].steps) do
+    if s[1] == 1 then bm = bm + s[3] end
+    if s[2] == "Bestial Wrath" then check(bm == 31, "leveling build reaches Bestial Wrath with point 31 (level 40): " .. bm) end
+  end
+end
 print("DONE")
