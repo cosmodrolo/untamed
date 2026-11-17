@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cffabd473Untamed|r
-## Notes: Hunter pet guide: what your pet can still learn, which beasts teach it, navigation, trip planner, pet browser and pet care.
+## Notes: Hunter companion for WoW Forever: every tameable beast and what it teaches, your pets and their training, gear upgrades, talents and rotation, chests and library books. Built for a controller.
 ## Author: Alejandro Angulo
 ## Version: @project-version@
 ## SavedVariables: UntamedDB
@@ -11,19 +11,19 @@
 ## X-License: GPL-3.0
 ## X-Website: https://github.com/cosmodrolo/untamed
 
-Init.lua
+Core\Init.lua
 Data\Forever.lua
 Data\Names_Forever.lua
 Data\Search_Forever.lua
 Data\Hunter_Forever.lua
-GearLive.lua
+Hunter\GearLive.lua
 Data\Books_Forever.lua
 Data\Chests_Forever.lua
 Data\Looks_Forever.lua
 Data\Trash_Forever.lua
-Abilities.lua
-Foods.lua
-Core.lua
+Pets\Abilities.lua
+Data\Foods.lua
+Core\Core.lua
 Locales\deDE.lua
 Locales\esES.lua
 Locales\esMX.lua
@@ -34,40 +34,40 @@ Locales\ptBR.lua
 Locales\ruRU.lua
 Locales\zhCN.lua
 Locales\zhTW.lua
-Locale.lua
-Geo.lua
-MapPins.lua
-Minimap.lua
-Arrow.lua
-Alerts.lua
-PetCare.lua
-Leveling.lua
-Hunter.lua
-Combat.lua
-UI.lua
-Pad.lua
-Planner.lua
-Recommend.lua
-Stable.lua
-Builds.lua
-Browser.lua
-Search.lua
-Recorder.lua
-Rares.lua
-Restock.lua
-Wishlist.lua
-Books.lua
-Chests.lua
-OpenMap.lua
-Doctor.lua
-Character.lua
-Dungeons.lua
-LootCard.lua
-Bags.lua
-QuestAdvice.lua
-Rotation.lua
-HUD.lua
-Range.lua
-Reputation.lua
-Home.lua
-Tabs.lua
+Core\Locale.lua
+Core\Geo.lua
+Map\MapPins.lua
+Map\Minimap.lua
+Map\Arrow.lua
+Core\Alerts.lua
+Pets\PetCare.lua
+Pets\Leveling.lua
+Hunter\Hunter.lua
+Hunter\Combat.lua
+UI\UI.lua
+UI\Pad.lua
+Pets\Planner.lua
+Pets\Recommend.lua
+Pets\Stable.lua
+Pets\Builds.lua
+Pets\Browser.lua
+World\Search.lua
+Core\Recorder.lua
+Pets\Rares.lua
+Hunter\Restock.lua
+World\Wishlist.lua
+World\Books.lua
+World\Chests.lua
+Map\OpenMap.lua
+Core\Doctor.lua
+Hunter\Character.lua
+World\Dungeons.lua
+Hunter\LootCard.lua
+Hunter\Bags.lua
+Hunter\QuestAdvice.lua
+Hunter\Rotation.lua
+Hunter\HUD.lua
+Hunter\Range.lua
+World\Reputation.lua
+UI\Home.lua
+UI\Tabs.lua

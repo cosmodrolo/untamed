@@ -120,4 +120,4 @@ do
   for _, a in ipairs(order) do if ns.AbilityFamilies[a] then ns.AbilityOrder[#ns.AbilityOrder + 1] = a end end
 end
 
--- Pet food types: Foods.lua (every item's food type).
+-- Pet food types: Data/Foods.lua (every item's food type).

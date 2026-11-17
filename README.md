@@ -1,42 +1,89 @@
 # Untamed
 
-A hunter pet guide for **WoW Forever**.
+A hunter companion for **WoW Forever**, built to be used with a controller.
 
-Untamed looks at the pet you have out (or a family you pick), shows every ability rank it can still learn, tells you which wild beasts teach each rank, and gets you there: map and minimap pins, an on-screen arrow, the nearest stable master and flight master, and a trip planner that orders the stops for you.
+Untamed started as a pet ability finder and grew into the one window a hunter opens for everything: which beast to tame and where it is, what your pets can still learn, which gear to chase, which talent to take next, and where the chests and library books are.
 
-## Features
+Open it with `/ut` (or `/untamed`) or the minimap button. `/ut help` lists the commands worth knowing, `/ut help all` lists every one.
 
-- **Abilities tab.** Every rank your pet can still learn, which ranks you already know (teach them at Beast Training), and the beasts that teach the rest, with level, zone and travel advice.
-- **Trip planner.** Picks the best rank your pet's level allows for each ability, the closest tameable beast for each (one beast can cover several), and orders the stops by distance. Start the route and the arrow moves to the next stop when you learn the ability.
-- **Navigation arrow.** Points to the nearest spawn of any beast, stable master or flight master. No other addon needed (TomTom is supported with shift-click).
-- **Stable and flight masters.** The closest ones for your faction to every beast, on the map and in tooltips.
-- **Map, minimap and tooltips.** Pins for every beast your pet still needs, tooltip lines on beasts in the world, and an alert when you target one.
-- **Pet browser.** Every tameable beast, searchable by name or zone, filterable by family, rares and what you can tame now, sortable by level, name and attack speed.
-- **Pet care.** Happiness, loyalty, experience, training points, diet, and the food in your bags your pet will eat, with a one-click Feed button that pops up when your pet is unhappy.
-- **Find a Pet.** Pick a role (Tank, Damage, Leveling, PvP, Utility) and get the best families and the best beasts to tame near you.
-- **Stable manager.** Remembers every pet you own and what each can learn from ranks you already know.
-- **Training point builds.** Presets and shareable build strings.
-- **Rare beast scanner, ammo and trainer reminders, Mend Pet and Revive Pet alerts, and a pet leveling helper.**
-- **Tame recorder.** When you tame a beast, Untamed records the abilities it really had and adds them to its data.
+## What's in the window
 
-Open it with `/untamed` or the minimap button. `/untamed help` lists all commands.
+Six sections along the top, plus Settings. With a controller: D-pad moves, Cross selects, Circle goes back, Square is the second action, L1 and R1 change sections.
 
-## WoW Forever
+| Section | Pages | What it's for |
+| --- | --- | --- |
+| **Today** | Today | What's worth doing right now: your pet's state, abilities in reach, upgrades nearby. |
+| **Bestiary** | Bestiary, Find a Pet, Rares, Planner | Every tameable beast with its 3D model, what it teaches, attack speed and where it lives. Looks shows every skin a family comes in. Find a Pet suggests beasts by role. Planner orders a taming trip by distance. |
+| **My Pets** | Abilities, Builds, Pet Care, Stable | Every ability rank your pet can still learn and which beasts teach it, training point builds, feeding and happiness, and every pet you own. |
+| **Hunter** | Spells, Talents, Rotation, Hunter Quests | What to train, the talent to take next (builds are checked against the talent window's rules), a rotation with ready-made macros, and the class quests. |
+| **Gear** | Gear, Wishlist, Dungeons, Reputation, Supplies | Your next upgrades by slot with a rank and how to get each one, your weakest slot, dungeon loot, reputation rewards, and ammo and pet food. |
+| **World** | Search, Library books | Find any item, NPC or beast and where to get it. The library books you still need. |
 
-Forever reworked hunter pets (new families, new family abilities, Owl renamed Bird of Prey). Shared abilities such as Bite, Claw, Dash, Dive and Cower are well covered. How the new family abilities (Swipe, Web, Sonic Blast and others) are learned is not confirmed publicly yet; the addon marks them as unconfirmed instead of guessing, and the tame recorder fills in real data as you play.
+## Outside the window
+
+- **Map and minimap.** Marks for the beasts your pet needs, treasure chest spots, library books and wishlist sources. Works on Blizzard's world map and on OpenMap's Gamepad UI mode.
+- **Arrow.** Points to the nearest spawn of whatever you picked: a beast, a chest, a book, a vendor.
+- **Range meter.** Under your character: melee, too close to shoot, in range or too far, with the distance in yards. A red Hawk icon shows while you fight with Aspect of the Cheetah or Pack on.
+- **Bag marks.** A green arrow on gear that beats what you wear, a lock on soulbound items, a coin on items worth selling.
+- **Quest reward advice.** When a quest offers a choice of rewards, a small box under the quest window says which to take.
+- **Item tooltips.** How much better an item is than what you wear, and its rank for your level.
+- **Alerts.** Rare beasts, a chest or book nearby, an upgrade dropping in a dungeon (with a loot card), Growl on in a group, a boss without Hunter's Mark, whether Feign Death worked.
+- **Macros.** One click makes the hunter macros from the Rotation page. `Care` is one button for your pet: revive, call, mend, or feed, whichever it needs.
+- **Restock.** A button on the vendor window fills your quiver and tops up pet food.
+- **Recorder.** Notes what you tame, loot and see, so the data improves as you play.
+- **Self-check.** `/ut doctor` tests each part against the game and says what isn't working.
+
+## Built for the gamepad UI
+
+WoW Forever's gamepad UI breaks ("face buttons stop working") when an addon creates or changes anything inside one of Blizzard's own windows. Untamed is built around that:
+
+- Everything Untamed draws is its own frame on the screen, made at login. Marks on the map, the bags and the quest window are drawn on Untamed's own layer by reading where Blizzard's buttons are, never by attaching to them.
+- Nothing is read or shown during a fight that the game hides from addons (buffs, exact pet distance), so nothing errors in combat.
+- Options live in Untamed's own Settings page, not in Blizzard's Settings panel.
+
+The one exception is the Restock button on the vendor window, which has to sit there to be reachable with a controller.
+
+## Layout of this repository
+
+```
+Untamed_Forever.toc   load order
+Bindings.xml          key bindings
+Core/      Init, Core (saved settings, slash commands), Locale, Geo (distances), Alerts, Recorder, Doctor
+Data/      generated data: beasts, names, items and sources, hunter gear and spells, foods, chests, books, looks
+Map/       MapPins (world map and OpenMap), Minimap, Arrow, OpenMap (its menu)
+Pets/      Abilities, Browser (the Bestiary), Stable, Recommend, Rares, Planner, Builds, PetCare, Leveling
+Hunter/    Character (spells, talents, gear, quests), GearLive, Rotation, Combat, HUD, Range, Restock, Bags, QuestAdvice, LootCard
+World/     Search (items and where they come from), Wishlist, Books, Chests, Dungeons, Reputation
+UI/        UI (the window, theme and widgets), Pad (controller navigation), Home (Today), Tabs (Pet Care and Settings)
+Locales/   translations (written by the release packager)
+Media/     icons
+tests/     offline tests against a mocked WoW API
+tools/     scripts that build Data/ (see tools/README.md)
+```
+
+`CHANGELOG.md` has an entry for every version.
+
+## Tests
+
+```
+pip install lupa
+python tests/run.py
+```
+
+Six scenarios load the addon exactly as the game does (from the TOC) against a mocked WoW API and exercise each page and feature. They run on every push.
 
 ## Data sources and credits
 
-- Spawn locations, stable masters, flight masters and localized NPC names: [QuestieDB](https://github.com/Questie/QuestieDB) (GPL-3.0).
-- Classic family damage, armor and health modifiers: [Icy Veins Classic hunter pet guide](https://www.icy-veins.com/wow-classic/hunter-dps-pets-guide).
-- Item pet food types, ammo vendors, hunter and pet trainers: [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0).
-- Classic Era tameable beasts: [cmangos classic-db](https://github.com/cmangos/classic-db) (GPL-3.0).
-- Forever trainer spells and item stats: WoW Forever client tables (build 1.60.1.70790), exported with [wago.tools](https://wago.tools).
-- Which abilities each beast teaches: Blizzard's Classic Era client table CreatureSpellData (build 1.15.9.70576), exported with [wago.tools](https://wago.tools).
-- WoW Forever beast abilities: compiled from public Forever pet guides, with field-confirmed abilities and spawn points for new beasts from [beastmaster.io](https://beastmaster.io/forever) (see `tools/forever_pets.json` for the list of sources), and checked against Blizzard's Forever client tables (build 1.60.1.70790) via [wago.tools](https://wago.tools).
+- Spawn locations, items, quests, vendors, flight and stable masters, localized names: [QuestieDB](https://github.com/Questie/QuestieDB) (GPL-3.0).
+- Tameable beasts, pet food types, trainers, chest spots, drop tables and which display each beast uses: [cmangos classic-db](https://github.com/cmangos/classic-db) (GPL-3.0).
+- Which abilities each beast teaches: Blizzard's client table CreatureSpellData (build 1.15.9.70576), exported with [wago.tools](https://wago.tools).
+- WoW Forever item stats, trainer spells and creature displays: WoW Forever client tables (build 1.60.1), exported with [wago.tools](https://wago.tools).
+- WoW Forever beast abilities: compiled from public Forever pet guides, with field-confirmed abilities and spawn points from [beastmaster.io](https://beastmaster.io/forever) (sources listed in `tools/forever_pets.json`).
+- Family damage, armor and health modifiers: [Icy Veins Classic hunter pet guide](https://www.icy-veins.com/wow-classic/hunter-dps-pets-guide).
+- Talent trees and builds: wowhead.com's Forever talent calculator, and Feor's Marksmanship guide on mobalytics.gg for the raid build.
+- Library book locations: kept by hand from public guides.
+- No code or data is taken from other addons.
 - World of Warcraft and all game data are trademarks and copyrights of Blizzard Entertainment.
-
-`tools/` holds the scripts that regenerate `Data/Forever.lua`, `Data/Hunter_Forever.lua` and `Foods.lua`. `tests/` runs the addon offline against a mocked WoW API (`python tests/run.py`, needs `pip install lupa`).
 
 ## License
 

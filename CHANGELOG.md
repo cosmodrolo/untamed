@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.38.2
+Housekeeping. Nothing changes in game.
+- The code is sorted into folders: Core, Map, Pets, Hunter, World and UI, with the generated data in Data (Foods.lua moved there too). The load order is the same.
+- README rewritten for what Untamed is today: the six sections, what runs outside the window, how it stays safe on the gamepad UI, and where everything lives in the repository.
+- tools/README rewritten: which script builds which data file, with the commands.
+- Removed a stray compiled Python file and added a .gitignore. The addon's description in the game's AddOns list is up to date.
+
 ## v2.38.1
 The hunter display is now just the range meter and one warning.
 - Gone: the Serpent Sting and Hunter's Mark timers, the hawk tracker (and /ut hawks), the pet watch (pet health, distance, the "ran off" and "fighting a different mob" warnings, /ut range pet and leash), and the Food and Pet reminders. The aspect icon no longer shows your current aspect.
