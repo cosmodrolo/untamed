@@ -407,7 +407,6 @@ L["Many hunters skip these while leveling to save gold. Buy them any time you ne
 L["Many hunters skip this while leveling to save gold and buy it later if they need it."] = true
 L["Map and minimap"] = true
 L["Map focus: "] = true
-L["Marks a rare with a skull the first time you see it, if it isn't marked yet."] = true
 L["Marksmanship"] = true
 L["Melee"] = true
 L["Melee it or step back"] = true
@@ -586,7 +585,6 @@ L["Press the lit look again to step through its beasts."] = true
 L["Prints how much memory Untamed is using."] = true
 L["Prints what the game answers for each part of Untamed (the same as /ut doctor). Red lines are worth reporting."] = true
 L["Pull"] = true
-L["Put a skull on rares"] = true
 L["Put it back"] = true
 L["Quest"] = true
 L["Quest level "] = true

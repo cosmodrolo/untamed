@@ -169,9 +169,7 @@ local function Announce(npcId, name, level, classification, unit)
   ns.Print(name .. " (" .. L["level"] .. " " .. lvl .. "): " .. what .. ". " .. L["Type /ut rare for an arrow."])
   ShowToast(name, C.GREY .. L["level"] .. " " .. lvl .. "  " .. "|r" .. what,
     beast and ns.Icon(ns.FamilyIcons[beast[4]] or "Ability_Hunter_BeastTaming") or nil)
-  if unit and ns.db.rareMark and GetRaidTargetIndex and not GetRaidTargetIndex(unit) and SetRaidTarget then
-    pcall(SetRaidTarget, unit, 8)
-  end
+  -- (No skull mark: WoW Forever forbids addons from setting raid markers, and trying raises an error.)
 end
 
 function ns.CheckRare(unit)

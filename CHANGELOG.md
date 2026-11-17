@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.37.4
+- Fixed an "Untamed tried to call a protected function" error when a rare was spotted with "Put a skull on rares" on. WoW Forever doesn't let addons place raid markers, so the option is removed. The rare alert itself (sound, banner, chat line) is unchanged.
+
 ## v2.37.3
 - Weakest slot: a slot is no longer called weakest when Untamed can't score what you wear there (an item new in Forever whose stats aren't in its data). Before, such an item counted as zero and came out last.
 - Gear: the "For you" line was empty on the item the weakest slot points at. It shows the slot and the gain now.

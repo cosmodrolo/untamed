@@ -192,7 +192,6 @@ local SECTIONS = {
       { "check", L["Alert when a rare is nearby"], "rareAlert", L["Untamed watches nameplates, your target and your mouseover. Turn on enemy nameplates to spot rares from further away."] },
       { "check", L["Only rares I can tame"], "rareTameableOnly", L["Skips rares that aren't beasts."] },
       { "check", L["Rare pop-up with a Target button"], "rareToast", L["A small box with the rare's name and a button that targets it. Drag it to move it."] },
-      { "check", L["Put a skull on rares"], "rareMark", L["Marks a rare with a skull the first time you see it, if it isn't marked yet."] },
       { "check", L["Hide ranks my pet is too low for"], "hideTooHigh", L["Abilities and plans leave out ranks above your pet's level."] },
       { "check", L["Move the arrow on when a beast isn't there"], "arrowNextSpot", L["Reach a spot with no beast and the arrow points to the next closest spot after a few seconds."] },
     } },
