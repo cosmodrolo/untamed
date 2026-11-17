@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.41.2
+- Data update from QuestieDB 1.1.2 (Nov 16): 62 beasts got more or corrected spawn points, and Search was rebuilt with its newest Forever items, NPCs, objects and quests plus your latest vendor and drop recordings (about 40 more entries, many corrected). Ghostmaw in the Riverglades is in Search now.
+
 ## v2.41.1
 - Gear: "Weakest slot" said "Nothing worn" when the item you wear isn't in Untamed's item data (items new in Forever, such as Replica Crescent Necklace). It now names the item from the game.
 - Blizzard look: dropdowns are dark boxes again instead of red buttons, the dark red box behind each button is gone, and checkboxes use the game's own box and tick.
