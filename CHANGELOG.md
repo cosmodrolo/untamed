@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.39.1
+- Talents: the names in the order list were cut to two letters ("1. En..."). The level now sits at the right of each row and the names have the room.
+- Talents: the tree picture is bigger. The list takes less width and the trees are packed closer.
+- Talents: the arrow from Ferocity to Frenzy was missing (seen in the game's talent window). It is drawn, and builds are checked against it.
+
 ## v2.39.0
 The Talents page shows the talent trees.
 - Next to the order list there is now a picture of all three trees, laid out like the game's talent window: every talent's icon in its own row and column, with the arrows between talents that need another one first.

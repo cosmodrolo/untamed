@@ -197,12 +197,11 @@ local TREES = {
   },
 }
 local TREE_NAME = { L["Beast Mastery"], L["Marksmanship"], L["Survival"] }
-local TREE_SHORT = { "BM", "MM", "SV" }
 
 -- The arrows in the talent window: a talent that needs another one maxed first (read off the
 -- Forever talent window, Nov 16 2026). A build that skips one of these can never reach its talent.
 local PREREQ = {
-  ["Intimidation"] = "Bestial Swiftness", ["Bestial Wrath"] = "Intimidation",
+  ["Intimidation"] = "Bestial Swiftness", ["Bestial Wrath"] = "Intimidation", ["Frenzy"] = "Ferocity",
   ["Mortal Shots"] = "Careful Aim", ["Rapid Recuperation"] = "Rapid Killing", ["Sniper Shot"] = "Trueshot Aura",
   ["Counterattack"] = "Deterrence", ["Lacerating Strikes"] = "Expose Prey",
 }
@@ -652,7 +651,7 @@ end
 
 do
   local list, buttons, tree = nil, {}, nil
-  local LIST_W = 430
+  local LIST_W = 340
 
   -- one talent in the picture: its icon, "2/5" and its place in the build's order
   local function Node(key)
@@ -706,10 +705,10 @@ do
     local w, h = tree:GetWidth(), tree:GetHeight()
     if type(w) ~= "number" or w < 100 then w = 500 end
     if type(h) ~= "number" or h < 100 then h = 420 end
-    local gapTree = 18
-    local cell = math.floor(math.min((w - 2 * gapTree - 24) / 12, (h - 60) / 7))
-    cell = math.max(26, math.min(52, cell))
-    local size = cell - 8
+    local gapTree = 14
+    local cell = math.floor(math.min((w - 2 * gapTree - 12) / 12, (h - 60) / 7))
+    cell = math.max(26, math.min(56, cell))
+    local size = cell - 7
     local treeW = cell * 4
     local x0 = math.max(8, math.floor((w - (3 * treeW + 2 * gapTree)) / 2))
     local used = 0
@@ -862,8 +861,7 @@ do
       if text then tip[#tip + 1] = (st.pts > 1 and string.format(L["At rank %d: "], last) or "") .. C.WHITE .. text .. "|r" end
       if WHY[st.name] then tip[#tip + 1] = C.GREEN .. WHY[st.name] .. "|r" end
       add(14, nil, string.format("%s%d.|r %s%s|r  %s%d/%d|r", C.GREY, i, color, label, C.GREY, st.done, st.pts),
-        isNext and (C.GOLD .. L["next"] .. "|r") or (C.GREY .. TREE_SHORT[st.tab] .. "|r"), nil, tip,
-        { mid = C.GREY .. L["lvl "] .. lvlText .. "|r" })
+        (isNext and (C.GOLD .. L["next"] .. "  |r") or "") .. C.GREY .. L["lvl "] .. lvlText .. "|r", nil, tip)
       if isNext and WHY[st.name] then add(28, nil, C.GREY .. WHY[st.name] .. "|r") end
     end
     add(0, nil, C.GREY .. L["Builds are common community picks. Swap points to suit your pet and playstyle."] .. "|r")
