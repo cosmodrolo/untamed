@@ -6,19 +6,15 @@ local C = ns.C
 -- The hunter display under your character (replaces the ForeverAuras hunter set), top to bottom:
 --   range meter and pet watch (Range.lua)
 --   Serpent Sting timer | hawk tracker (Hawks.lua) | Hunter's Mark       reminders (only when missing)
---   fight cooldowns: Summon Hawk, Aimed Shot, Multi-Shot, Rapid Fire, Bestial Wrath, Concussive Shot
---   escapes: Feign Death, Frost Trap, Freezing Trap, Disengage
--- Only spells you know are shown. Cooldowns use the game's own timers (they work with Forever's
--- hidden combat numbers); the Sting and Mark timers start when you cast them, and their length is
--- read from the debuff once, outside combat. One anchor: /ut hud move | lock | reset | scale 1.2 | off | on.
+-- The Sting and Mark timers start when you cast them, and their length is read from the debuff
+-- once, outside combat. (Spell cooldowns are left to the game's own cooldown manager.)
+-- One anchor: /ut hud move | lock | reset | scale 1.2 | off | on.
 -- Our own frames on UIParent (gamepad safe).
 ---------------------------------------------------------------------------
 
 local DEFAULT_POS = { "CENTER", 0, -222 }   -- low enough to clear your character when zoomed in
-local ICON, SMALL = 34, 30
+local ICON = 34
 
-local COOLDOWNS = { "Summon Hawk", "Aimed Shot", "Multi-Shot", "Rapid Fire", "Bestial Wrath", "Concussive Shot" }
-local ESCAPES = { "Feign Death", "Frost Trap", "Freezing Trap", "Disengage" }
 local STING_IDS = { [1978] = true, [13549] = true, [13550] = true, [13551] = true, [13552] = true, [13553] = true, [13554] = true, [13555] = true }
 local MARK_IDS = { [1130] = true, [14323] = true, [14324] = true, [14325] = true }
 local HAWK_ASPECT = { [13165] = true, [14318] = true, [14319] = true, [14320] = true, [14321] = true, [14322] = true, [25296] = true }
@@ -85,7 +81,7 @@ end
 
 local function Build()
   hud = CreateFrame("Frame", "UntamedHUD", UIParent)
-  hud:SetSize(300, 200)
+  hud:SetSize(300, 112)
   hud:SetFrameStrata("MEDIUM")
   hud:SetMovable(true)
   hud:EnableMouse(false)
@@ -126,16 +122,6 @@ local function Build()
   hud.markWarn:SetPoint("CENTER")
   hud.markWarn:SetText("|cffff5050!|r")
 
-  hud.rows = {}
-  for i, list in ipairs({ COOLDOWNS, ESCAPES }) do
-    local row = CreateFrame("Frame", nil, hud)
-    row:SetSize(6 * (SMALL + 4), SMALL)
-    row:SetPoint("TOP", 0, -114 - (i - 1) * (SMALL + 6))
-    row.icons = {}
-    for _, name in ipairs(list) do row.icons[#row.icons + 1] = Icon(row, SMALL, name) end
-    hud.rows[i] = row
-  end
-
   -- reminders, right of the timers: Food (out of combat), Aspect of the Hawk (in a fight), Pet
   hud.remind = CreateFrame("Frame", nil, hud)
   hud.remind:SetSize(3 * 48, 28)
@@ -157,62 +143,6 @@ end
 
 ns.HUD_Slot = function(which) return hud and hud[which] end
 ns.HUD_Moving = function() return moving end
-
----------------------------------------------------------------------------
--- Cooldown rows (only the spells you know)
----------------------------------------------------------------------------
-local function LayoutRows()
-  for _, row in ipairs(hud.rows) do
-    local shown = {}
-    for _, b in ipairs(row.icons) do
-      if Known(b.spell) then
-        b.icon:SetTexture(SpellIcon(b.spell))
-        shown[#shown + 1] = b
-      else
-        b:Hide()
-      end
-    end
-    local w = #shown * (SMALL + 4) - 4
-    for i, b in ipairs(shown) do
-      b:ClearAllPoints()
-      b:SetPoint("LEFT", row, "CENTER", -w / 2 + (i - 1) * (SMALL + 4), 0)
-      b:Show()
-    end
-    row.shown = shown
-  end
-end
-
-local function SetCooldown(b)
-  local done
-  if C_Spell and C_Spell.GetSpellCooldownDuration then
-    local ok, dur = pcall(C_Spell.GetSpellCooldownDuration, b.spell, true)
-    if ok and dur then
-      done = pcall(b.cd.SetCooldownFromDurationObject, b.cd, dur, true)
-      if done then
-        local okz, zero = pcall(dur.IsZero, dur)
-        if okz and zero ~= nil and not ns.IsSecret(zero) then b.icon:SetDesaturated(not zero) end
-      end
-    end
-  end
-  if not done and C_Spell and C_Spell.GetSpellCooldown then
-    local ok, info = pcall(C_Spell.GetSpellCooldown, b.spell)
-    local start, dur = ok and info and Plain(info.startTime), ok and info and Plain(info.duration)
-    if start and dur and dur > 1.5 then
-      b.cd:SetCooldown(start, dur)
-      b.icon:SetDesaturated(true)
-    elseif start then
-      b.cd:Clear()
-      b.icon:SetDesaturated(false)
-    end
-  end
-end
-
-local function UpdateCooldowns()
-  if not hud then return end
-  for _, row in ipairs(hud.rows) do
-    for _, b in ipairs(row.shown or {}) do SetCooldown(b) end
-  end
-end
 
 ---------------------------------------------------------------------------
 -- Serpent Sting and Hunter's Mark: started by your casts
@@ -408,8 +338,6 @@ local function Paint()
   else
     hud.sting:Hide(); hud.mark:Hide()
   end
-  local showRows = moving or fight or ns.db.hudAlways
-  for _, row in ipairs(hud.rows) do row:SetShown(showRows and true or false) end
   PaintReminders(fight)
 end
 ns.HUD_Paint = Paint
@@ -435,19 +363,15 @@ function ns.HUDCommand(arg)
     ns.db.hud = arg == "on"
     ns.Print(ns.db.hud and L["The hunter display is on."] or L["The hunter display is off (/ut hud on brings it back)."])
     Paint()
-  elseif arg == "always" then
-    ns.db.hudAlways = not ns.db.hudAlways
-    ns.Print(ns.db.hudAlways and L["Cooldowns stay on screen outside fights too."] or L["Cooldowns show only in fights."])
-    Paint()
   else
-    ns.Print(L["/ut hud move, lock, reset, scale 1.2, off, on, always (cooldowns outside fights too)"])
+    ns.Print(L["/ut hud move, lock, reset, scale 1.2, off, on"])
   end
 end
 
 do
   local ev = CreateFrame("Frame")
   local tick = 0
-  for _, e in ipairs({ "PLAYER_LOGIN", "SPELLS_CHANGED", "SPELL_UPDATE_COOLDOWN", "UNIT_SPELLCAST_SUCCEEDED", "UNIT_AURA",
+  for _, e in ipairs({ "PLAYER_LOGIN", "UNIT_SPELLCAST_SUCCEEDED", "UNIT_AURA",
     "PLAYER_TARGET_CHANGED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED", "UNIT_PET", "PLAYER_MOUNT_DISPLAY_CHANGED" }) do
     pcall(ev.RegisterEvent, ev, e)
   end
@@ -455,9 +379,7 @@ do
     if event == "PLAYER_LOGIN" then
       if select(2, UnitClass("player")) ~= "HUNTER" then ev:UnregisterAllEvents() return end
       Build()
-      LayoutRows()
       ReadAspect()
-      UpdateCooldowns()
       ev:SetScript("OnUpdate", function(_, e)
         tick = tick + e
         if tick < 0.2 then return end
@@ -472,15 +394,12 @@ do
       return
     end
     if not hud then return end
-    if event == "SPELLS_CHANGED" then LayoutRows(); UpdateCooldowns()
-    elseif event == "SPELL_UPDATE_COOLDOWN" then UpdateCooldowns()
-    elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
+    if event == "UNIT_SPELLCAST_SUCCEEDED" then
       if unit == "player" then CastAspect(spellID) end
       if unit == "player" and spellID and not ns.IsSecret(spellID) then
         if STING_IDS[spellID] then StartTimer("sting", "Serpent Sting")
         elseif MARK_IDS[spellID] then StartTimer("mark", "Hunter's Mark") end
       end
-      UpdateCooldowns()
     elseif event == "UNIT_AURA" then
       if unit == "player" then ReadAspect() end
     elseif event == "PLAYER_REGEN_ENABLED" then

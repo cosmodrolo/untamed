@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.38.0
+Two features removed, now that the game's own cooldown manager does the job.
+- Gone: the cooldown rows on the hunter display (Summon Hawk, Aimed Shot, Multi-Shot, Rapid Fire, Bestial Wrath, Concussive Shot, and the Feign Death, trap and Disengage row), with their "keep on screen outside fights" switch and /ut hud always.
+- Gone: the Auto Shot timer bar and its switch.
+- Cleaned up after them: their code, events, saved settings (removed from your saved data at login), the self-check line for cooldown timers, and the help text.
+- Staying on the hunter display: the range meter and pet watch, the Serpent Sting and Hunter's Mark timers, the hawk tracker, and the Food, aspect and Pet reminders.
+
 ## v2.37.6
 - Quest reward advice: the box sat beside the quest window, right where the item tooltips open, so they covered it. It now sits under the quest window, below the controller's button prompts (beside the window only when there's no room underneath).
 

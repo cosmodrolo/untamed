@@ -100,9 +100,7 @@ function ns.Doctor()
   local slots = ns.RangeMeleeSlotList and ns.RangeMeleeSlotList() or {}
   Line(#slots > 0, "Melee button on your bars", #slots > 0 and ("slot " .. table.concat(slots, ", ")) or "none found (put Raptor Strike or the Rapt macro on a bar)")
 
-  -- cooldowns and auras
-  local okC, dur = Try(C_Spell and C_Spell.GetSpellCooldownDuration, "Arcane Shot", true)
-  Line(okC and dur ~= nil, "Cooldown timers", okC and "duration object" or dur)
+  -- auras
   local okA = Try(C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID, 13165)
   Line(okA, "Aura lookup (aspects)")
 

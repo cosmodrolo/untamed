@@ -2,7 +2,7 @@ local _, ns = ...
 local L = ns.L
 local C = ns.C
 
--- Combat helpers: Auto Shot timer, Growl warning, aspect and Hunter's Mark reminders.
+-- Combat helpers: Growl warning, aspect and Hunter's Mark reminders.
 
 local function IsHunter()
   local _, class = UnitClass("player")
@@ -19,128 +19,6 @@ local function Name(id)
   local n = NAMES[id]
   if n == nil then n = ns.SpellName(id) or false; NAMES[id] = n end
   return n or nil
-end
-
----------------------------------------------------------------------------
--- Auto Shot timer
--- Classic: after each Auto Shot there is a reload (you may move), then a short
--- aim window (about 0.5 s) where moving delays the shot. The bar shows both.
----------------------------------------------------------------------------
-local AUTO_SHOT = 75
-local AIM = 0.5
-local AIMED_SHOT = { 19434, 20900, 20901, 20902, 20903, 20904 }
-local bar, shooting, lastShot, swing, aimStart
-
--- Forever hides stats like ranged speed during combat (secret values), so check before comparing
--- and remember the last speed we could read.
-local knownSpeed
-local function RangedSpeed()
-  local s = UnitRangedDamage and UnitRangedDamage("player")
-  if ns.IsSecret(s) or type(s) ~= "number" or s <= 0 then return nil end
-  knownSpeed = s
-  return s
-end
-
--- Moving? IsPlayerMoving is never secret; GetUnitSpeed can be.
-local function Moving()
-  if IsPlayerMoving then
-    local ok, m = pcall(IsPlayerMoving)
-    if ok and not ns.IsSecret(m) then return m and true or false end
-  end
-  local v = GetUnitSpeed and GetUnitSpeed("player")
-  if ns.IsSecret(v) or type(v) ~= "number" then return false end
-  return v > 0
-end
-
-local function CreateBar()
-  bar = CreateFrame("StatusBar", "UntamedAutoShotBar", UIParent)
-  bar:SetSize(200, 14)
-  local pos = ns.db.shotBarPos
-  if pos then bar:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else bar:SetPoint("CENTER", 0, -170) end
-  bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-  bar:SetMinMaxValues(0, 1)
-  bar:SetMovable(true)
-  bar:EnableMouse(true)
-  bar:RegisterForDrag("LeftButton")
-  bar:SetClampedToScreen(true)
-  bar:SetScript("OnDragStart", function(self) if IsShiftKeyDown() then self:StartMoving() end end)
-  bar:SetScript("OnDragStop", function(self)
-    self:StopMovingOrSizing()
-    local p, _, rp, x, y = self:GetPoint()
-    ns.db.shotBarPos = { p, rp, x, y }
-  end)
-  bar:SetScript("OnEnter", function(self)
-    ns.ShowTooltip(self, { L["Auto Shot timer"], L["Yellow: reloading, you can move freely."],
-      L["Red: aiming. Stand still or your next shot is delayed."], C.GREY .. L["Shift-drag to move."] .. "|r" })
-  end)
-  bar:SetScript("OnLeave", function() GameTooltip:Hide() end)
-  local bg = bar:CreateTexture(nil, "BACKGROUND")
-  bg:SetAllPoints()
-  bg:SetColorTexture(0, 0, 0, 0.6)
-  local border = CreateFrame("Frame", nil, bar, "BackdropTemplate")
-  border:SetPoint("TOPLEFT", -3, 3)
-  border:SetPoint("BOTTOMRIGHT", 3, -3)
-  if border.SetBackdrop then
-    border:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 10 })
-    border:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-  end
-  -- marker where the aim window starts
-  bar.mark = bar:CreateTexture(nil, "OVERLAY")
-  bar.mark:SetSize(2, 14)
-  bar.mark:SetColorTexture(1, 1, 1, 0.8)
-  bar.text = bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  bar.text:SetPoint("LEFT", 4, 0)
-  bar.time = bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  bar.time:SetPoint("RIGHT", -4, 0)
-  bar.text:SetText(Name(AUTO_SHOT) or "Auto Shot")
-  bar:Hide()
-
-  bar:SetScript("OnUpdate", function(self)
-    if not lastShot or not swing then return end
-    local now = GetTime()
-    local reload = swing - AIM
-    local moving = Moving()
-    local t = now - lastShot
-    if t < reload then
-      self:SetStatusBarColor(1, 0.82, 0)
-      self:SetValue(t / swing)
-      self.time:SetText(string.format("%.1f", swing - t))
-      aimStart = nil
-    else
-      -- Aim window: moving holds the shot back.
-      if moving or not aimStart then aimStart = now end
-      local a = math.min(AIM, now - aimStart)
-      self:SetStatusBarColor(1, 0.25, 0.2)
-      self:SetValue((reload + a) / swing)
-      self.time:SetText(moving and L["stand still"] or string.format("%.1f", AIM - a))
-    end
-  end)
-end
-
-local function MarkPosition()
-  if not bar or not swing then return end
-  bar.mark:ClearAllPoints()
-  bar.mark:SetPoint("CENTER", bar, "LEFT", bar:GetWidth() * (swing - AIM) / swing, 0)
-end
-
-local function ShotFired()
-  local now = GetTime()
-  local speed = RangedSpeed()
-  if not speed and lastShot then
-    -- Speed is hidden: use the time since the last shot when it looks like a normal swing.
-    local gap = now - lastShot
-    if gap > 1 and gap < 4 then speed = gap end
-  end
-  lastShot = now
-  swing = speed or swing or knownSpeed or 2.8
-  aimStart = nil
-  MarkPosition()
-end
-
-local function ShowBar(on)
-  if not ns.db.autoShotBar then on = false end
-  if on and not bar then CreateBar() end
-  if bar then bar:SetShown(on and true or false) end
 end
 
 ---------------------------------------------------------------------------
@@ -244,26 +122,10 @@ end
 ---------------------------------------------------------------------------
 local ev = CreateFrame("Frame")
 local function Reg(e) pcall(ev.RegisterEvent, ev, e) end
-for _, e in ipairs({ "START_AUTOREPEAT_SPELL", "STOP_AUTOREPEAT_SPELL", "UNIT_SPELLCAST_SUCCEEDED", "PET_BAR_UPDATE",
-  "GROUP_ROSTER_UPDATE", "UNIT_PET", "PLAYER_REGEN_DISABLED", "PLAYER_TARGET_CHANGED", "UNIT_RANGEDDAMAGE" }) do Reg(e) end
+for _, e in ipairs({ "PET_BAR_UPDATE", "GROUP_ROSTER_UPDATE", "UNIT_PET", "PLAYER_REGEN_DISABLED", "PLAYER_TARGET_CHANGED" }) do Reg(e) end
 
-ev:SetScript("OnEvent", function(_, event, unit, _, spellID)
-  if event == "START_AUTOREPEAT_SPELL" then
-    shooting = true
-    swing = RangedSpeed() or swing
-    ShowBar(true)
-  elseif event == "STOP_AUTOREPEAT_SPELL" then
-    shooting = false
-    ShowBar(false)
-  elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
-    if unit ~= "player" or ns.IsSecret(spellID) then return end
-    if spellID == AUTO_SHOT then ShotFired()
-    else
-      for _, id in ipairs(AIMED_SHOT) do if spellID == id then ShotFired() break end end
-    end
-  elseif event == "UNIT_RANGEDDAMAGE" then
-    if unit == "player" then swing = RangedSpeed() or swing; MarkPosition() end
-  elseif event == "PET_BAR_UPDATE" or event == "GROUP_ROSTER_UPDATE" or event == "UNIT_PET" then
+ev:SetScript("OnEvent", function(_, event, unit)
+  if event == "PET_BAR_UPDATE" or event == "GROUP_ROSTER_UPDATE" or event == "UNIT_PET" then
     if event == "UNIT_PET" and unit ~= "player" then return end
     CheckGrowl()
   elseif event == "PLAYER_REGEN_DISABLED" then
@@ -279,4 +141,4 @@ ns.On("LOGIN", function()
 end)
 
 -- Test hooks
-ns.Combat = { ShotFired = ShotFired, CheckGrowl = CheckGrowl, CheckAspect = CheckAspect, ShowBar = ShowBar }
+ns.Combat = { CheckGrowl = CheckGrowl, CheckAspect = CheckAspect }

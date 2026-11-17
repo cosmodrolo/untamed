@@ -94,12 +94,7 @@ ns.UI_Show("recommend")
 ns.UI_ViewingMenu(); ns.UI_ViewingMenu()
 check(ns.ToEnglish("Bite") == "Bite", "locale passthrough")
 -- Combat helpers
-FIRE("START_AUTOREPEAT_SPELL")
-check(_G.UntamedAutoShotBar and _G.UntamedAutoShotBar:IsShown(), "auto shot bar shows")
-FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 75)
-TICK(3)
-FIRE("STOP_AUTOREPEAT_SPELL")
-check(not _G.UntamedAutoShotBar:IsShown(), "auto shot bar hides")
+check(_G.UntamedAutoShotBar == nil, "no auto shot bar any more")
 GROUPED = true; GROWL_AUTO = true
 ALERTS = 0
 local oldAlert = ns.Alert

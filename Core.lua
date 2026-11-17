@@ -61,12 +61,14 @@ end
 local defaultsDB = {
   zoneAlerts = true, autoPins = true, hideTooHigh = false, minimapAngle = 200, showMinimap = true,
   tooltipInfo = true, targetAlert = true, targetSound = true, minimapPins = true, feedReminder = true,
-  arrowScale = 1, arrowNextSpot = true, autoShotBar = true, growlWarning = true, aspectReminder = true, markReminder = true,
+  arrowScale = 1, arrowNextSpot = true, growlWarning = true, aspectReminder = true, markReminder = true,
   gearTooltip = true, talentGlow = true, talentPath = true, gearAlerts = true, recordData = true, openHome = true, wishPins = true,
 }
 local function InitDB()
   UntamedDB = UntamedDB or {}
   for k, v in pairs(defaultsDB) do if UntamedDB[k] == nil then UntamedDB[k] = v end end
+  -- settings of features that are gone (2.38.0: cooldown rows, Auto Shot timer bar)
+  UntamedDB.hudAlways, UntamedDB.autoShotBar, UntamedDB.shotBarPos = nil, nil, nil
   UntamedDB.observed = UntamedDB.observed or {}
   UntamedDB.observed[ns.FLAVOR] = UntamedDB.observed[ns.FLAVOR] or {}
   UntamedCharDB = UntamedCharDB or {}
@@ -670,7 +672,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed clear  clear map focus and the navigation arrow   |  /untamed spot  arrow to the next spawn spot")
     ns.Print("/untamed alerts  toggle zone alerts   |  /untamed minimap  toggle the minimap button")
     ns.Print("/untamed loot  the dungeon loot card (move, lock, size 80, reset, stay, need, off, on)")
-    ns.Print("/untamed hud  the hunter display under your character (move, lock, reset, scale 1.2, off, on, always)")
+    ns.Print("/untamed hud  the hunter display under your character (move, lock, reset, scale 1.2, off, on)")
     ns.Print("/untamed hawks  the hawk tracker (off, on)")
     ns.Print("/untamed books  library books   |  /untamed book  arrow to the nearest one you need   |  /untamed librarian  arrow to yours")
     ns.Print("/untamed chests  chest spots on the map (on, off, minimap)   |  /untamed scan  what the game marks on your minimap")

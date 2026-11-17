@@ -31,8 +31,6 @@ GetUnitSpeed = function() return SECRET end
 IsPlayerMoving = function() return false end
 UnitLevel = function(u) if u == "target" then return SECRET end return 20 end
 UnitGUID = function(u) if u == "target" then return SECRET end return oldGUID(u) end
-ns.db.autoShotBar = true; ns.Combat.ShowBar(true)
-ns.Combat.ShotFired(); ns.Combat.ShotFired()
 FIRE("PLAYER_REGEN_DISABLED"); FIRE("PLAYER_TARGET_CHANGED")
 -- loot recorded while the target GUID is hidden
 ns.db.recordData = true
@@ -270,10 +268,9 @@ local KNOWN = { ["Summon Hawk"] = 1293241, ["Aimed Shot"] = 19434, ["Feign Death
 local old2 = C_Spell.GetSpellInfo
 C_Spell.GetSpellInfo = function(x) if KNOWN[x] then return { name = x, spellID = KNOWN[x] } end return old2(x) end
 IsPlayerSpell = function(id) return true end
-C_Spell.GetSpellCooldown = function(x) if x == "Aimed Shot" then return { startTime = GetTime(), duration = 6 } end return { startTime = 0, duration = 0 } end
 FIRE("SPELLS_CHANGED")
 assert(UntamedHUD, "hunter display built")
-local rows = ns.HUD_Slot("rows") or {}
+assert(rawget(UntamedHUD, "rows") == nil, "no cooldown rows any more")
 UnitAffectingCombat = function() return true end
 FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1978)
 assert(ns.HUD_Timer("sting"), "Serpent Sting timer started")
