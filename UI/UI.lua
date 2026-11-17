@@ -1244,7 +1244,7 @@ local function BuildHeader()
   header.tp = MakeBar(L["Training"], -61)
   header.tp:SetStatusBarColor(0.25, 0.55, 1)
 
-  header.viewing = ns.MakeButton(frame, "", 192, function(self) OpenMenu(self) end)
+  header.viewing = ns.MakeButton(frame, "", 192, function(self) OpenMenu(self) end, true)
   header.viewing:SetPoint("TOPRIGHT", -14, -30)
   local arrow = header.viewing:CreateTexture(nil, "OVERLAY")
   arrow:SetTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")

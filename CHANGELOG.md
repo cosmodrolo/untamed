@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.41.3
+- Blizzard look: the "Viewing" picker at the top right is a dark box like the other dropdowns, not a red button.
+
 ## v2.41.2
 - Data update from QuestieDB 1.1.2 (Nov 16): 62 beasts got more or corrected spawn points, and Search was rebuilt with its newest Forever items, NPCs, objects and quests plus your latest vendor and drop recordings (about 40 more entries, many corrected). Ghostmaw in the Riverglades is in Search now.
 
