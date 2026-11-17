@@ -723,12 +723,24 @@ local SLOT_LABEL = { HEAD = L["Head"], NECK = L["Neck"], SHOULDER = L["Shoulders
 local function Score(id) local g = ns.GearItems and id and ns.GearItems[id]; return g and g[3] or 0 end
 
 -- Score of the item worn in one inventory slot, random suffix included.
+local wornCache = {}     -- [inventory slot] = { key, score }
 local function WornAt(inv)
   local id = GetInventoryItemID("player", inv)
   if not id then return 0 end
   local link = GetInventoryItemLink and GetInventoryItemLink("player", inv)
-  if ns.GearScoreOf then return (ns.GearScoreOf(id, link)) end
-  return Score(id)
+  if not ns.GearScoreOf then return Score(id) end
+  local key = type(link) == "string" and not ns.IsSecret(link) and link or id
+  local hit = wornCache[inv]
+  if hit and hit[1] == key then return hit[2] end
+  -- the tooltip of the very item you wear: it shows a random suffix's stats for certain
+  local tdata
+  if C_TooltipInfo and C_TooltipInfo.GetInventoryItem then
+    local ok, t = pcall(C_TooltipInfo.GetInventoryItem, "player", inv)
+    tdata = ok and t or nil
+  end
+  local score = (ns.GearScoreOf(id, link, tdata))
+  wornCache[inv] = { key, score }
+  return score
 end
 
 -- Score of what's worn in a slot (lowest of two for rings and trinkets, so upgrades replace the weaker one).
@@ -747,9 +759,9 @@ end
 
 -- How much better an item is than what you wear, or nil when it isn't for you (not hunter gear,
 -- mail before 40, level too high, an off-hand while you hold a two-hander).
-function ns.GearGain(id, link)
+function ns.GearGain(id, link, tdata)
   if not ns.GearScoreOf then return nil end
-  local score, g = ns.GearScoreOf(id, link)
+  local score, g = ns.GearScoreOf(id, link, tdata)
   if not g then return nil end
   local level = UnitLevel("player") or 1
   if g[2] > level or (g[4] == 1 and level < 40) then return nil end
@@ -803,17 +815,17 @@ local function RankOfScore(slot, score, level)
   return rank, math.max(#pool.scores, rank), pool.best
 end
 
-function ns.GearRank(id, link)
+function ns.GearRank(id, link, tdata)
   if not ns.GearScoreOf then return nil end
-  local score, g = ns.GearScoreOf(id, link)
+  local score, g = ns.GearScoreOf(id, link, tdata)
   if not g then return nil end
   local rank, total, best = RankOfScore(g[1], score, UnitLevel("player") or 1)
   return rank, total, best, score
 end
 
 -- "Rank 3 of 41 shoulders you can wear at level 38."
-function ns.GearRankText(id, link, short)
-  local rank, total, best = ns.GearRank(id, link)
+function ns.GearRankText(id, link, short, tdata)
+  local rank, total, best = ns.GearRank(id, link, tdata)
   if not rank then return nil end
   local g = ns.GearItems[tonumber(id)]
   local slot = (SLOT_LABEL[g[1]] or g[1]):lower()
@@ -1058,15 +1070,17 @@ end
 ns.GearAlertTest = { AlertNewLevel = AlertNewLevel, AlertZone = AlertZone }
 
 -- Upgrade line on item tooltips.
-local function OnItemTooltip(tt, id)
+local function OnItemTooltip(tt, id, data)
   if not ns.db.gearTooltip or not id or not ns.GearItems then return end
   if ns.IsSecret and ns.IsSecret(id) then return end
   local g = ns.GearItems[id]
   if not g then return end
   local link
   if tt.GetItem then local ok, _, l = pcall(tt.GetItem, tt); if ok then link = l end end
+  if type(data) == "table" and not ns.IsSecret(data) and type(data.hyperlink) == "string" and not ns.IsSecret(data.hyperlink) then link = data.hyperlink end
   local worn = WornScore(g[1])
-  local diff = (ns.GearScoreOf and (ns.GearScoreOf(id, link)) or g[3]) - worn
+  local mine = ns.GearScoreOf and (ns.GearScoreOf(id, link, data)) or g[3]
+  local diff = mine - worn
   local level = UnitLevel("player")
   local note = (g[4] == 1 and level < 40) and (" " .. L["(mail at 40)"]) or ""
   if diff > 0 then
@@ -1074,7 +1088,7 @@ local function OnItemTooltip(tt, id)
   elseif diff < 0 then
     tt:AddLine(string.format("|cffabd473Untamed:|r %s%d %s|r", C.GREY, diff, L["vs what you wear"]))
   end
-  local okR, rankText = pcall(ns.GearRankText, id, link, true)
+  local okR, rankText = pcall(ns.GearRankText, id, link, true, data)
   if okR and rankText then tt:AddLine("|cffabd473Untamed:|r " .. C.GREY .. rankText .. "|r") end
 end
 
@@ -1082,7 +1096,7 @@ do
   ns.On("LOGIN", function()
     if TooltipDataProcessor and Enum and Enum.TooltipDataType then
       TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tt, data)
-        if tt == GameTooltip or tt == ItemRefTooltip then OnItemTooltip(tt, data and data.id) end
+        if tt == GameTooltip or tt == ItemRefTooltip then OnItemTooltip(tt, data and data.id, data) end
       end)
     elseif GameTooltip and GameTooltip.HookScript then
       GameTooltip:HookScript("OnTooltipSetItem", function(tt)

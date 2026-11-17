@@ -25,7 +25,12 @@ local function Choices()
     local link = GetQuestItemLink and select(2, pcall(GetQuestItemLink, "choice", i)) or nil
     link = type(Plain(link)) == "string" and link or nil
     local id = ok and Plain(itemID) or (link and tonumber(link:match("item:(%d+)")))
-    out[#out + 1] = { id = id, link = link, name = ok and Plain(name) or nil, icon = ok and Plain(icon) or nil, quality = ok and Plain(quality) or nil }
+    local tdata
+    if C_TooltipInfo and C_TooltipInfo.GetQuestItem then
+      local okT, t = pcall(C_TooltipInfo.GetQuestItem, "choice", i)
+      tdata = okT and t or nil
+    end
+    out[#out + 1] = { id = id, link = link, tdata = tdata, name = ok and Plain(name) or nil, icon = ok and Plain(icon) or nil, quality = ok and Plain(quality) or nil }
   end
   return out
 end
@@ -45,8 +50,8 @@ function ns.QuestAdviceJudge(choices)
   for i, c in ipairs(choices) do
     local r = { c = c }
     if c.id then
-      r.gain = ns.GearGain and ns.GearGain(c.id, c.link) or nil
-      if r.gain then r.rank, r.total = ns.GearRank(c.id, c.link) end
+      r.gain = ns.GearGain and ns.GearGain(c.id, c.link, c.tdata) or nil
+      if r.gain then r.rank, r.total = ns.GearRank(c.id, c.link, c.tdata) end
       r.price = SellPrice(c.id)
       if r.price == nil then complete = false end
     else

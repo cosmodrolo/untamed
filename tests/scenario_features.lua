@@ -574,4 +574,19 @@ do
     if s[2] == "Bestial Wrath" then check(bm == 31, "leveling build reaches Bestial Wrath with point 31 (level 40): " .. bm) end
   end
 end
+-- A random suffix counts, read from the item's own tooltip ("Archer's Shoulderpads of the Beast")
+do
+  local up
+  for id, g in pairs(ns.GearItems) do if g[1] == "SHOULDER" and g[2] <= 30 and g[4] == 0 then up = id break end end
+  local base = ns.GearItems[up][3]
+  local tip = { lines = { { leftText = "Archer's Shoulderpads of the Beast" }, { leftText = "+4 Strength" },
+    { leftText = "|cffffffff+5 Agility|r" }, { leftText = "+8 Stamina" }, { leftText = "Durability 50 / 50" } } }
+  local stats = ns.GearLineStats(tip)
+  check(stats.ITEM_MOD_AGILITY_SHORT == 5 and stats.ITEM_MOD_STAMINA_SHORT == 8, "tooltip lines are read as stats")
+  local kTip = C_TooltipInfo
+  C_TooltipInfo = { GetHyperlink = function(l) return { lines = { { leftText = "Archer's Shoulderpads" } } } end }
+  local s = ns.GearScoreOf(up, nil, tip)
+  check(s == base + 16, "the suffix adds agility x2.4 + stamina x0.5 = 16: " .. tostring(s - base))
+  C_TooltipInfo = kTip
+end
 print("DONE")

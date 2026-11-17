@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.38.3
+- Gear scores missed random suffixes after all: Archer's Shoulderpads of the Beast (+5 Agility, +8 Stamina, all from its suffix) scored 0 and read as "-2 vs what you wear, rank 80 of 80". The game's stats call doesn't report a suffix on WoW Forever, which the first version (2.32.0) relied on. Untamed now also reads the "+N Stat" lines of the item's own tooltip, which is what you see, and counts whichever finds more. This covers item tooltips, bag arrows, what you wear, ranks, the weakest slot and quest reward advice.
+
 ## v2.38.2
 Housekeeping. Nothing changes in game.
 - The code is sorted into folders: Core, Map, Pets, Hunter, World and UI, with the generated data in Data (Foods.lua moved there too). The load order is the same.

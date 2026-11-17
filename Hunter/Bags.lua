@@ -53,7 +53,13 @@ local function Marks(bag, slot)
           sellable = SELL_CLASS[classID] or (classID == 15 and (quality or 0) >= 2) or false
         end
       end
-      local gain = ns.GearGain and ns.GearGain(id, link)
+      -- the bag item's own tooltip: it carries a random suffix's stats for certain
+      local tdata
+      if C_TooltipInfo and C_TooltipInfo.GetBagItem and ns.GearItems and ns.GearItems[id] then
+        local okT, t = pcall(C_TooltipInfo.GetBagItem, bag, slot)
+        tdata = okT and t or nil
+      end
+      local gain = ns.GearGain and ns.GearGain(id, link, tdata)
       m = {
         up = (gain and gain > 0) or false,
         lock = bound,

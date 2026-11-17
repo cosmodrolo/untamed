@@ -96,25 +96,88 @@ local function LinkStats(link)
   if ok and type(t) == "table" and not ns.IsSecret(t) then return t end
 end
 
-local suffixScore = {}
--- score, entry for an item given its number and (when there is one) its link
-function ns.GearScoreOf(id, link)
+-- The stats on an item as its tooltip shows them ("+5 Agility"). The tooltip is what the player
+-- sees, so it includes a random suffix whatever the item's link or the stats call say.
+local nameToKey
+local function StatNames()
+  if nameToKey then return nameToKey end
+  nameToKey = {}
+  local english = { ITEM_MOD_AGILITY_SHORT = "Agility", ITEM_MOD_STAMINA_SHORT = "Stamina", ITEM_MOD_INTELLECT_SHORT = "Intellect",
+    ITEM_MOD_ATTACK_POWER_SHORT = "Attack Power", ITEM_MOD_RANGED_ATTACK_POWER_SHORT = "Ranged Attack Power" }
+  for key, name in pairs(english) do
+    local g = _G[key]
+    nameToKey[(type(g) == "string" and g or name):lower()] = key
+  end
+  return nameToKey
+end
+
+local function LineStats(tdata)
+  if type(tdata) ~= "table" or ns.IsSecret(tdata) then return nil end
+  local lines = tdata.lines
+  if type(lines) ~= "table" or ns.IsSecret(lines) then return nil end
+  local names, out, any = StatNames(), {}, false
+  for _, line in ipairs(lines) do
+    local text = type(line) == "table" and line.leftText
+    if type(text) == "string" and not ns.IsSecret(text) then
+      text = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+      local n, name = text:match("^%+(%d+)%s+(.-)%s*$")
+      local key = name and names[name:lower()]
+      if key then out[key] = (out[key] or 0) + tonumber(n); any = true end
+    end
+  end
+  return out, any
+end
+ns.GearLineStats = LineStats
+
+local function Tip(fn, ...)
+  if not (C_TooltipInfo and C_TooltipInfo[fn]) then return nil end
+  local ok, t = pcall(C_TooltipInfo[fn], ...)
+  return ok and t or nil
+end
+
+local plainLines = {}     -- [id] = weighted tooltip stats of the plain item (no suffix)
+local linkScore = {}      -- [item string] = score
+-- score, entry for an item given its number and, when there are any, its link and its tooltip
+-- (tdata: what C_TooltipInfo gave for the very item in your bag or on you).
+--   score = the plain item's score + what its suffix adds.
+-- The suffix is measured two ways and the bigger one counts: the game's stats call on the link,
+-- and the "+N Stat" lines of the tooltip compared with the plain item's tooltip.
+function ns.GearScoreOf(id, link, tdata)
   id = tonumber(id)
   local g = id and ns.GearItems and ns.GearItems[id]
   if not g then return 0, nil end
-  if type(link) ~= "string" or (ns.IsSecret and ns.IsSecret(link)) then return g[3], g end
-  local suffix = link:match("item:%d+:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:(%-?%d+)")
-  if not suffix or suffix == "0" then return g[3], g end
-  local key = id .. ":" .. suffix
-  local s = suffixScore[key]
-  if not s then
+  if type(link) ~= "string" or (ns.IsSecret and ns.IsSecret(link)) then link = nil end
+  if not link and not tdata then return g[3], g end
+  local key = link and link:match("item:[%-%d:]+")
+  -- a tooltip of the very item is the best evidence there is: with one, work it out afresh
+  if key and linkScore[key] and not tdata then return linkScore[key], g end
+  local ranged = g[1] == "RANGED"
+  local add, settled = 0, false
+  if link then
     local full, plain = LinkStats(link), Stats(id)
-    if not full or not plain then return g[3], g end
-    local add = Weighted(full, g[1] == "RANGED") - Weighted(plain, g[1] == "RANGED")
-    s = g[3] + math.max(0, math.floor(add + 0.5))
-    suffixScore[key] = s
+    if full and plain then add = Weighted(full, ranged) - Weighted(plain, ranged); settled = true end
   end
-  return s, g
+  local shown = LineStats(tdata or (link and Tip("GetHyperlink", link)))
+  if shown then
+    local base = plainLines[id]
+    if base == nil then
+      local p = LineStats(Tip("GetHyperlink", "item:" .. id))
+      if p then base = Weighted(p, false); plainLines[id] = base end
+    end
+    if base == nil then
+      -- no tooltip for the plain item right now: the stats call on its number says the same thing
+      local plain = Stats(id)
+      if plain then base = Weighted(plain, false) end
+    end
+    if base then
+      add = math.max(add, Weighted(shown, false) - base)
+      settled = true
+    end
+  end
+  local score = g[3] + math.max(0, math.floor(add + 0.5))
+  if key and settled then linkScore[key] = math.max(score, linkScore[key] or 0) end
+  if key and linkScore[key] then score = linkScore[key] end
+  return score, g
 end
 
 if ns.GearItems then
