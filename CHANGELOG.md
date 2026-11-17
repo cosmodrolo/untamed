@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.41.0
+Six looks for the window, and the Blizzard look goes further.
+- Settings, Basics, "Look of the window" now offers six: Savage Land (green and amber, still the default), Blizzard, Midnight (navy and ice blue), Ember (charcoal and orange), Slate (grey and hunter green) and Twilight (purple and lilac). Type /reload after switching.
+- Blizzard look: buttons are the game's red buttons (the one to press glows gold), the section tabs are grey plates with the current one in gold, and panels wear the game's inner border.
+- The four new color looks keep Untamed's flat shapes and only change the colors.
+- Chests: a chest you open where no spot was known becomes a spot on your map and minimap from then on (it is read from the recorder's notes, so chests you already found count). This covers the new Forever zones, which the chest data has nothing for.
+- Chests: the first Riverglades spot ships with the addon (Solid Chest at 18.6, 70.7).
+
 ## v2.40.1
 - Talents: in a large window the trees stayed small in a corner of an empty panel. The icons now grow with the window (up to about one and a half times bigger) and the picture sits lower when there is height to spare.
 - Talents: three lines in the order list were cut off. The heading now shows the build's short name and its split, the note under the next talent is gone (it's in the tooltip), and the closing note is short with the full text in its tooltip.

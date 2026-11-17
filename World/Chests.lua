@@ -25,8 +25,14 @@ local function Continent(mapID)
   return ok and Plain(cont) or nil
 end
 
+-- Chest spots found in game, in zones the data doesn't cover: [mapID] = { x, y, kind, ... }
+ns.ChestFound = {
+  [2548] = { 18.6, 70.7, 2 },      -- Riverglades: Solid Chest
+}
+
 function ns.ChestSpotsOn(mapID)
-  if not mapID or not ns.ChestWorld then return nil end
+  if not mapID then return nil end
+  ns.ChestWorld = ns.ChestWorld or {}
   local c = cache[mapID]
   if c then return c end
   c = {}
@@ -55,6 +61,29 @@ function ns.ChestSpotsOn(mapID)
       if #c > 0 then ns.chestSwap = true end
     elseif #c > 0 then
       ns.chestSwap = ns.chestSwap or false
+    end
+  end
+  -- zones the data has nothing for (the new Forever zones): chests found in game. First the ones
+  -- shipped with the addon, then every spot you opened a chest at yourself (the recorder's notes).
+  local function Add(x, y, kind)
+    for i = 1, #c, 3 do
+      if math.abs(c[i] - x) < 1.5 and math.abs(c[i + 1] - y) < 1.5 then return end
+    end
+    c[#c + 1] = x; c[#c + 1] = y; c[#c + 1] = kind
+  end
+  local found = ns.ChestFound[mapID]
+  for i = 1, found and #found or 0, 3 do Add(found[i], found[i + 1], found[i + 2]) end
+  local rec = ns.db and ns.db.recorded and ns.db.recorded[ns.FLAVOR]
+  local drops = rec and rec.drops
+  if drops and ns.ChestIds then
+    local ids = {}
+    for id in pairs(ns.ChestIds) do if drops["o" .. id] then ids[#ids + 1] = id end end
+    table.sort(ids)
+    for _, id in ipairs(ids) do
+      local s = drops["o" .. id].spots
+      for i = 1, type(s) == "table" and #s or 0, 3 do
+        if s[i] == mapID and type(s[i + 1]) == "number" and type(s[i + 2]) == "number" then Add(s[i + 1], s[i + 2], ns.ChestIds[id]) end
+      end
     end
   end
   cache[mapID] = c
@@ -227,14 +256,14 @@ end
 -- chest was your interact target in the last few seconds. Then the nearest chest spot (within 40
 -- yards) is marked opened.
 local function ChestLooted()
-  local isChest = false
+  local isChest, fromObject = false, false
   if GetNumLootItems and GetLootSourceInfo then
     for slot = 1, (Plain(GetNumLootItems()) or 0) do
       local ok, guid = pcall(GetLootSourceInfo, slot)
       guid = ok and Plain(guid)
       if type(guid) == "string" and guid:match("^GameObject") then
         local id = tonumber(guid:match("^GameObject%-%d+%-%d+%-%d+%-%d+%-(%d+)"))
-        if id and ns.ChestIds and ns.ChestIds[id] then isChest = true break end
+        if id and ns.ChestIds and ns.ChestIds[id] then isChest = true; fromObject = true break end
       end
     end
   end
@@ -250,7 +279,21 @@ local function ChestLooted()
     local d = ns.Distance(pc, pe, pn, c, e, n)
     if d and d <= 40 and (not bd or d < bd) then best, bd = i, d end
   end
-  if not best or Opened(map, best) then return false end
+  if not best and not fromObject then return false end
+  if not best then
+    -- a chest where no spot was known: the recorder is noting it right now, so read the spots
+    -- again in a moment and it's on your map from here on
+    if C_Timer and C_Timer.After then
+      C_Timer.After(1, function()
+        wipe(cache)
+        if ns.Pins_Refresh then ns.Pins_Refresh() end
+        if ns.MinimapRebuild then ns.MinimapRebuild() end
+      end)
+    end
+    ns.Print(L["New chest spot. It's on your map from now on."])
+    return false
+  end
+  if Opened(map, best) then return false end
   ns.cdb.chestOpened = ns.cdb.chestOpened or {}
   ns.cdb.chestOpened[map .. ":" .. best] = time()
   ns.chestSeenAt = nil

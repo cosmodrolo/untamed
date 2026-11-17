@@ -28,23 +28,76 @@ local T = {
 }
 ns.Theme = T
 
--- A second look: "Blizzard". The game's own metal window frame and stone backing, with dark
--- panels, bronze lines and the game's gold. Chosen in Settings (ns.db.theme); the colors are put
--- in place once, when your settings load, before any window is built, so it takes a /reload.
-local BLIZZARD = {
-  window = { 0.050, 0.048, 0.052 },
-  bar    = { 0.030, 0.028, 0.030 },
-  panel  = { 0.095, 0.088, 0.082 },
-  deep   = { 0.032, 0.030, 0.034 },
-  button = { 0.170, 0.135, 0.100 },
-  line   = { 0.430, 0.345, 0.200 },
-  accent = { 1.000, 0.820, 0.000 },
-  ink    = { 0.160, 0.100, 0.000 },
+-- Other looks, chosen in Settings (ns.db.theme). The colors are put in place once, when your
+-- settings load, before any window is built, so switching takes a /reload.
+--   blizzard: the game's own metal window frame, stone backing, red buttons and inset borders.
+--   the rest: Savage Land's flat shapes in other colors.
+ns.THEMES = {
+  { key = "savage",   name = L["Savage Land (green and amber)"] },
+  { key = "blizzard", name = L["Blizzard (like the game's windows)"], art = true,
+    window = { 0.050, 0.048, 0.052 }, bar = { 0.030, 0.028, 0.030 }, panel = { 0.095, 0.088, 0.082 }, deep = { 0.032, 0.030, 0.034 },
+    button = { 0.170, 0.135, 0.100 }, line = { 0.430, 0.345, 0.200 }, accent = { 1.000, 0.820, 0.000 }, ink = { 0.160, 0.100, 0.000 } },
+  { key = "midnight", name = L["Midnight (navy and ice blue)"],
+    window = { 0.050, 0.065, 0.100 }, bar = { 0.032, 0.042, 0.068 }, panel = { 0.075, 0.098, 0.150 }, deep = { 0.040, 0.052, 0.084 },
+    button = { 0.110, 0.150, 0.230 }, line = { 0.200, 0.290, 0.440 }, accent = { 0.350, 0.780, 0.980 }, ink = { 0.020, 0.120, 0.200 } },
+  { key = "ember",    name = L["Ember (charcoal and orange)"],
+    window = { 0.085, 0.062, 0.055 }, bar = { 0.055, 0.040, 0.036 }, panel = { 0.125, 0.090, 0.078 }, deep = { 0.062, 0.045, 0.040 },
+    button = { 0.190, 0.125, 0.100 }, line = { 0.400, 0.230, 0.150 }, accent = { 1.000, 0.500, 0.160 }, ink = { 0.250, 0.080, 0.000 } },
+  { key = "slate",    name = L["Slate (grey and hunter green)"],
+    window = { 0.085, 0.095, 0.105 }, bar = { 0.055, 0.062, 0.070 }, panel = { 0.120, 0.133, 0.147 }, deep = { 0.062, 0.070, 0.078 },
+    button = { 0.180, 0.200, 0.220 }, line = { 0.330, 0.370, 0.410 }, accent = { 0.670, 0.830, 0.450 }, ink = { 0.100, 0.180, 0.030 } },
+  { key = "twilight", name = L["Twilight (purple and lilac)"],
+    window = { 0.075, 0.058, 0.105 }, bar = { 0.048, 0.036, 0.070 }, panel = { 0.110, 0.086, 0.155 }, deep = { 0.058, 0.044, 0.084 },
+    button = { 0.170, 0.130, 0.240 }, line = { 0.340, 0.260, 0.480 }, accent = { 0.800, 0.600, 1.000 }, ink = { 0.200, 0.080, 0.300 } },
 }
 function ns.ApplyTheme()
-  if not (ns.db and ns.db.theme == "blizzard") then return end
-  for k, v in pairs(BLIZZARD) do T[k][1], T[k][2], T[k][3] = v[1], v[2], v[3] end
-  T.blizzard = true
+  local want = ns.db and ns.db.theme
+  for _, th in ipairs(ns.THEMES) do
+    if th.key == want and th.window then
+      for _, k in ipairs({ "window", "bar", "panel", "deep", "button", "line", "accent", "ink" }) do
+        T[k][1], T[k][2], T[k][3] = th[k][1], th[k][2], th[k][3]
+      end
+      T.blizzard = th.art or nil
+    end
+  end
+  -- text on the accent color follows the look
+  local f = _G.UntamedFontOnAmber
+  if f and f.SetTextColor then f:SetTextColor(T.ink[1], T.ink[2], T.ink[3]) end
+end
+
+-- Blizzard look: the game's inner border on a panel of ours (art only, drawn by the game's own
+-- nine-slice helper on our frame).
+local function BlizzardInset(f)
+  if not (T.blizzard and NineSliceUtil and NineSliceUtil.ApplyLayoutByName) then return end
+  pcall(function()
+    local nine = CreateFrame("Frame", nil, f, "NineSlicePanelTemplate")
+    nine:SetFrameLevel((f:GetFrameLevel() or 1) + 1)
+    NineSliceUtil.ApplyLayoutByName(nine, "InsetFrameTemplate")
+    f.blizzInset = nine
+  end)
+end
+
+-- Blizzard look: the game's red panel button (its three legacy textures, stretched to the button).
+local BTN = "Interface\\Buttons\\UI-Panel-Button-"
+local function BlizzardButton(b)
+  if not T.blizzard then return false end
+  local function Face(set, file, blend)
+    if not set then return end
+    set(b, BTN .. file)
+    local getter = (file == "Up" and b.GetNormalTexture) or (file == "Down" and b.GetPushedTexture) or (file == "Disabled" and b.GetDisabledTexture) or b.GetHighlightTexture
+    local t = getter and getter(b)
+    if t and t.SetTexCoord then
+      t:SetTexCoord(0, 0.625, 0, 0.6875)
+      if blend and t.SetBlendMode then t:SetBlendMode("ADD") end
+    end
+  end
+  pcall(function()
+    Face(b.SetNormalTexture, "Up")
+    Face(b.SetPushedTexture, "Down")
+    Face(b.SetDisabledTexture, "Disabled")
+    Face(b.SetHighlightTexture, "Highlight", true)
+  end)
+  return true
 end
 
 -- The Blizzard look's window art, on OUR frame: the game's nine-slice metal border (the same one
@@ -406,7 +459,7 @@ ns.TextWidth = TextWidth
 function ns.MakeButton(parent, text, w, onClick)
   local b = CreateFrame("Button", nil, parent)
   b:SetSize(w, 24)
-  Skin(b, T.button, 1, T.line, 1, 0.22)
+  if not T.blizzard then Skin(b, T.button, 1, T.line, 1, 0.22) end
   if b.SetFontString then
     local fs = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     fs:SetPoint("CENTER", 0, 0)
@@ -417,9 +470,21 @@ function ns.MakeButton(parent, text, w, onClick)
     b:SetHighlightFontObject("GameFontHighlight")
     b:SetDisabledFontObject("GameFontDisable")
   end
-  local hl = b:CreateTexture(nil, "HIGHLIGHT")
-  hl:SetAllPoints()
-  hl:SetColorTexture(1, 1, 1, 0.10)
+  local native = BlizzardButton(b)
+  if native then
+    -- a dark red plate under the art, so the button reads even where the art is missing
+    Skin(b, { 0.30, 0.04, 0.03 }, 1, { 0.10, 0.02, 0.02 }, 1, 0.25)
+    b.primaryGlow = b:CreateTexture(nil, "OVERLAY")
+    b.primaryGlow:SetPoint("TOPLEFT", -1, 1); b.primaryGlow:SetPoint("BOTTOMRIGHT", 1, -1)
+    b.primaryGlow:SetTexture(BTN .. "Highlight")
+    b.primaryGlow:SetTexCoord(0, 0.625, 0, 0.6875)
+    if b.primaryGlow.SetBlendMode then b.primaryGlow:SetBlendMode("ADD") end
+    b.primaryGlow:Hide()
+  else
+    local hl = b:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetAllPoints()
+    hl:SetColorTexture(1, 1, 1, 0.10)
+  end
   b:SetText(text)
   OneLine(b.GetFontString and b:GetFontString())
   local need = math.ceil(TextWidth(b, text)) + 24
@@ -427,6 +492,12 @@ function ns.MakeButton(parent, text, w, onClick)
   -- a pressed look: the label drops a pixel
   if b.SetPushedTextOffset then b:SetPushedTextOffset(1, -1) end
   function b:SetPrimary(on)
+    if native then
+      -- the game's buttons are all red: the one to press glows gold
+      self.primaryGlow:SetShown(on and true or false)
+      if self.SetNormalFontObject then self:SetNormalFontObject(on and "GameFontHighlight" or "GameFontNormal") end
+      return
+    end
     if on then
       Skin(self, T.accent, 1, T.accent, 1, 0.12)
       if primaryFont and self.SetNormalFontObject then self:SetNormalFontObject(primaryFont); self:SetHighlightFontObject(primaryFont) end
@@ -727,6 +798,7 @@ end
 function ns.MakeInset(parent)
   local f = CreateFrame("Frame", nil, parent)
   Skin(f, T.panel, 0.92, T.line, 1, 0.12)
+  BlizzardInset(f)
   return f
 end
 
@@ -1275,6 +1347,16 @@ local function BuildSectionBar()
     b.bar:ClearAllPoints()
     b.bar:SetPoint("BOTTOMLEFT"); b.bar:SetPoint("BOTTOMRIGHT")
     b.bar:SetHeight(3)
+    if T.blizzard then
+      -- tabs like the game's: a grey plate at rest, a gold-edged one when it's the section you're in
+      local plain = b.SetSelected
+      function b:SetSelected(v)
+        plain(self, v)
+        if v then Skin(self, { 0.36, 0.27, 0.06 }, 1, T.accent, 1, 0.45)
+        else Skin(self, { 0.115, 0.110, 0.105 }, 1, { 0.33, 0.31, 0.27 }, 1, 0.35) end
+        self.sel:Hide()
+      end
+    end
     b:SetSelected(false)
     b:SetScript("OnClick", function() SelectSection(sec.key) end)
     sec.button = b
@@ -1288,6 +1370,15 @@ local function BuildSectionBar()
   gear.bar:ClearAllPoints()
   gear.bar:SetPoint("BOTTOMLEFT"); gear.bar:SetPoint("BOTTOMRIGHT")
   gear.bar:SetHeight(3)
+  if T.blizzard then
+    local plain = gear.SetSelected
+    function gear:SetSelected(v)
+      plain(self, v)
+      if v then Skin(self, { 0.36, 0.27, 0.06 }, 1, T.accent, 1, 0.45)
+      else Skin(self, { 0.115, 0.110, 0.105 }, 1, { 0.33, 0.31, 0.27 }, 1, 0.35) end
+      self.sel:Hide()
+    end
+  end
   gear:SetSelected(false)
   gear:SetScript("OnClick", function() SelectTab("settings") end)
   sectionBar.gear = gear

@@ -375,6 +375,19 @@ ns.ChestWorld[1] = { 1, -(oy + 2000), -(ox + 1000), 2, -(oy + 100), -(ox + 3900)
 ns.ChestCacheClear()
 local spots = ns.ChestSpotsOn(1429)
 check(#spots == 6 and math.floor(spots[1]) == 25 and math.floor(spots[2]) == 50, "chest spots on the map (" .. #spots / 3 .. ")")
+-- a chest you opened where the data had no spot is on the map from then on
+do
+  local r = ns.db.recorded and ns.db.recorded[ns.FLAVOR]
+  if not r then ns.db.recorded = ns.db.recorded or {}; r = { vendors = {}, drops = {}, objects = {} }; ns.db.recorded[ns.FLAVOR] = r end
+  local chestId = next(ns.ChestIds)
+  r.drops["o" .. chestId] = { items = {}, spots = { 1429, 80, 80, 1429, 25.5, 50.5, 1, 10, 10 } }
+  ns.ChestCacheClear()
+  local s = ns.ChestSpotsOn(1429)
+  check(#s == 9 and s[7] == 80, "a chest you found yourself is a spot too (and not twice where one was known)")
+  check(#ns.ChestSpotsOn(2548) == 3, "the Riverglades chest found in game ships with the addon")
+  r.drops["o" .. chestId] = nil
+  ns.ChestCacheClear()
+end
 ns.ScanReport()
 -- near a chest spot, and a chest as the interact target
 local heard = {}
