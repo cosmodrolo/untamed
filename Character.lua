@@ -856,8 +856,16 @@ function ns.GearWeakest()
       -- for rings, the weaker of the two
       local inv, score = s[2], WornAt(s[2])
       if s[3] and WornAt(s[3]) < score then inv, score = s[3], WornAt(s[3]) end
+      -- Something is worn there but Untamed can't score it (an item new in Forever whose stats the
+      -- game hasn't given us): we can't call that slot weak on a guess
+      local wornID = GetInventoryItemID("player", inv)
+      local judged = true
+      if wornID and ns.GearScoreOf then
+        local _, g = ns.GearScoreOf(wornID, GetInventoryItemLink and GetInventoryItemLink("player", inv))
+        judged = g ~= nil
+      end
       local rank, total = RankOfScore(slot, score, level)
-      if total >= 3 and rank > 1 then
+      if judged and total >= 3 and rank > 1 then
         local beat = WornScore(slot)
         local fix, fixScore = BestFor(slot, 1, level, beat, "easy", false)
         if not fix then fix, fixScore = BestFor(slot, 1, level, beat, "any", false) end
@@ -878,6 +886,7 @@ do
   local list, j, fill
   local opt = { slot = "all", way = "any", near = false }
   local info = {}        -- [item id] = { slot, gain, bucket }
+  local weakInfo = {}    -- the same for the weakest slot's item, when it isn't in the list below
   local function SlotOptions()
     local o = { { "all", L["All slots"] } }
     for _, s in ipairs(SLOTS) do o[#o + 1] = { s[1], SLOT_LABEL[s[1]] } end
@@ -895,7 +904,7 @@ do
     j.list = list
     fill = ns.ItemPageSetup(j)
     j.onSelect = function(id)
-      local x = info[id]
+      local x = info[id] or weakInfo[id]
       fill(id, x and string.format("%s%s|r   %s+%d|r %s%s|r", C.WHITE, SLOT_LABEL[x.slot], C.GREEN, x.gain, C.GREY, L["over what you wear"]) or "")
     end
   end
@@ -921,7 +930,9 @@ do
     -- first of all: the slot that is furthest behind, and the thing to go and get for it
     if opt.slot == "all" then
       local okW, weak = pcall(ns.GearWeakest)
+      wipe(weakInfo)
       if okW and weak then
+        weakInfo[weak.fix] = { slot = weak.slot, gain = weak.gain }
         local it = db and db.I[weak.fix]
         local wornName = weak.worn and db and db.I[weak.worn] and db.I[weak.worn][1]
         rows[#rows + 1] = { 0, nil, L["Weakest slot"], C.GREY .. SLOT_LABEL[weak.slot] .. "|r", nil,

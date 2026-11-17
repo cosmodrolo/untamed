@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.37.3
+- Weakest slot: a slot is no longer called weakest when Untamed can't score what you wear there (an item new in Forever whose stats aren't in its data). Before, such an item counted as zero and came out last.
+- Gear: the "For you" line was empty on the item the weakest slot points at. It shows the slot and the gain now.
+
 ## v2.37.2
 - Quest reward advice: the box could stay on screen after the quest window was gone. It now also closes when a reward is taken, when a quest is accepted or handed in, when the quest window is no longer up, and after two minutes whatever happens.
 - When an addon takes a quest reward for you, Untamed says which one in chat ("RXPGuides picked quest reward 2 of 3 for you."). /ut advice lists the last things the box saw: quests offered, handed in, who took each reward, and what closed the box.
