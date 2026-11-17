@@ -195,6 +195,7 @@ L["Click: arrow to the nearest source.  Shift-click: link in chat.  Alt-click: w
 L["Close"] = true
 L["Closest flight master to this beast for your faction. Click for an arrow."] = true
 L["Coins on items you can sell"] = true
+L["Community builds: adjust to taste."] = true
 L["Container"] = true
 L["Content"] = true
 L["Cost not known yet for this WoW Forever spell."] = true

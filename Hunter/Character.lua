@@ -707,10 +707,12 @@ do
     if type(h) ~= "number" or h < 100 then h = 420 end
     local gapTree = 14
     local cell = math.floor(math.min((w - 2 * gapTree - 12) / 12, (h - 60) / 7))
-    cell = math.max(26, math.min(56, cell))
+    cell = math.max(26, math.min(92, cell))
     local size = cell - 7
     local treeW = cell * 4
     local x0 = math.max(8, math.floor((w - (3 * treeW + 2 * gapTree)) / 2))
+    -- spare height: the picture sits a little below the top, not glued to it
+    local y0 = 14 + math.max(0, math.floor((h - 60 - 7 * cell) / 5))
     local used = 0
     for tab = 1, 3 do
       local left = x0 + (tab - 1) * (treeW + gapTree)
@@ -728,7 +730,7 @@ do
           local want = p and p.pts or 0
           n:SetSize(size, size)
           n:ClearAllPoints()
-          n:SetPoint("TOPLEFT", tree, "TOPLEFT", left + (col - 1) * cell + 4, -44 - (row - 1) * cell)
+          n:SetPoint("TOPLEFT", tree, "TOPLEFT", left + (col - 1) * cell + 4, -y0 - 30 - (row - 1) * cell)
           local sid = spellOf[name]
           local tex = sid and C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(sid)
           if tex and ns.IsSecret(tex) then tex = nil end
@@ -770,7 +772,7 @@ do
         tree.heads[tab] = head
       end
       head:ClearAllPoints()
-      head:SetPoint("TOP", tree, "TOPLEFT", left + treeW / 2, -14)
+      head:SetPoint("TOP", tree, "TOPLEFT", left + treeW / 2, -y0)
       head:SetText(TREE_NAME[tab] .. "  " .. C.WHITE .. spent .. "|r")
     end
     -- the arrows: a talent that needs another one first
@@ -829,7 +831,8 @@ do
     for k, btn in pairs(buttons) do if k == build.key then btn:LockHighlight() else btn:UnlockHighlight() end end
     local steps, nextStep = BuildProgress(build)
     local free = ns.FreeTalentPoints()
-    add(0, ns.Icon(build.key == "raid" and "Ability_TrueShot" or "Ability_Druid_FerociousBite"), build.label .. "  " .. C.GREY .. build.split .. "|r",
+    -- the list is narrow (the trees sit beside it): the build's short name and its split
+    add(0, ns.Icon(build.key == "raid" and "Ability_TrueShot" or "Ability_Druid_FerociousBite"), (build.label:gsub("%s*%(.-%)", "")) .. "  " .. C.GREY .. build.split .. "|r",
       free and free > 0 and (C.GREEN .. ns.Count(free, L["point to spend"], L["points to spend"]) .. "|r") or "", nil,
       { build.label, L["Source: "] .. build.source, L["Open your talent window: the next talent in this build glows green."] }, { header = true })
     if not MapTalents()[1]["Deadly Aspects"] then
@@ -862,9 +865,9 @@ do
       if WHY[st.name] then tip[#tip + 1] = C.GREEN .. WHY[st.name] .. "|r" end
       add(14, nil, string.format("%s%d.|r %s%s|r  %s%d/%d|r", C.GREY, i, color, label, C.GREY, st.done, st.pts),
         (isNext and (C.GOLD .. L["next"] .. "  |r") or "") .. C.GREY .. L["lvl "] .. lvlText .. "|r", nil, tip)
-      if isNext and WHY[st.name] then add(28, nil, C.GREY .. WHY[st.name] .. "|r") end
     end
-    add(0, nil, C.GREY .. L["Builds are common community picks. Swap points to suit your pet and playstyle."] .. "|r")
+    add(0, nil, C.GREY .. L["Community builds: adjust to taste."] .. "|r", "", nil,
+      { L["Builds"], L["Builds are common community picks. Swap points to suit your pet and playstyle."] })
     list:Set(rows)
     local okT, errT = pcall(FillTree, build, steps, nextStep)
     if not okT then ns.talentTreeError = tostring(errT) end

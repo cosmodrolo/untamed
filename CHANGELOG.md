@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.40.1
+- Talents: in a large window the trees stayed small in a corner of an empty panel. The icons now grow with the window (up to about one and a half times bigger) and the picture sits lower when there is height to spare.
+- Talents: three lines in the order list were cut off. The heading now shows the build's short name and its split, the note under the next talent is gone (it's in the tooltip), and the closing note is short with the full text in its tooltip.
+
 ## v2.40.0
 A second look for the window: Blizzard.
 - Settings, Basics, "Look of the window": Savage Land (the green one, still the default) or Blizzard. Type /reload after switching.
