@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.38.4
+A sweep of everywhere gear is scored, after the suffix fix.
+- Need alert on loot rolls: it scored the rolled item by its number alone, so a suffixed green ("of the Monkey") that was an upgrade got no alert. It reads the rolled item's own tooltip now.
+- Suffixes that give attack power ("of Power", "of Marksmanship") are read too: their bonus is an "Equip: +14 Attack Power" line, which the first pass didn't count. Attack power that only works in a druid form or against one kind of creature is left out.
+- /ut worn lists every item you wear with its score and rank, so a wrong score is easy to spot.
+- Checked and already right: item tooltips, bag arrows, what you wear, ranks, the weakest slot, quest reward advice. Unchanged on purpose: the Gear, Dungeons and Reputation lists, which show items with fixed stats. Greens whose stats come only from a random suffix aren't listed there, since which suffix drops is luck.
+
 ## v2.38.3
 - Gear scores missed random suffixes after all: Archer's Shoulderpads of the Beast (+5 Agility, +8 Stamina, all from its suffix) scored 0 and read as "-2 vs what you wear, rank 80 of 80". The game's stats call doesn't report a suffix on WoW Forever, which the first version (2.32.0) relied on. Untamed now also reads the "+N Stat" lines of the item's own tooltip, which is what you see, and counts whichever finds more. This covers item tooltips, bag arrows, what you wear, ranks, the weakest slot and quest reward advice.
 

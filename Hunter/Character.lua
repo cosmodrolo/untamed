@@ -823,6 +823,31 @@ function ns.GearRank(id, link, tdata)
   return rank, total, best, score
 end
 
+-- /ut worn: what Untamed makes of everything you wear, one line per slot, so a wrong score is easy to spot.
+function ns.GearWornReport()
+  ns.Print(L["What you wear, as Untamed scores it:"])
+  local level = UnitLevel("player") or 1
+  local seenInv = {}
+  for _, s in ipairs(SLOTS) do
+    for _, inv in ipairs({ s[2], s[3] }) do
+      if inv and not seenInv[inv] then
+        seenInv[inv] = true
+        local id = GetInventoryItemID("player", inv)
+        if id then
+          local link = GetInventoryItemLink and GetInventoryItemLink("player", inv)
+          local score = WornAt(inv)
+          local _, g = ns.GearScoreOf(id, link)
+          local rank, total = RankOfScore(s[1], score, level)
+          ns.Print(string.format("%s%s|r  %s  %s", C.GREY, SLOT_LABEL[s[1]] or s[1], (type(link) == "string" and not ns.IsSecret(link)) and link or ("item " .. id),
+            g and string.format(L["score %d, rank %d of %d"], score, rank, total) or (C.GREY .. L["not scored"] .. "|r")))
+        end
+      end
+    end
+  end
+  local off = GetInventoryItemID("player", 17)
+  if off then ns.Print(string.format("%s%s|r  %s", C.GREY, L["Off hand"], string.format(L["score %d"], WornAt(17)))) end
+end
+
 -- "Rank 3 of 41 shoulders you can wear at level 38."
 function ns.GearRankText(id, link, short, tdata)
   local rank, total, best = ns.GearRank(id, link, tdata)

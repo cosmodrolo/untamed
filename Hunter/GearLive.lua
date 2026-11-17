@@ -116,12 +116,25 @@ local function LineStats(tdata)
   local lines = tdata.lines
   if type(lines) ~= "table" or ns.IsSecret(lines) then return nil end
   local names, out, any = StatNames(), {}, false
+  local apNames = { (type(ITEM_MOD_RANGED_ATTACK_POWER_SHORT) == "string" and ITEM_MOD_RANGED_ATTACK_POWER_SHORT or "Ranged Attack Power"):lower(),
+    (type(ITEM_MOD_ATTACK_POWER_SHORT) == "string" and ITEM_MOD_ATTACK_POWER_SHORT or "Attack Power"):lower() }
   for _, line in ipairs(lines) do
     local text = type(line) == "table" and line.leftText
     if type(text) == "string" and not ns.IsSecret(text) then
       text = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
       local n, name = text:match("^%+(%d+)%s+(.-)%s*$")
       local key = name and names[name:lower()]
+      if not key then
+        -- "Equip: +14 Attack Power." (suffixes like "of Power" and "of Marksmanship"). Not the
+        -- kinds that only count in a druid form or against one kind of creature.
+        local low = text:lower()
+        local amount = low:match("%+(%d+)")
+        if amount and not low:find(" forms", 1, true) and not low:find("when fighting", 1, true) then
+          local rap, ap = apNames[1], apNames[2]
+          if low:find(rap, 1, true) then key, n = "ITEM_MOD_RANGED_ATTACK_POWER_SHORT", amount
+          elseif low:find(ap, 1, true) then key, n = "ITEM_MOD_ATTACK_POWER_SHORT", amount end
+        end
+      end
       if key then out[key] = (out[key] or 0) + tonumber(n); any = true end
     end
   end

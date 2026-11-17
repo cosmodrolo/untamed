@@ -59,15 +59,19 @@ end
 
 -- is it hunter gear for you (Untamed's gear list: usable, mail from 40), and how much better than
 -- what you wear in that slot: gain (nil = not for you)
-local function ForMe(id)
+-- link and tdata (the item's own tooltip) are for a real item in front of you: they carry a
+-- random suffix's stats ("of the Monkey"), which the item's number alone doesn't.
+local function ForMe(id, link, tdata)
   local g = ns.GearItems and ns.GearItems[tonumber(id) or 0]
   if not g then return nil end
   if g[4] == 1 and (UnitLevel("player") or 1) < 40 then return nil end
   local worn = ns.GearWornScore and ns.GearWornScore(g[1]) or 0
+  local score = g[3]
+  if (link or tdata) and ns.GearScoreOf then score = (ns.GearScoreOf(id, link, tdata)) end
   -- items scored in game (not in the shipped list) count only when they're an upgrade, so
   -- caster cloth and the like stay off the card
-  if g.live and g[3] - worn <= 0 then return nil end
-  return g[3] - worn, g
+  if g.live and score - worn <= 0 then return nil end
+  return score - worn, g
 end
 ns.LootForMe = ForMe
 
@@ -301,7 +305,12 @@ function ns.OnLootRoll(rollID)
   local link = GetLootRollItemLink and GetLootRollItemLink(rollID)
   if not link or (issecretvalue and issecretvalue(link)) then return end
   local id = tonumber(link:match("item:(%d+)"))
-  local gain = ForMe(id)
+  local tdata
+  if C_TooltipInfo and C_TooltipInfo.GetLootRollItem then
+    local okT, t = pcall(C_TooltipInfo.GetLootRollItem, rollID)
+    tdata = okT and t or nil
+  end
+  local gain = ForMe(id, link, tdata)
   if not gain then return end
   if ns.HaveItem(id) then
     ns.Print(MUTED .. string.format(L["You already have %s: greed or pass."], link) .. "|r")

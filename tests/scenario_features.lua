@@ -587,6 +587,15 @@ do
   C_TooltipInfo = { GetHyperlink = function(l) return { lines = { { leftText = "Archer's Shoulderpads" } } } end }
   local s = ns.GearScoreOf(up, nil, tip)
   check(s == base + 16, "the suffix adds agility x2.4 + stamina x0.5 = 16: " .. tostring(s - base))
+  local ap = ns.GearLineStats({ lines = { { leftText = "Equip: +14 Attack Power." }, { leftText = "Equip: +10 ranged Attack Power." },
+    { leftText = "Equip: +40 Attack Power in Cat, Bear, and Dire Bear forms only." }, { leftText = "Equip: +30 Attack Power when fighting Beasts." } } })
+  check(ap.ITEM_MOD_ATTACK_POWER_SHORT == 14 and ap.ITEM_MOD_RANGED_ATTACK_POWER_SHORT == 10, "attack power lines count, form-only and beast-only ones don't")
+  -- a loot roll on a suffixed item: the Need alert sees the suffix
+  local worn = ns.GearWornScore("SHOULDER")
+  local plain = ns.LootForMe(up)
+  local withSuffix = ns.LootForMe(up, nil, tip)
+  check(withSuffix == (plain or (base - worn)) + 16, "loot roll: the suffix counts toward the gain")
   C_TooltipInfo = kTip
+  ns.GearWornReport()
 end
 print("DONE")
