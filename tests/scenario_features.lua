@@ -598,4 +598,13 @@ do
   C_TooltipInfo = kTip
   ns.GearWornReport()
 end
+-- Talents page: the tree picture next to the order list
+do
+  ns.talentTreeError = nil
+  ns.UI_Show("talents")
+  check(ns.talentTreeError == nil, "talent tree draws: " .. tostring(ns.talentTreeError))
+  ns.cdb.talentBuild = "raid"; ns.UI_Refresh()
+  check(ns.talentTreeError == nil, "talent tree draws for the raid build: " .. tostring(ns.talentTreeError))
+  ns.cdb.talentBuild = nil
+end
 print("DONE")

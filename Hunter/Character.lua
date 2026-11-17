@@ -165,36 +165,39 @@ end
 ---------------------------------------------------------------------------
 -- WoW Forever talent trees (wowhead.com/forever/talent-calc/hunter, Nov 2026): per tab, the
 -- talents per tier in column order, with max ranks. Used to know which tree a talent is in.
+-- Each talent: { name, ranks, column }. Rows and columns are the talent window's own (read off the
+-- Forever talent window, Nov 2026), so Untamed's tree picture matches it.
 local TREES = {
   { -- Beast Mastery
-    { { "Deadly Aspects", 5 }, { "Endurance Training", 5 } },
-    { { "Focused Fire", 2 }, { "Improved Aspect of the Monkey", 3 }, { "Improved Revive Pet", 2 } },
-    { { "Pathfinding", 2 }, { "Bestial Swiftness", 1 }, { "Unleashed Fury", 5 } },
-    { { "Improved Mend Pet", 2 }, { "Ferocity", 5 }, { "Summon Hawk", 1 } },
-    { { "Spirit Bond", 2 }, { "Intimidation", 1 }, { "Bestial Discipline", 2 } },
-    { { "Frenzy", 5 } },
-    { { "Bestial Wrath", 1 } },
+    { { "Deadly Aspects", 5, 2 }, { "Endurance Training", 5, 3 } },
+    { { "Focused Fire", 2, 1 }, { "Improved Aspect of the Monkey", 3, 2 }, { "Improved Revive Pet", 2, 3 } },
+    { { "Pathfinding", 2, 1 }, { "Bestial Swiftness", 1, 2 }, { "Unleashed Fury", 5, 3 } },
+    { { "Improved Mend Pet", 2, 1 }, { "Ferocity", 5, 3 }, { "Summon Hawk", 1, 4 } },
+    { { "Spirit Bond", 2, 1 }, { "Intimidation", 1, 2 }, { "Bestial Discipline", 2, 4 } },
+    { { "Frenzy", 5, 3 } },
+    { { "Bestial Wrath", 1, 2 } },
   },
   { -- Marksmanship
-    { { "Hawk Eye", 3 }, { "Improved Concussive Shot", 5 }, { "Lethal Attacks", 5 } },
-    { { "Improved Stings", 3 }, { "Efficiency", 5 }, { "Careful Aim", 5 } },
-    { { "Rapid Killing", 2 }, { "Improved Arcane Shot", 5 }, { "Lone Wolf", 1 } },
-    { { "Trueshot Aura", 1 }, { "Mortal Shots", 5 } },
-    { { "Rapid Recuperation", 2 }, { "Barrage", 3 }, { "Scatter Shot", 1 } },
-    { { "Ranged Weapon Specialization", 5 } },
-    { { "Sniper Shot", 1 } },
+    { { "Hawk Eye", 3, 1 }, { "Improved Concussive Shot", 5, 2 }, { "Lethal Attacks", 5, 3 } },
+    { { "Improved Stings", 3, 1 }, { "Efficiency", 5, 2 }, { "Careful Aim", 5, 3 } },
+    { { "Rapid Killing", 2, 1 }, { "Improved Arcane Shot", 5, 2 }, { "Lone Wolf", 1, 4 } },
+    { { "Trueshot Aura", 1, 2 }, { "Mortal Shots", 5, 3 } },
+    { { "Rapid Recuperation", 2, 1 }, { "Barrage", 3, 3 }, { "Scatter Shot", 1, 4 } },
+    { { "Ranged Weapon Specialization", 5, 3 } },
+    { { "Sniper Shot", 1, 2 } },
   },
   { -- Survival
-    { { "Improved Tracking", 5 }, { "Deflection", 5 } },
-    { { "Entrapment", 5 }, { "Savage Strikes", 2 }, { "Survivalist", 5 }, { "Improved Wing Clip", 3 } },
-    { { "Clever Traps", 2 }, { "Surefooted", 3 }, { "Deterrence", 1 } },
-    { { "Survival Tactics", 2 }, { "Predator's Edge", 5 }, { "Counterattack", 1 } },
-    { { "Resourcefulness", 2 }, { "Expose Prey", 2 }, { "Survivalist's Discipline", 2 }, { "Strider Kick", 1 } },
-    { { "Lightning Reflexes", 5 } },
-    { { "Lacerating Strikes", 1 } },
+    { { "Improved Tracking", 5, 2 }, { "Deflection", 5, 3 } },
+    { { "Entrapment", 5, 1 }, { "Savage Strikes", 2, 2 }, { "Survivalist", 5, 3 }, { "Improved Wing Clip", 3, 4 } },
+    { { "Clever Traps", 2, 1 }, { "Surefooted", 3, 2 }, { "Deterrence", 1, 3 } },
+    { { "Survival Tactics", 2, 1 }, { "Predator's Edge", 5, 2 }, { "Counterattack", 1, 3 } },
+    { { "Resourcefulness", 2, 1 }, { "Expose Prey", 2, 2 }, { "Survivalist's Discipline", 2, 3 }, { "Strider Kick", 1, 4 } },
+    { { "Lightning Reflexes", 5, 3 } },
+    { { "Lacerating Strikes", 1, 2 } },
   },
 }
 local TREE_NAME = { L["Beast Mastery"], L["Marksmanship"], L["Survival"] }
+local TREE_SHORT = { "BM", "MM", "SV" }
 
 -- The arrows in the talent window: a talent that needs another one maxed first (read off the
 -- Forever talent window, Nov 16 2026). A build that skips one of these can never reach its talent.
@@ -648,7 +651,151 @@ do
 end
 
 do
-  local list, buttons = nil, {}
+  local list, buttons, tree = nil, {}, nil
+  local LIST_W = 430
+
+  -- one talent in the picture: its icon, "2/5" and its place in the build's order
+  local function Node(key)
+    local n = tree.nodes[key]
+    if n then return n end
+    n = CreateFrame("Button", nil, tree)
+    n.edge = n:CreateTexture(nil, "BACKGROUND")
+    n.edge:SetAllPoints()
+    n.icon = n:CreateTexture(nil, "ARTWORK")
+    n.icon:SetPoint("TOPLEFT", 2, -2)
+    n.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+    n.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    n.rank = n:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    n.rank:SetPoint("BOTTOMRIGHT", 3, -4)
+    n.rankBg = n:CreateTexture(nil, "ARTWORK", nil, 2)
+    n.rankBg:SetPoint("TOPLEFT", n.rank, "TOPLEFT", -2, 1)
+    n.rankBg:SetPoint("BOTTOMRIGHT", n.rank, "BOTTOMRIGHT", 2, -1)
+    n.rankBg:SetColorTexture(0, 0, 0, 0.85)
+    n.order = n:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    n.order:SetPoint("TOPLEFT", -3, 4)
+    n.orderBg = n:CreateTexture(nil, "ARTWORK", nil, 2)
+    n.orderBg:SetPoint("TOPLEFT", n.order, "TOPLEFT", -2, 1)
+    n.orderBg:SetPoint("BOTTOMRIGHT", n.order, "BOTTOMRIGHT", 2, -1)
+    n.orderBg:SetColorTexture(0, 0, 0, 0.85)
+    n:SetScript("OnClick", function() end)
+    n:SetScript("OnEnter", function(self) if self.tip then ns.ShowTooltip(self, self.tip) end end)
+    n:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    tree.nodes[key] = n
+    return n
+  end
+
+  local function FillTree(build, steps, nextStep)
+    tree.fill = function() ns.UI_Refresh() end
+    local map = MapTalents()
+    local spellOf = {}
+    for id, name in pairs(TALENT_SPELL) do spellOf[name] = id end
+    -- what the build does with each talent: its place in the order, the points and the levels
+    local plan, level = {}, 9
+    for i, st in ipairs(steps) do
+      local first = level + 1
+      level = level + st.pts
+      local key = st.tab .. st.name
+      local p = plan[key]
+      if not p then p = { order = i, pts = 0, lines = {} }; plan[key] = p end
+      p.pts = p.pts + st.pts
+      p.lines[#p.lines + 1] = string.format(L["Step %d: %s, at level %s"], i, ns.Count(st.pts, L["point"], L["points"]),
+        st.pts > 1 and (first .. "-" .. level) or tostring(first))
+      if st == nextStep then p.isNext = true end
+    end
+    -- the size that fits: three trees of four columns and seven rows, plus their headings
+    local w, h = tree:GetWidth(), tree:GetHeight()
+    if type(w) ~= "number" or w < 100 then w = 500 end
+    if type(h) ~= "number" or h < 100 then h = 420 end
+    local gapTree = 18
+    local cell = math.floor(math.min((w - 2 * gapTree - 24) / 12, (h - 60) / 7))
+    cell = math.max(26, math.min(52, cell))
+    local size = cell - 8
+    local treeW = cell * 4
+    local x0 = math.max(8, math.floor((w - (3 * treeW + 2 * gapTree)) / 2))
+    local used = 0
+    for tab = 1, 3 do
+      local left = x0 + (tab - 1) * (treeW + gapTree)
+      local spent = 0
+      for row, talents in ipairs(TREES[tab]) do
+        for _, t in ipairs(talents) do
+          local name, max, col = t[1], t[2], t[3]
+          local key = tab .. name
+          local n = Node(key)
+          local m = map[tab][name]
+          local have = 0
+          if m then local okR, r = pcall(TraitRank, m.node); have = okR and r or 0 end
+          spent = spent + have
+          local p = plan[key]
+          local want = p and p.pts or 0
+          n:SetSize(size, size)
+          n:ClearAllPoints()
+          n:SetPoint("TOPLEFT", tree, "TOPLEFT", left + (col - 1) * cell + 4, -44 - (row - 1) * cell)
+          local sid = spellOf[name]
+          local tex = sid and C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(sid)
+          if tex and ns.IsSecret(tex) then tex = nil end
+          n.icon:SetTexture(tex or "Interface\\Icons\\INV_Misc_QuestionMark")
+          local idle = want == 0 and have == 0
+          n.icon:SetDesaturated(idle)
+          n.icon:SetAlpha(idle and 0.35 or 1)
+          local col3
+          if have > want then col3 = { 1, 0.6, 0.2 }                      -- more points than the build has
+          elseif p and p.isNext then col3 = ns.Theme.accent               -- the next point goes here
+          elseif want > 0 and have >= want then col3 = { 0.25, 0.9, 0.3 } -- done
+          elseif want > 0 then col3 = { 0.75, 0.8, 0.75 }                 -- still to come
+          else col3 = { 0.2, 0.25, 0.2 } end
+          n.edge:SetColorTexture(col3[1], col3[2], col3[3], idle and 0.6 or 1)
+          n.rank:SetText((have >= math.max(want, 1) and want > 0 and C.GREEN or (have > 0 and C.WHITE or C.GREY)) .. have .. "/" .. max .. "|r")
+          n.rank:SetShown(not idle); n.rankBg:SetShown(not idle)
+          n.order:SetText(p and ((p.isNext and C.GOLD or C.WHITE) .. p.order .. "|r") or "")
+          n.orderBg:SetShown(p ~= nil)
+          local label = m and m.name or name
+          local tip = { label, string.format(L["Rank %d of %d"], have, max) }
+          local text = m and TalentText(m.entry, math.max(1, math.min(max, math.max(have, want))))
+          if text then tip[#tip + 1] = C.WHITE .. text .. "|r" end
+          if p then
+            for _, line in ipairs(p.lines) do tip[#tip + 1] = (p.isNext and C.GOLD or C.GREY) .. line .. "|r" end
+            if p.isNext then tip[#tip + 1] = C.GOLD .. L["Your next point goes here."] .. "|r" end
+          else
+            tip[#tip + 1] = C.GREY .. L["Not in this build."] .. "|r"
+          end
+          if PREREQ[name] then tip[#tip + 1] = C.GREY .. string.format(L["Needs %s first."], PREREQ[name]) .. "|r" end
+          if WHY[name] then tip[#tip + 1] = C.GREEN .. WHY[name] .. "|r" end
+          n.tip = tip
+          n:Show()
+          n.col, n.row, n.tab = col, row, tab
+        end
+      end
+      local head = tree.heads[tab]
+      if not head then
+        head = tree:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        tree.heads[tab] = head
+      end
+      head:ClearAllPoints()
+      head:SetPoint("TOP", tree, "TOPLEFT", left + treeW / 2, -14)
+      head:SetText(TREE_NAME[tab] .. "  " .. C.WHITE .. spent .. "|r")
+    end
+    -- the arrows: a talent that needs another one first
+    local i = 0
+    for name, need in pairs(PREREQ) do
+      local a, b
+      for tab = 1, 3 do
+        if tree.nodes[tab .. name] and tree.nodes[tab .. need] then a, b = tree.nodes[tab .. need], tree.nodes[tab .. name] end
+      end
+      if a and b then
+        i = i + 1
+        local line = tree.links[i]
+        if not line then line = tree:CreateTexture(nil, "BORDER"); tree.links[i] = line end
+        local inBuild = plan[b.tab .. name] ~= nil
+        line:SetColorTexture(inBuild and ns.Theme.accent[1] or 0.4, inBuild and ns.Theme.accent[2] or 0.45, inBuild and ns.Theme.accent[3] or 0.4, inBuild and 0.9 or 0.6)
+        line:ClearAllPoints()
+        line:SetWidth(3)
+        line:SetPoint("TOP", a, "BOTTOM", 0, 0)
+        line:SetPoint("BOTTOM", b, "TOP", 0, 0)
+        line:Show()
+      end
+    end
+    for k = i + 1, #tree.links do tree.links[k]:Hide() end
+  end
   local function Build(panel)
     local x = 4
     for _, b in ipairs(BUILDS) do
@@ -657,7 +804,23 @@ do
       buttons[b.key] = btn
       x = x + 174
     end
-    list = ns.NewList(panel, 36)
+    -- left: the order to take them in. right: the talent trees, as in the talent window.
+    local left = CreateFrame("Frame", nil, panel)
+    left:SetPoint("TOPLEFT", 0, -36)
+    left:SetPoint("BOTTOMLEFT", 0, 0)
+    left:SetWidth(LIST_W)
+    list = ns.NewList(left, 0)
+    tree = CreateFrame("Frame", nil, panel)
+    tree:SetPoint("TOPLEFT", left, "TOPRIGHT", 12, 0)
+    tree:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -4, 4)
+    ns.Skin(tree, ns.Theme.deep, 0.5, ns.Theme.line, 1, 0)
+    tree.heads, tree.nodes, tree.links = {}, {}, {}
+    local pending
+    tree:SetScript("OnSizeChanged", function()
+      if pending then return end
+      pending = true
+      C_Timer.After(0.1, function() pending = false; if tree:IsVisible() and tree.fill then tree.fill() end end)
+    end)
   end
 
   local function Refresh()
@@ -698,13 +861,15 @@ do
       local text = TalentText(st.entry, last)
       if text then tip[#tip + 1] = (st.pts > 1 and string.format(L["At rank %d: "], last) or "") .. C.WHITE .. text .. "|r" end
       if WHY[st.name] then tip[#tip + 1] = C.GREEN .. WHY[st.name] .. "|r" end
-      add(14, nil, string.format("%s%s|r  %s%d/%d|r", color, label, C.GREY, st.done, st.pts),
-        TREE_NAME[st.tab] .. (isNext and (C.GOLD .. "   " .. L["next"] .. "|r") or ""), nil, tip,
+      add(14, nil, string.format("%s%d.|r %s%s|r  %s%d/%d|r", C.GREY, i, color, label, C.GREY, st.done, st.pts),
+        isNext and (C.GOLD .. L["next"] .. "|r") or (C.GREY .. TREE_SHORT[st.tab] .. "|r"), nil, tip,
         { mid = C.GREY .. L["lvl "] .. lvlText .. "|r" })
       if isNext and WHY[st.name] then add(28, nil, C.GREY .. WHY[st.name] .. "|r") end
     end
     add(0, nil, C.GREY .. L["Builds are common community picks. Swap points to suit your pet and playstyle."] .. "|r")
     list:Set(rows)
+    local okT, errT = pcall(FillTree, build, steps, nextStep)
+    if not okT then ns.talentTreeError = tostring(errT) end
   end
   ns.RegisterTab("talents", L["Talents"], Build, Refresh)
 end

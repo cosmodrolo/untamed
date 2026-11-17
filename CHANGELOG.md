@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.39.0
+The Talents page shows the talent trees.
+- Next to the order list there is now a picture of all three trees, laid out like the game's talent window: every talent's icon in its own row and column, with the arrows between talents that need another one first.
+- Each talent in your build carries a number: its place in the order. The list on the left is numbered the same way, so "7." in the list is the icon marked 7.
+- Colors: gold is where your next point goes, green is done, pale is still to come, orange has more points than the build, and talents the build skips are dimmed. Each icon shows your points in it ("2/5"), and each tree's heading shows the points you've spent there.
+- Point at an icon (or move to it with the D-pad) for what the talent does, which step and levels the build takes it at, and what it needs first.
+- The picture sizes itself to the window.
+
 ## v2.38.4
 A sweep of everywhere gear is scored, after the suffix fix.
 - Need alert on loot rolls: it scored the rolled item by its number alone, so a suffixed green ("of the Monkey") that was an upgrade got no alert. It reads the rolled item's own tooltip now.
