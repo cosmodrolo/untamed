@@ -164,6 +164,8 @@ local SECTIONS = {
       { "check", L["Open on the Today page"], "openHome", L["Untamed opens on Today (what's worth doing now) instead of the page you left."] },
       { "check", L["Use the controller in this window"], "pad", L["D-pad moves, Cross selects, Circle goes back, L1 and R1 change sections. Your buttons go back to the game when the window closes or a fight starts."], on = true,
         after = function(v) if ns.PadCommand then ns.PadCommand(v and "on" or "off") end end },
+      { "choose", L["Look of the window"], "theme", { { "savage", L["Savage Land (green)"] }, { "blizzard", L["Blizzard (like the game's windows)"] } }, "savage",
+        after = function() ns.Print(C.GOLD .. L["Type /reload to see the new look."] .. "|r") end },
       { "button", L["Reset this window's size"], function() if ns.UI_ResetWindow then ns.UI_ResetWindow() end end, L["Back to its starting size, in the middle of the screen. Also /ut window reset."] },
     } },
   { key = "display", title = L["Under your character"], icon = "Ability_Hunter_SniperShot",
@@ -330,8 +332,9 @@ local function BuildSettings(panel, top)
         local fs = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         fs:SetPoint("TOPLEFT", 42, y - 5)
         fs:SetText(label)
+        local after = it.after
         local d = ns.MakeDropdown(page, 230, options, function() local v = ns.db[key]; if v == nil then v = default end return v end,
-          function(v) ns.db[key] = v; if ns.RangePaint then ns.RangePaint() end end)
+          function(v) ns.db[key] = v; if ns.RangePaint then ns.RangePaint() end; if after then after(v) end end)
         d:SetPoint("TOPLEFT", 240, y)
         y = y - 34
       elseif kind == "button" then

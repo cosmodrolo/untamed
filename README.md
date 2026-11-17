@@ -70,7 +70,7 @@ pip install lupa
 python tests/run.py
 ```
 
-Six scenarios load the addon exactly as the game does (from the TOC) against a mocked WoW API and exercise each page and feature. They run on every push.
+Seven scenarios load the addon exactly as the game does (from the TOC) against a mocked WoW API and exercise each page and feature. They run on every push.
 
 ## Data sources and credits
 

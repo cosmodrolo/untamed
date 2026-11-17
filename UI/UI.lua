@@ -28,6 +28,53 @@ local T = {
 }
 ns.Theme = T
 
+-- A second look: "Blizzard". The game's own metal window frame and stone backing, with dark
+-- panels, bronze lines and the game's gold. Chosen in Settings (ns.db.theme); the colors are put
+-- in place once, when your settings load, before any window is built, so it takes a /reload.
+local BLIZZARD = {
+  window = { 0.050, 0.048, 0.052 },
+  bar    = { 0.030, 0.028, 0.030 },
+  panel  = { 0.095, 0.088, 0.082 },
+  deep   = { 0.032, 0.030, 0.034 },
+  button = { 0.170, 0.135, 0.100 },
+  line   = { 0.430, 0.345, 0.200 },
+  accent = { 1.000, 0.820, 0.000 },
+  ink    = { 0.160, 0.100, 0.000 },
+}
+function ns.ApplyTheme()
+  if not (ns.db and ns.db.theme == "blizzard") then return end
+  for k, v in pairs(BLIZZARD) do T[k][1], T[k][2], T[k][3] = v[1], v[2], v[3] end
+  T.blizzard = true
+end
+
+-- The Blizzard look's window art, on OUR frame: the game's nine-slice metal border (the same one
+-- its own windows use, minus the portrait), its stone backing and its close button. Only art is
+-- borrowed: no Blizzard panel template, so the gamepad UI doesn't treat this as one of its panels.
+-- Returns true when the art went on.
+local function BlizzardFrameArt(frame, onClose)
+  if not (NineSliceUtil and NineSliceUtil.ApplyLayoutByName) then return false end
+  local ok = pcall(function()
+    local stone = frame:CreateTexture(nil, "BACKGROUND", nil, -6)
+    stone:SetPoint("TOPLEFT", 2, -21)
+    stone:SetPoint("BOTTOMRIGHT", -2, 2)
+    stone:SetTexture("Interface\\FrameGeneral\\UI-Background-Rock", "REPEAT", "REPEAT")
+    stone:SetHorizTile(true); stone:SetVertTile(true)
+    stone:SetVertexColor(0.55, 0.55, 0.6)
+    local nine = CreateFrame("Frame", nil, frame, "NineSlicePanelTemplate")
+    NineSliceUtil.ApplyLayoutByName(nine, "ButtonFrameTemplateNoPortrait")
+    frame.blizzNine = nine
+  end)
+  if not ok then return false end
+  pcall(function()
+    local x = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+    x:SetPoint("TOPRIGHT", 1, 0)
+    x:SetFrameLevel((frame.blizzNine:GetFrameLevel() or 500) + 10)
+    x:SetScript("OnClick", onClose)       -- ours, not the template's (which goes through Blizzard's panel code)
+    frame.blizzClose = x
+  end)
+  return true
+end
+
 -- shade a texture from one color to another (flat if this client can't)
 function ns.Gradient(tex, orient, r1, g1, b1, a1, r2, g2, b2, a2)
   if not (tex.SetGradient and CreateColor) then return false end
@@ -1296,15 +1343,21 @@ end
 local function CreateMainFrame()
   frame = CreateFrame("Frame", "UntamedFrame", UIParent)
   Skin(frame, T.window, 0.97, T.line, 1, 0.45)
-  -- our own title bar and close button (no Blizzard frame art)
+  -- Savage Land: our own title bar and close button. Blizzard look: the game's metal frame.
+  local blizzard = T.blizzard and BlizzardFrameArt(frame, function() frame:Hide() end)
   local bar = CreateFrame("Frame", nil, frame)
   bar:SetPoint("TOPLEFT", 1, -1); bar:SetPoint("TOPRIGHT", -1, -1)
   bar:SetHeight(23)
-  Skin(bar, T.bar, 1)
-  local barRule = bar:CreateTexture(nil, "ARTWORK")
-  barRule:SetPoint("BOTTOMLEFT"); barRule:SetPoint("BOTTOMRIGHT")
-  barRule:SetHeight(1)
-  barRule:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 0.55)
+  if blizzard then
+    -- the title sits on the metal top edge, above the border art
+    bar:SetFrameLevel((frame.blizzNine:GetFrameLevel() or 500) + 5)
+  else
+    Skin(bar, T.bar, 1)
+    local barRule = bar:CreateTexture(nil, "ARTWORK")
+    barRule:SetPoint("BOTTOMLEFT"); barRule:SetPoint("BOTTOMRIGHT")
+    barRule:SetHeight(1)
+    barRule:SetColorTexture(T.accent[1], T.accent[2], T.accent[3], 0.55)
+  end
   -- v2.9 made everything roomier: reset a window size saved by older versions once.
   if ns.db.win and ns.db.win.layout ~= 2 then ns.db.win.w, ns.db.win.h = nil, nil; ns.db.win.layout = 2 end
   local win = ns.db.win or {}
@@ -1333,14 +1386,19 @@ local function CreateMainFrame()
 
   local title = bar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   title:SetPoint("CENTER", 10, 0)
-  title:SetText("U N T A M E D")
-  local mark = bar:CreateTexture(nil, "ARTWORK")
-  mark:SetSize(17, 17)
-  mark:SetPoint("RIGHT", title, "LEFT", -8, 0)
-  mark:SetTexture("Interface\\AddOns\\Untamed\\Media\\Icon")
-  local close = ns.MakeButton(bar, "X", 24, function() frame:Hide() end)
-  close:SetSize(24, 19)
-  close:SetPoint("RIGHT", -3, 0)
+  title:SetText(blizzard and "Untamed" or "U N T A M E D")
+  if blizzard then title:SetPoint("CENTER", 0, 1) end
+  if not blizzard then
+    local mark = bar:CreateTexture(nil, "ARTWORK")
+    mark:SetSize(17, 17)
+    mark:SetPoint("RIGHT", title, "LEFT", -8, 0)
+    mark:SetTexture("Interface\\AddOns\\Untamed\\Media\\Icon")
+  end
+  if not (blizzard and rawget(frame, "blizzClose")) then
+    local close = ns.MakeButton(bar, "X", 24, function() frame:Hide() end)
+    close:SetSize(24, 19)
+    close:SetPoint("RIGHT", -3, 0)
+  end
 
   BuildHeader()
   BuildSectionBar()

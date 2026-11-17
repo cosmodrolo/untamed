@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.40.0
+A second look for the window: Blizzard.
+- Settings, Basics, "Look of the window": Savage Land (the green one, still the default) or Blizzard. Type /reload after switching.
+- The Blizzard look gives the window the game's own metal frame, stone backing and close button, with dark panels, bronze lines and the game's gold in place of the green and amber.
+- This is the frame only, a first step: buttons, tabs, lists, dropdowns and scroll bars keep Untamed's shapes in the new colors.
+- Only the art is borrowed. The window is still Untamed's own frame, not one of the game's panels, so the controller is handled exactly as before.
+
 ## v2.39.1
 - Talents: the names in the order list were cut to two letters ("1. En..."). The level now sits at the right of each row and the names have the room.
 - Talents: the tree picture is bigger. The list takes less width and the trees are packed closer.

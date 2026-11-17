@@ -506,6 +506,7 @@ ev:RegisterEvent("PLAYER_LOGIN")
 ev:SetScript("OnEvent", function(self, event, arg1, arg2, arg3, arg4)
   if event == "ADDON_LOADED" and arg1 == ADDON then
     InitDB()
+    if ns.ApplyTheme then ns.ApplyTheme() end      -- the look, before any window is built
     MergeObserved()
     ns.BuildIndex()
   elseif event == "PLAYER_LOGIN" then
