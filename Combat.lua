@@ -2,7 +2,7 @@ local _, ns = ...
 local L = ns.L
 local C = ns.C
 
--- Combat helpers: Growl warning, aspect and Hunter's Mark reminders.
+-- Combat helpers: Growl warning, the travel aspect warning and the Hunter's Mark reminder on bosses.
 
 local function IsHunter()
   local _, class = UnitClass("player")
@@ -64,8 +64,6 @@ end
 -- Aspect and Hunter's Mark reminders
 ---------------------------------------------------------------------------
 local TRAVEL_ASPECTS = { 5118, 13159 }                               -- Cheetah, Pack
-local ALL_ASPECTS = { 13165, 14318, 14319, 14320, 14321, 14322, 25296, -- Hawk
-  13163, 5118, 13159, 13161, 20043, 20190, 34074 }                   -- Monkey, Cheetah, Pack, Beast, Wild, Viper
 local HUNTERS_MARK = { 1130, 14323, 14324, 14325 }
 
 -- Find a buff on the player by any of these spell IDs (by name, which works on both clients).
@@ -94,8 +92,6 @@ local function CheckAspect()
   local travel = HasAura("player", TRAVEL_ASPECTS, "HELPFUL")
   if travel then
     Alert(C.ORANGE .. string.format(L["%s is on in combat. Switch aspects!"], travel) .. "|r", true)
-  elseif (function() local l = UnitLevel("player"); return not ns.IsSecret(l) and l >= 10 end)() and not HasAura("player", ALL_ASPECTS, "HELPFUL") then
-    ns.Print(L["No aspect is active."])
   end
 end
 

@@ -67,8 +67,10 @@ local defaultsDB = {
 local function InitDB()
   UntamedDB = UntamedDB or {}
   for k, v in pairs(defaultsDB) do if UntamedDB[k] == nil then UntamedDB[k] = v end end
-  -- settings of features that are gone (2.38.0: cooldown rows, Auto Shot timer bar)
-  UntamedDB.hudAlways, UntamedDB.autoShotBar, UntamedDB.shotBarPos = nil, nil, nil
+  -- settings of features that are gone (2.38: cooldown rows, Auto Shot timer bar, Sting and Mark timers, hawk tracker, pet watch, Food and Pet reminders)
+  for _, k in ipairs({ "hudAlways", "autoShotBar", "shotBarPos", "hawkPos", "hawkTracker", "hudDur", "hudFood", "petWatch", "petLeash" }) do
+    UntamedDB[k] = nil
+  end
   UntamedDB.observed = UntamedDB.observed or {}
   UntamedDB.observed[ns.FLAVOR] = UntamedDB.observed[ns.FLAVOR] or {}
   UntamedCharDB = UntamedCharDB or {}
@@ -645,8 +647,6 @@ SlashCmdList.UNTAMED = function(msg)
     if ns.HUDCommand then ns.HUDCommand(msg:match("^hud%s*(.*)$")) end
   elseif msg == "range" or msg:match("^range ") then
     if ns.RangeCommand then ns.RangeCommand(msg:match("^range%s*(.*)$")) end
-  elseif msg == "hawks" or msg:match("^hawks ") then
-    if ns.HawkCommand then ns.HawkCommand(msg:match("^hawks%s*(.*)$")) end
   elseif msg == "loot" or msg:match("^loot ") then
     if ns.LootCommand then ns.LootCommand(msg:match("^loot%s*(.*)$")) end
   elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" or msg == "builds" or msg == "search"
@@ -673,7 +673,6 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed alerts  toggle zone alerts   |  /untamed minimap  toggle the minimap button")
     ns.Print("/untamed loot  the dungeon loot card (move, lock, size 80, reset, stay, need, off, on)")
     ns.Print("/untamed hud  the hunter display under your character (move, lock, reset, scale 1.2, off, on)")
-    ns.Print("/untamed hawks  the hawk tracker (off, on)")
     ns.Print("/untamed books  library books   |  /untamed book  arrow to the nearest one you need   |  /untamed librarian  arrow to yours")
     ns.Print("/untamed chests  chest spots on the map (on, off, minimap)   |  /untamed scan  what the game marks on your minimap")
     ns.Print("/untamed recorded  what Untamed has noted for future data updates")
@@ -681,7 +680,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/untamed mem  how much memory Untamed is using")
     ns.Print("/untamed pad on | off  the controller in Untamed's window")
     ns.Print("/untamed tamedfrom <beast>  which beast the pet that's out was tamed from")
-    ns.Print("/untamed range  the range meter and pet watch (off, on, alerts, always, pet off, pet on, leash 30)")
+    ns.Print("/untamed range  the range meter (off, on, alerts, always)")
     ns.Print("/untamed want <beast name>  put a beast on your wishlist (again to take it off)   |  /untamed wishlist  open it")
   else
     if ns.UI_Toggle then ns.UI_Toggle() end

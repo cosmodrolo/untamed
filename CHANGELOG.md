@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.38.1
+The hunter display is now just the range meter and one warning.
+- Gone: the Serpent Sting and Hunter's Mark timers, the hawk tracker (and /ut hawks), the pet watch (pet health, distance, the "ran off" and "fighting a different mob" warnings, /ut range pet and leash), and the Food and Pet reminders. The aspect icon no longer shows your current aspect.
+- Kept: the range meter, and the Hawk warning. A red Hawk icon shows under the range meter while you're in a fight with Aspect of the Cheetah (or Pack) still on, and goes when you switch. The sound and on-screen line at the start of such a fight stay too. The "No aspect is active" chat line is gone.
+- Cleaned up: Hawks.lua is deleted, their switches are off the Settings page, their saved settings are removed at login, and the display no longer runs a timer five times a second: it only wakes when you cast something or a fight starts or ends.
+- Not touched: the Feign Death check, the Growl warning and the Hunter's Mark reminder on bosses, which are alerts rather than parts of the display.
+
 ## v2.38.0
 Two features removed, now that the game's own cooldown manager does the job.
 - Gone: the cooldown rows on the hunter display (Summon Hawk, Aimed Shot, Multi-Shot, Rapid Fire, Bestial Wrath, Concussive Shot, and the Feign Death, trap and Disengage row), with their "keep on screen outside fights" switch and /ut hud always.

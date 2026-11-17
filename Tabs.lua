@@ -152,7 +152,7 @@ local function Repaint()
   if ns.Pins_Refresh then ns.Pins_Refresh() end
   if ns.MinimapRebuild then ns.MinimapRebuild() end
   if ns.RangePaint then ns.RangePaint() end
-  if ns.HawkPaint then ns.HawkPaint() end
+  if ns.HUD_Paint then ns.HUD_Paint() end
 end
 
 local SECTIONS = {
@@ -167,15 +167,13 @@ local SECTIONS = {
       { "button", L["Reset this window's size"], function() if ns.UI_ResetWindow then ns.UI_ResetWindow() end end, L["Back to its starting size, in the middle of the screen. Also /ut window reset."] },
     } },
   { key = "display", title = L["Under your character"], icon = "Ability_Hunter_SniperShot",
-    blurb = L["The hunter display: what you watch in a fight, placed just below your character."],
+    blurb = L["The range meter and the Hawk warning, placed just below your character."],
     items = {
-      { "check", L["Show the hunter display"], "hud", L["Your Serpent Sting and Hunter's Mark timers, your hawks, and reminders (your aspect, pet not out, no food buff)."], on = true,
+      { "check", L["Show the hunter display"], "hud", L["The range meter, and the Hawk warning under it."], on = true,
         after = function(v) if ns.HUDCommand then ns.HUDCommand(v and "on" or "off") end end },
-      { "check", L["Show the aspect I have on"], "hudAspect", L["A small icon for your current aspect. In a fight without Aspect of the Hawk it turns into a red Hawk warning."], on = true, after = Repaint },
+      { "check", L["Warn me when I fight in Cheetah"], "hudAspect", L["A red Hawk icon while you're in a fight with Aspect of the Cheetah (or Pack) still on. It goes when you switch."], on = true, after = Repaint },
       { "check", L["Range meter"], "rangeMeter", L["Says whether your target is in melee, too close to shoot, in range or too far, with the distance in yards."], on = true, after = Repaint },
       { "choose", L["Show the range meter"], "rangeMode", { { "always", L["Whenever I target an enemy"] }, { "alerts", L["Only when I'm too close or too far"] } }, "always" },
-      { "check", L["Pet watch"], "petWatch", L["Your pet's health and how far it is from you, with a warning when it runs off."], on = true, after = Repaint },
-      { "check", L["Hawk timers"], "hawkTracker", L["How long each hawk from Summon Hawk has left."], on = true, after = Repaint },
       { "check", L["Feign Death check"], "feignHelper", L["Tells you whether Feign Death worked."], on = true },
       { "button", L["Move the display"], function() if ns.HUDCommand then ns.HUDCommand("move") end end,
         L["Drag it where you want it. Press the button again (or type /ut hud lock) when you're done."] },
@@ -197,7 +195,7 @@ local SECTIONS = {
     blurb = L["Short warnings about mistakes that are easy to make in combat."],
     items = {
       { "check", L["Warn when Growl is on in a group"], "growlWarning", L["Your pet taunting in a dungeon pulls the boss off the tank."] },
-      { "check", L["Aspect reminder"], "aspectReminder", L["Warns when you start a fight with Cheetah or Pack on (one hit dazes you), or with no aspect at all."] },
+      { "check", L["Aspect reminder"], "aspectReminder", L["A sound and a line on screen when you start a fight with Cheetah or Pack on (one hit dazes you)."] },
       { "check", L["Hunter's Mark reminder on bosses"], "markReminder", L["A nudge when a boss has no Hunter's Mark."] },
     } },
   { key = "map", title = L["Map and minimap"], icon = "INV_Misc_Map_01",

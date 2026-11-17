@@ -67,7 +67,6 @@ Bags.lua
 QuestAdvice.lua
 Rotation.lua
 HUD.lua
-Hawks.lua
 Range.lua
 Reputation.lua
 Home.lua

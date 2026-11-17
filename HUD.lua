@@ -3,31 +3,27 @@ local L = ns.L
 local C = ns.C
 
 ---------------------------------------------------------------------------
--- The hunter display under your character (replaces the ForeverAuras hunter set), top to bottom:
---   range meter and pet watch (Range.lua)
---   Serpent Sting timer | hawk tracker (Hawks.lua) | Hunter's Mark       reminders (only when missing)
--- The Sting and Mark timers start when you cast them, and their length is read from the debuff
--- once, outside combat. (Spell cooldowns are left to the game's own cooldown manager.)
+-- The hunter display under your character:
+--   range meter (Range.lua)
+--   "Hawk!" warning: you're in a fight with a travel aspect on (Cheetah or Pack)
 -- One anchor: /ut hud move | lock | reset | scale 1.2 | off | on.
 -- Our own frames on UIParent (gamepad safe).
+--
+-- Gone on purpose (the game's own cooldown manager covers them, Nov 2026): the cooldown rows, the
+-- Serpent Sting and Hunter's Mark timers, the hawk tracker, the pet watch, and the Food, aspect
+-- and Pet reminders.
 ---------------------------------------------------------------------------
 
 local DEFAULT_POS = { "CENTER", 0, -222 }   -- low enough to clear your character when zoomed in
-local ICON = 34
-
-local STING_IDS = { [1978] = true, [13549] = true, [13550] = true, [13551] = true, [13552] = true, [13553] = true, [13554] = true, [13555] = true }
-local MARK_IDS = { [1130] = true, [14323] = true, [14324] = true, [14325] = true }
 local HAWK_ASPECT = { [13165] = true, [14318] = true, [14319] = true, [14320] = true, [14321] = true, [14322] = true, [25296] = true }
+local TRAVEL_ASPECT = { [5118] = true, [13159] = true }                              -- Cheetah, Pack
 local OTHER_ASPECTS = { [5118] = true, [13159] = true, [13163] = true, [20043] = true, [20190] = true, [13161] = true }
-local DEFAULT_DUR = { sting = 15, mark = 120 }
 
 local hud, moving
-local timers = {}   -- sting / mark: { ends, dur, guid }
-local aspect        -- "hawk", "other" or nil (unknown / none)
+local aspect        -- "hawk", "travel", "other" or nil (unknown / none)
 local aspectID      -- the spell of the aspect that's on, when we know it
 
 local function Plain(v) if v == nil or ns.IsSecret(v) then return nil end return v end
-local function Bool(v, hidden) if ns.IsSecret(v) then return hidden end return v and true or false end
 
 local function Text(parent, size)
   local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -50,25 +46,6 @@ local function Known(name)
   return true
 end
 
-local function Icon(parent, size, name)
-  local b = CreateFrame("Frame", nil, parent)
-  b:SetSize(size, size)
-  b.bg = b:CreateTexture(nil, "BACKGROUND")
-  b.bg:SetAllPoints()
-  b.bg:SetColorTexture(0, 0, 0, 0.8)
-  b.icon = b:CreateTexture(nil, "ARTWORK")
-  b.icon:SetPoint("TOPLEFT", 1, -1)
-  b.icon:SetPoint("BOTTOMRIGHT", -1, 1)
-  b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-  if name then b.icon:SetTexture(SpellIcon(name)) end
-  b.cd = CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate")
-  b.cd:SetAllPoints(b.icon)
-  b.cd:SetDrawEdge(false)
-  b.cd:SetHideCountdownNumbers(false)
-  b.spell = name
-  return b
-end
-
 ---------------------------------------------------------------------------
 -- Anchor
 ---------------------------------------------------------------------------
@@ -81,7 +58,7 @@ end
 
 local function Build()
   hud = CreateFrame("Frame", "UntamedHUD", UIParent)
-  hud:SetSize(300, 112)
+  hud:SetSize(220, 100)
   hud:SetFrameStrata("MEDIUM")
   hud:SetMovable(true)
   hud:EnableMouse(false)
@@ -104,106 +81,47 @@ local function Build()
   hud.hint:SetText("|cffffd140" .. L["Drag me, then /ut hud lock"] .. "|r")
   hud.hint:Hide()
 
-  -- slots the other parts sit in
-  hud.top = CreateFrame("Frame", nil, hud)          -- range meter + pet line
-  hud.top:SetSize(170, 52)
+  hud.top = CreateFrame("Frame", nil, hud)          -- the range meter sits here
+  hud.top:SetSize(170, 40)
   hud.top:SetPoint("TOP")
-  hud.mid = CreateFrame("Frame", nil, hud)          -- sting | hawks | mark
-  hud.mid:SetSize(220, 50)
-  hud.mid:SetPoint("TOP", 0, -58)
 
-  hud.sting = Icon(hud.mid, ICON, "Serpent Sting")
-  hud.sting:SetPoint("LEFT", 0, 4)
-  hud.sting.cd:SetReverse(true)
-  hud.mark = Icon(hud.mid, ICON, "Hunter's Mark")
-  hud.mark:SetPoint("RIGHT", 0, 4)
-  hud.mark.cd:SetReverse(true)
-  hud.markWarn = Text(hud.mark, 18)
-  hud.markWarn:SetPoint("CENTER")
-  hud.markWarn:SetText("|cffff5050!|r")
-
-  -- reminders, right of the timers: Food (out of combat), Aspect of the Hawk (in a fight), Pet
-  hud.remind = CreateFrame("Frame", nil, hud)
-  hud.remind:SetSize(3 * 48, 28)
-  hud.remind:SetPoint("LEFT", hud.mid, "RIGHT", 14, 4)
-  hud.remind.icons = {}
-  for i, r in ipairs({ { "food", "Interface\\Icons\\INV_Misc_Food_14", L["Food"] },
-                       { "aspect", nil, L["Aspect"] }, { "pet", "Interface\\Icons\\Ability_Hunter_BeastCall", L["Pet"] } }) do
-    local b = Icon(hud.remind, 28, r[2] == nil and "Aspect of the Hawk" or nil)
-    if r[2] then b.icon:SetTexture(r[2]) end
-    b.key = r[1]
-    b.label = Text(b, 10)
-    b.label:SetPoint("TOP", b, "BOTTOM", 0, -1)
-    b.label:SetText("|cffff9c40" .. r[3] .. "|r")
-    b:Hide()
-    hud.remind.icons[i] = b
-  end
+  -- the Hawk warning, under the range meter
+  local w = CreateFrame("Frame", nil, hud)
+  w:SetSize(30, 30)
+  w:SetPoint("TOP", 0, -46)
+  w.bg = w:CreateTexture(nil, "BACKGROUND")
+  w.bg:SetAllPoints()
+  w.bg:SetColorTexture(0, 0, 0, 0.8)
+  w.icon = w:CreateTexture(nil, "ARTWORK")
+  w.icon:SetPoint("TOPLEFT", 1, -1)
+  w.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+  w.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  w.icon:SetTexture(SpellIcon("Aspect of the Hawk"))
+  w.label = Text(w, 11)
+  w.label:SetPoint("TOP", w, "BOTTOM", 0, -1)
+  w.label:SetText("|cffff5050" .. L["Hawk!"] .. "|r")
+  w:Hide()
+  hud.warn = w
   Place()
 end
 
-ns.HUD_Slot = function(which) return hud and hud[which] end
+ns.HUD_Slot = function(which) return hud and rawget(hud, which) end
 ns.HUD_Moving = function() return moving end
 
 ---------------------------------------------------------------------------
--- Serpent Sting and Hunter's Mark: started by your casts
+-- Which aspect is on
 ---------------------------------------------------------------------------
-local function TargetKey()
-  local g = UnitGUID and UnitGUID("target")
-  return Plain(g) or "target"
-end
-
--- the debuff's real length, read once outside combat (it can differ from the default)
-local function LearnDuration(which, name)
-  if InCombatLockdown() or not (C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName) then return end
-  local ok, aura = pcall(C_UnitAuras.GetAuraDataBySpellName, "target", name, "HARMFUL|PLAYER")
-  local d = ok and aura and Plain(aura.duration)
-  if d and d > 0 then
-    ns.db.hudDur = ns.db.hudDur or {}
-    ns.db.hudDur[which] = d
-    local t = timers[which]
-    local exp = Plain(aura.expirationTime)
-    if t and exp then t.ends, t.dur = exp, d end
-  end
-end
-
-local function StartTimer(which, name)
-  local d = (ns.db.hudDur and ns.db.hudDur[which]) or DEFAULT_DUR[which]
-  timers[which] = { ends = GetTime() + d, dur = d, guid = TargetKey() }
-  C_Timer.After(0.3, function() LearnDuration(which, name) end)
-end
-
-local function TimerFor(which)
-  local t = timers[which]
-  if not t then return nil end
-  if t.ends <= GetTime() then timers[which] = nil return nil end
-  if t.guid ~= TargetKey() then return nil end
-  return t
-end
-
-local function PaintTimer(b, which, alertWhenMissing)
-  if not Known(b.spell) then b:Hide() return end
-  b:Show()
-  local t = TimerFor(which)
-  if b.ends ~= (t and t.ends) then
-    b.ends = t and t.ends
-    if t then b.cd:SetCooldown(t.ends - t.dur, t.dur) else b.cd:Clear() end
-  end
-  if t then
-    b:SetAlpha(1); b.icon:SetDesaturated(false)
-    if which == "mark" then hud.markWarn:Hide() end
-  else
-    b:SetAlpha(0.45); b.icon:SetDesaturated(true)
-    if which == "mark" then hud.markWarn:SetShown(alertWhenMissing and true or false) end
-  end
-end
-
----------------------------------------------------------------------------
--- Reminders
----------------------------------------------------------------------------
--- Aspects by name as well as by number: Forever's ranks don't all carry the old numbers.
-local ASPECT_NAMES = { "Aspect of the Hawk", "Aspect of the Cheetah", "Aspect of the Monkey", "Aspect of the Pack",
+-- By name as well as by number: Forever's ranks don't all carry the old numbers.
+local ASPECT_NAMES = { "Aspect of the Hawk", "Aspect of the Cheetah", "Aspect of the Pack", "Aspect of the Monkey",
   "Aspect of the Beast", "Aspect of the Wild" }
+local KIND = { "hawk", "travel", "travel", "other", "other", "other" }
 local seen = { casts = 0, hidden = 0 }   -- for /ut doctor
+
+local function KindOf(spellID, name)
+  if HAWK_ASPECT[spellID] or name == "Aspect of the Hawk" then return "hawk" end
+  if TRAVEL_ASPECT[spellID] or name == "Aspect of the Cheetah" or name == "Aspect of the Pack" then return "travel" end
+  return "other"
+end
 
 local function InFight()
   if InCombatLockdown and InCombatLockdown() then return true end
@@ -229,7 +147,7 @@ local function ReadAspect()
     for i, name in ipairs(ASPECT_NAMES) do
       local ok, a = pcall(byName, "player", name, "HELPFUL")
       if not ok or ns.IsSecret(a) then seen.read = "hidden" return end
-      if a then found, foundID = i == 1 and "hawk" or "other", Plain(a.spellId) break end
+      if a then found, foundID = KIND[i], Plain(a.spellId) break end
     end
   end
   if not found and byID then
@@ -237,7 +155,7 @@ local function ReadAspect()
       for id in pairs(set) do
         local ok, a = pcall(byID, id)
         if not ok or ns.IsSecret(a) then seen.read = "hidden" return end
-        if a then found, foundID = set == HAWK_ASPECT and "hawk" or "other", id break end
+        if a then found, foundID = KindOf(id), id break end
       end
       if found then break end
     end
@@ -251,73 +169,17 @@ local function CastAspect(spellID)
   seen.casts = seen.casts + 1
   if spellID == nil or ns.IsSecret(spellID) then seen.hidden = seen.hidden + 1 return end
   seen.last = spellID
-  if HAWK_ASPECT[spellID] then aspect, aspectID, seen.aspectCast = "hawk", spellID, spellID return end
-  if OTHER_ASPECTS[spellID] then aspect, aspectID, seen.aspectCast = "other", spellID, spellID return end
+  if HAWK_ASPECT[spellID] or OTHER_ASPECTS[spellID] then
+    aspect, aspectID, seen.aspectCast = KindOf(spellID), spellID, spellID
+    return
+  end
   local ok, name = pcall(ns.SpellName, spellID)
   name = ok and Plain(name)
   if type(name) == "string" and name:find("^Aspect of the ") then
-    aspect, aspectID, seen.aspectCast = name == "Aspect of the Hawk" and "hawk" or "other", spellID, spellID
+    aspect, aspectID, seen.aspectCast = KindOf(spellID, name), spellID, spellID
   end
 end
 ns.HUD_AspectSeen = function() return seen, aspect, aspectID end
-
--- The aspect icon: always the aspect you have on. In a fight without Hawk it turns into the
--- "switch to Hawk" warning. In a fight the game hides buffs, so it goes by your last cast.
-local function PaintAspect(b, fight)
-  local hawk = Known("Aspect of the Hawk")
-  if fight and hawk and aspect ~= "hawk" then
-    b.icon:SetTexture(SpellIcon("Aspect of the Hawk"))
-    b.icon:SetDesaturated(false); b:SetAlpha(1)
-    b.label:SetText("|cffff5050" .. L["Hawk!"] .. "|r")
-    return true
-  end
-  if aspect then
-    local tex = aspectID and C_Spell and C_Spell.GetSpellTexture and Plain(C_Spell.GetSpellTexture(aspectID))
-    b.icon:SetTexture(tex or SpellIcon("Aspect of the Hawk"))
-    b.icon:SetDesaturated(false); b:SetAlpha(1)
-    local name = aspectID and ns.SpellName and ns.SpellName(aspectID) or (aspect == "hawk" and "Hawk" or "")
-    name = name:gsub("^Aspect of the ", "")
-    b.label:SetText("|cffc8d2c8" .. name .. "|r")
-    return true
-  end
-  if hawk and not aspect then
-    b.icon:SetTexture(SpellIcon("Aspect of the Hawk"))
-    b.icon:SetDesaturated(true); b:SetAlpha(0.6)
-    b.label:SetText("|cffff9c40" .. L["No aspect"] .. "|r")
-    return true
-  end
-  return false
-end
-
-local function WellFed()
-  if not (C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName) then return true end
-  local name = (ns.SpellName and ns.SpellName(19705)) or "Well Fed"
-  local ok, a = pcall(C_UnitAuras.GetAuraDataBySpellName, "player", name, "HELPFUL")
-  if not ok or ns.IsSecret(a) then return true end
-  return a ~= nil
-end
-
-local function PaintReminders(fight)
-  local mounted = Bool(IsMounted and IsMounted(), false)
-  local hasPet = Bool(UnitExists("pet"), true) and not Bool(UnitIsDead("pet"), false)
-  local want = {
-    food = not fight and not mounted and ns.db.hudFood ~= false and not WellFed(),
-    aspect = ns.db.hudAspect ~= false and not mounted,
-    pet = not hasPet and not mounted and Known("Call Pet"),
-  }
-  local x = 0
-  for _, b in ipairs(hud.remind.icons) do
-    local show = want[b.key]
-    if b.key == "aspect" and show then show = PaintAspect(b, fight) end
-    show = moving or show
-    b:SetShown(show and true or false)
-    if show then
-      b:ClearAllPoints()
-      b:SetPoint("LEFT", x, 0)
-      x = x + 48
-    end
-  end
-end
 
 ---------------------------------------------------------------------------
 -- Paint
@@ -325,20 +187,10 @@ end
 local function Paint()
   if not hud then return end
   if ns.db.hud == false then hud:Hide() return end
-  local fight = UnitAffectingCombat("player")
-  if ns.IsSecret(fight) then fight = true end
-  local hasTarget = Bool(UnitExists("target"), false)
-  local hostile = hasTarget and Bool(UnitCanAttack("player", "target"), true)
-  local dead = hasTarget and Bool(UnitIsDead("target"), false)
   hud:Show()
-  local showTimers = moving or (hostile and not dead and (fight or TimerFor("sting") or TimerFor("mark")))
-  if showTimers then
-    PaintTimer(hud.sting, "sting", false)
-    PaintTimer(hud.mark, "mark", fight)
-  else
-    hud.sting:Hide(); hud.mark:Hide()
-  end
-  PaintReminders(fight)
+  -- in a fight with Cheetah or Pack on: switch to Hawk (any hit dazes you in those)
+  local warn = moving or (ns.db.hudAspect ~= false and aspect == "travel" and InFight() and Known("Aspect of the Hawk"))
+  hud.warn:SetShown(warn and true or false)
 end
 ns.HUD_Paint = Paint
 
@@ -352,7 +204,6 @@ function ns.HUDCommand(arg)
     if moving then ns.Print(L["Drag the hunter display where you want it, then type /ut hud lock."]) end
     Paint()
     if ns.RangePaint then ns.RangePaint() end
-    if ns.HawkPaint then ns.HawkPaint() end
   elseif arg == "reset" then
     ns.db.hudPos, ns.db.hudScale = nil, nil
     Place()
@@ -370,9 +221,7 @@ end
 
 do
   local ev = CreateFrame("Frame")
-  local tick = 0
-  for _, e in ipairs({ "PLAYER_LOGIN", "UNIT_SPELLCAST_SUCCEEDED", "UNIT_AURA",
-    "PLAYER_TARGET_CHANGED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED", "UNIT_PET", "PLAYER_MOUNT_DISPLAY_CHANGED" }) do
+  for _, e in ipairs({ "PLAYER_LOGIN", "UNIT_SPELLCAST_SUCCEEDED", "UNIT_AURA", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED" }) do
     pcall(ev.RegisterEvent, ev, e)
   end
   ev:SetScript("OnEvent", function(_, event, unit, _, spellID)
@@ -380,35 +229,24 @@ do
       if select(2, UnitClass("player")) ~= "HUNTER" then ev:UnregisterAllEvents() return end
       Build()
       ReadAspect()
-      ev:SetScript("OnUpdate", function(_, e)
-        tick = tick + e
-        if tick < 0.2 then return end
-        tick = 0
-        -- one error is reported once, then the display rests 10 seconds instead of flooding
-        local ok, err = pcall(Paint)
-        if not ok then
-          tick = -10
-          if geterrorhandler then geterrorhandler()(err) end
-        end
-      end)
+      Paint()
       return
     end
     if not hud then return end
     if event == "UNIT_SPELLCAST_SUCCEEDED" then
-      if unit == "player" then CastAspect(spellID) end
-      if unit == "player" and spellID and not ns.IsSecret(spellID) then
-        if STING_IDS[spellID] then StartTimer("sting", "Serpent Sting")
-        elseif MARK_IDS[spellID] then StartTimer("mark", "Hunter's Mark") end
-      end
+      if unit ~= "player" then return end
+      CastAspect(spellID)
     elseif event == "UNIT_AURA" then
-      if unit == "player" then ReadAspect() end
+      if unit ~= "player" then return end
+      ReadAspect()
     elseif event == "PLAYER_REGEN_ENABLED" then
       ReadAspect()
     end
-    Paint()
+    -- nothing here needs a timer any more: the warning only changes on these events
+    local ok, err = pcall(Paint)
+    if not ok and geterrorhandler then geterrorhandler()(err) end
   end)
 end
 
 -- for tests
-ns.HUD_Timer = TimerFor
 ns.HUD_Aspect = function() return aspect end

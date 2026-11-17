@@ -90,10 +90,6 @@ function ns.Doctor()
     end
     local zone, lo, hi = ns.RangeToTarget()
     Line(zone ~= nil, "Range meter says", zone and (zone .. "  " .. ns.RangeYards(lo, hi)) or "nothing")
-    local d = ns.PetDistance and ns.PetDistance()
-    local okPet = d ~= nil or not UnitExists("pet")
-    if not okPet and InCombatLockdown() then okPet = nil end
-    Line(okPet, "Distance to your pet", d and (math.floor(d) .. " yd") or (InCombatLockdown() and "hidden in a fight" or "not given"))
   else
     Line(nil, "Range checks", "target an enemy and run it again")
   end

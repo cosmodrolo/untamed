@@ -176,28 +176,7 @@ assert(MACROS[1].body == "/cast Mend Pet", "his own macro left alone")
 ns.UI_Show("rotation")
 print("ROTATION OK")
 
--- the hawk tracker: two slots, a third hawk replaces the oldest, time kept between fights
-local clock = 1000
-local realTime = GetTime
-GetTime = function() return clock end
-UnitAffectingCombat = function() return true end
-FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1293241)
-assert(UntamedHawks:IsShown(), "hawk tracker shows")
-FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1293241)
-FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1293241)
-assert(ns.HawkCount() == 2, "two hawks at most: " .. ns.HawkCount())
-UnitAffectingCombat = function() return false end
-FIRE("PLAYER_REGEN_ENABLED")
-assert(ns.HawkCount() == 2 and UntamedHawks:IsShown(), "hawks still out after the fight keep their time")
-clock = clock + 10
-UnitAffectingCombat = function() return true end
-FIRE("PLAYER_REGEN_DISABLED")
-assert(ns.HawkCount() == 2, "next fight: same hawks, 8 seconds left")
-clock = clock + 9
-UnitAffectingCombat = function() return false end
-FIRE("PLAYER_REGEN_ENABLED")
-assert(ns.HawkCount() == 0 and not UntamedHawks:IsShown(), "gone when their time runs out")
-GetTime = realTime
+assert(UntamedHawks == nil, "no hawk tracker any more")
 print("HAWKS OK")
 -- beast wishlist
 ns.WishBeast_ByName("broken tooth")
@@ -242,25 +221,8 @@ IsActionInRange = function() return nil end
 DIST = 6; z = ns.RangeToTarget(); assert(z == "close", "6 yd, melee unknown: too close (" .. tostring(z) .. ")")
 C_Spell.SpellHasRange, C_Spell.IsSpellInRange = nil, honest
 ns.RangeMeleeSlots()
--- pet watch: distance and the run-off warning
-UnitDistanceSquared = function(u) if u == "pet" then return 42 * 42, true end end
-assert(math.floor(ns.PetDistance()) == 42, "pet distance")
-local warned
-local oldAlert = ns.Alert
-ns.Alert = function(msg) warned = msg end
-UnitAffectingCombat = function() return true end
+assert(ns.PetDistance == nil, "no pet watch any more")
 ns.RangePaint()
-assert(warned and warned:find("42 yd"), "pet too far warning: " .. tostring(warned))
-ns.Alert = oldAlert
-C_Spell.GetSpellInfo = oldInfo
--- Forever hides UnitIsUnit in fights: a hidden answer must not break the display
-local SECRET = setmetatable({}, { __eq = function() error("compared a secret") end })
-local oldSecret, oldIsUnit = ns.IsSecret, UnitIsUnit
-ns.IsSecret = function(v) return v == nil and false or rawequal(v, SECRET) or (oldSecret and oldSecret(v)) end
-UnitIsUnit = function() return SECRET end
-UnitAffectingCombat = function() return true end
-ns.RangePaint()
-ns.IsSecret, UnitIsUnit = oldSecret, oldIsUnit
 print("RANGE OK")
 -- hunter display: rows of known spells, Sting timer from your cast, reminders
 local KNOWN = { ["Summon Hawk"] = 1293241, ["Aimed Shot"] = 19434, ["Feign Death"] = 5384, ["Serpent Sting"] = 1978,
@@ -272,12 +234,16 @@ FIRE("SPELLS_CHANGED")
 assert(UntamedHUD, "hunter display built")
 assert(rawget(UntamedHUD, "rows") == nil, "no cooldown rows any more")
 UnitAffectingCombat = function() return true end
-FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 1978)
-assert(ns.HUD_Timer("sting"), "Serpent Sting timer started")
+assert(ns.HUD_Timer == nil, "no Sting or Mark timers any more")
+local warnIcon = ns.HUD_Slot("warn")
 FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 5118)
-assert(ns.HUD_Aspect() == "other", "Cheetah seen")
+assert(ns.HUD_Aspect() == "travel", "Cheetah seen")
+assert(warnIcon:IsShown(), "in a fight in Cheetah: the Hawk warning shows")
+FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 13163)
+assert(ns.HUD_Aspect() == "other" and not warnIcon:IsShown(), "Monkey in a fight: no warning")
+FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 5118)
 FIRE("UNIT_SPELLCAST_SUCCEEDED", "player", "x", 13165)
-assert(ns.HUD_Aspect() == "hawk", "Hawk seen")
+assert(ns.HUD_Aspect() == "hawk" and not warnIcon:IsShown(), "Hawk on: the warning goes")
 ns.HUD_Paint()
 ns.HUDCommand("move"); ns.HUDCommand("lock"); ns.HUDCommand("scale 1.2"); ns.HUDCommand("reset")
 C_Spell.GetSpellInfo = old2

@@ -3,16 +3,13 @@ local L = ns.L
 local C = ns.C
 
 ---------------------------------------------------------------------------
--- Range meter and pet watch: the top of the hunter display under your character (HUD.lua).
+-- Range meter: the top of the hunter display under your character (HUD.lua).
 --  * Range: melee, dead zone (too close for Auto Shot), in range, too far, plus the distance as a
 --    band in yards. WoW doesn't give addons the exact distance to an enemy, so the band comes from
 --    the game's own range checks on your spells (each spell has its own min and max range) and,
 --    when the game allows it, the interact distances (10, 11 and 28 yards).
---  * Pet: health bar (works with Forever's hidden combat numbers), "Mend Pet" when it's low, the
---    exact distance to your pet, and a warning when it runs off chasing something or fights a
---    different mob than your target. The Back macro (Rotation tab) calls it back.
 --  * Feign Death: says whether it dropped you out of combat.
--- Our own frame (gamepad safe). /ut range off | on | alerts | always | pet off | pet on | leash 30; /ut hud move moves it.
+-- Our own frame (gamepad safe). /ut range off | on | alerts | always; /ut hud move moves it.
 ---------------------------------------------------------------------------
 
 local DEFAULT_POS = { "CENTER", 0, 120 }
@@ -24,7 +21,6 @@ local INTERACT = { [3] = 10, [2] = 11, [4] = 28 }
 local FEIGN = { [5384] = true }
 
 local frame, moving, lastZone
-local petWarnAt, otherWarnAt, petFarSince = 0, 0, nil
 
 local function Plain(v) if v == nil or ns.IsSecret(v) then return nil end return v end
 -- a yes/no from the game that may be hidden in combat: the fallback when it is
@@ -213,29 +209,9 @@ local function Place()
   end
 end
 
--- pet health: a status bar takes Forever's hidden numbers directly, and curves turn the hidden
--- percentage into a color and into the "Mend Pet" text's visibility.
-local colorCurve, mendCurve
-local function Curves()
-  if colorCurve ~= nil then return end
-  colorCurve, mendCurve = false, false
-  if not (C_CurveUtil and C_CurveUtil.CreateColorCurve and CreateColor) then return end
-  pcall(function()
-    local c = C_CurveUtil.CreateColorCurve()
-    c:AddPoint(0, CreateColor(0.89, 0.29, 0.29, 1))
-    c:AddPoint(0.5, CreateColor(0.94, 0.75, 0.15, 1))
-    c:AddPoint(1, CreateColor(0.39, 0.75, 0.2, 1))
-    colorCurve = c
-    local m = C_CurveUtil.CreateCurve()
-    if m.SetType and Enum and Enum.LuaCurveType then m:SetType(Enum.LuaCurveType.Step) end
-    m:AddPoint(0, 1); m:AddPoint(0.35, 0); m:AddPoint(1, 0)
-    mendCurve = m
-  end)
-end
-
 local function Build()
   frame = CreateFrame("Frame", "UntamedRange", UIParent)
-  frame:SetSize(170, 52)
+  frame:SetSize(170, 40)
   frame:SetFrameStrata("MEDIUM")
   frame:SetMovable(true)
   frame:EnableMouse(false)
@@ -271,44 +247,11 @@ local function Build()
   r.hint:SetPoint("TOP", r, "BOTTOM", 0, -1)
   frame.range = r
 
-  local p = CreateFrame("Frame", nil, frame)
-  p:SetSize(150, 14)
-  p:SetPoint("TOP", r, "BOTTOM", 0, -14)
-  p.name = Text(p, 11)
-  p.name:SetPoint("LEFT", 0, 0)
-  p.bar = CreateFrame("StatusBar", nil, p)
-  p.bar:SetSize(70, 8)
-  p.bar:SetPoint("LEFT", 44, 0)
-  p.bar:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8")
-  p.bar:SetStatusBarColor(0.39, 0.75, 0.2)
-  p.bar.bg = p.bar:CreateTexture(nil, "BACKGROUND")
-  p.bar.bg:SetAllPoints()
-  p.bar.bg:SetColorTexture(0, 0, 0, 0.6)
-  p.mend = Text(p, 11)
-  p.mend:SetPoint("CENTER", p.bar, "CENTER", 0, 0)
-  p.mend:SetText("|cffff5050" .. L["Mend Pet"] .. "|r")
-  p.mend:SetAlpha(0)
-  p.yd = Text(p, 11)
-  p.yd:SetPoint("RIGHT", 0, 0)
-  frame.pet = p
-
   frame.hint = Text(frame, 11)
   frame.hint:SetPoint("BOTTOM", frame, "TOP", 0, 2)
   frame.hint:Hide()
   Place()
 end
-
--- Frenzy and the pet's other buffs can't be shown: in a fight Forever refuses addons every way of
--- reading buffs (the questions error with "Auras cannot be accessed", and the game's own notices
--- arrive as hidden tables that can't be opened). Tried in 2.19.16 to 2.19.21, taken out in 2.19.22.
-
-local function PetDistance()
-  if not UnitDistanceSquared then return nil end
-  local ok, d2, checked = pcall(UnitDistanceSquared, "pet")
-  if not ok or ns.IsSecret(d2) or ns.IsSecret(checked) or not checked or not d2 then return nil end
-  return math.sqrt(d2)
-end
-ns.PetDistance = PetDistance
 
 local function Paint()
   if not frame then return end
@@ -336,67 +279,7 @@ local function Paint()
     r:Hide(); r.hint:Hide()
   end
 
-  -- pet
-  local p = frame.pet
-  local hasPet = Bool(UnitExists("pet"), true) and not Bool(UnitIsDead("pet"), false)
-  local petDist = hasPet and PetDistance()
-  local leash = ns.db.petLeash or 30
-  local far = petDist and petDist > leash
-  local showPet = hasPet and ns.db.petWatch ~= false and (fight or far or moving)
-  if showPet then
-    local name = UnitName("pet")
-    p.name:SetText(ns.IsSecret(name) and L["Pet"] or (name or L["Pet"]))
-    pcall(function()
-      p.bar:SetMinMaxValues(0, UnitHealthMax("pet"))
-      p.bar:SetValue(UnitHealth("pet"))
-    end)
-    Curves()
-    if colorCurve and UnitHealthPercent then
-      pcall(function()
-        local col = UnitHealthPercent("pet", true, colorCurve)
-        p.bar:GetStatusBarTexture():SetVertexColor(col:GetRGB())
-      end)
-    end
-    if mendCurve and UnitHealthPercent and fight then
-      if not pcall(function() p.mend:SetAlpha(UnitHealthPercent("pet", true, mendCurve)) end) then p.mend:SetAlpha(0) end
-    else
-      p.mend:SetAlpha(0)
-    end
-    if petDist then
-      p.yd:SetText((far and "|cffff5050" or "|cffd3d1c7") .. math.floor(petDist + 0.5) .. " " .. L["yd"] .. "|r")
-    else
-      p.yd:SetText("")
-    end
-    p:Show()
-  else
-    p:Hide()
-  end
-  frame:SetShown(showRange or showPet or moving)
-
-  -- pet ran off / fights something else
-  if hasPet and ns.db.petWatch ~= false then
-    local petFight = UnitAffectingCombat("pet")
-    if ns.IsSecret(petFight) then petFight = fight end
-    local now = GetTime()
-    if far and (petFight or fight) then
-      petFarSince = petFarSince or now
-      if now > petWarnAt then
-        petWarnAt = now + 6
-        ns.Alert(C.ORANGE .. string.format(L["%s is %d yd away. Press Back to call it off!"], p.name:GetText() or L["Pet"], math.floor(petDist + 0.5)) .. "|r", true)
-      end
-    else
-      petFarSince = nil
-    end
-    if petFight and fight and now > otherWarnAt and Bool(UnitExists("pettarget"), false) and Bool(UnitExists("target"), false) then
-      local hostile = Bool(UnitCanAttack("player", "target"), false)
-      local ok, same = pcall(UnitIsUnit, "pettarget", "target")
-      -- hidden in some fights: then there's nothing to say
-      if ok and hostile and not ns.IsSecret(same) and same == false then
-        otherWarnAt = now + 8
-        ns.Alert(C.ORANGE .. string.format(L["%s is fighting a different mob than your target."], p.name:GetText() or L["Pet"]) .. "|r", false)
-      end
-    end
-  end
+  frame:SetShown(showRange or moving)
 end
 ns.RangePaint = Paint
 
@@ -422,15 +305,8 @@ function ns.RangeCommand(arg)
     ns.db.rangeMode = arg
     ns.Print(arg == "alerts" and L["The range meter only shows when you're too close or too far."] or L["The range meter shows whenever you target an enemy."])
     Paint()
-  elseif arg == "pet off" or arg == "pet on" then
-    ns.db.petWatch = arg == "pet on"
-    ns.Print(ns.db.petWatch and L["The pet watch is on."] or L["The pet watch is off (/ut range pet on brings it back)."])
-    Paint()
-  elseif arg and arg:match("^leash %d+$") then
-    ns.db.petLeash = tonumber(arg:match("%d+"))
-    ns.Print(string.format(L["You'll be warned when your pet is more than %d yards away in a fight."], ns.db.petLeash))
   else
-    ns.Print(L["/ut range off, on, alerts (only when too close or too far), always, pet off, pet on, leash 30  (/ut hud move moves it)"])
+    ns.Print(L["/ut range off, on, alerts (only when too close or too far), always  (/ut hud move moves it)"])
   end
 end
 
@@ -438,7 +314,7 @@ do
   local ev = CreateFrame("Frame")
   local tick = 0
   for _, e in ipairs({ "PLAYER_LOGIN", "UNIT_SPELLCAST_SUCCEEDED", "PLAYER_TARGET_CHANGED", "SPELLS_CHANGED",
-    "PLAYER_REGEN_ENABLED", "PLAYER_REGEN_DISABLED", "UNIT_PET", "ACTIONBAR_SLOT_CHANGED", "UPDATE_MACROS" }) do
+    "PLAYER_REGEN_ENABLED", "PLAYER_REGEN_DISABLED", "ACTIONBAR_SLOT_CHANGED", "UPDATE_MACROS" }) do
     pcall(ev.RegisterEvent, ev, e)
   end
   ev:SetScript("OnEvent", function(_, event, unit, _, spellID)
