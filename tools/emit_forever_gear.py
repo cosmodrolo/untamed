@@ -18,7 +18,7 @@ for m in re.finditer(r'^\[(\d+)\]=\{.*\},$', era, re.M):
     if int(m.group(1)) not in have: rows.append(m.group(0))
 rows.sort(key=lambda r: int(r[1:r.index("]")]))
 src += ("-- [itemID] = {slot, requiredLevel, score, isMail}. Built from WoW Forever item data (wago.tools, build 1.60.1).\n"
-        "-- Score: agility x2.4, attack power x1, crit% x20, hit% x18, stamina x0.5, intellect x0.3, ranged weapon DPS x14.\n"
+        "-- Score: agility x2.6, attack power x1.05, crit% x28, hit% x18, stamina x0.6, intellect x0.3, armor x0.02, ranged weapon DPS x14.\n"
         "ns.GearItems = {\n" + "\n".join(rows) + "\n}\n")
 open(out, "w").write(src)
 print(len(rows))

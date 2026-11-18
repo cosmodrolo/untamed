@@ -76,7 +76,7 @@ if FLAVOR == "era":
 
 # ------------------------------------------------------------------ gear scores
 if FLAVOR == "era":
-    AURA_W = {52: ("crit", 20), 54: ("hit", 18), 99: ("ap", 1), 124: ("rap", 1)}
+    AURA_W = {52: ("crit", 28), 54: ("hit", 18), 99: ("ap", 1.05), 124: ("rap", 1.05)}
     def equip_bonus(sid):
         sp = SP.get(sid)
         if not sp: return 0
@@ -87,7 +87,7 @@ if FLAVOR == "era":
                 val = int(sp[76 + k] or 0) + int(sp[64 + k] or 0)
                 tot += val * AURA_W[aura][1]
         return tot
-    STAT_W = {3: 2.4, 7: 0.5, 5: 0.3, 4: 0.1, 1: 0.05}
+    STAT_W = {3: 2.6, 7: 0.6, 5: 0.3, 4: 0.1, 1: 0.05}
     SLOT = {1: "HEAD", 2: "NECK", 3: "SHOULDER", 5: "CHEST", 20: "CHEST", 6: "WAIST", 7: "LEGS", 8: "FEET", 9: "WRIST",
             10: "HANDS", 11: "FINGER", 12: "TRINKET", 16: "BACK", 13: "WEAPON", 17: "WEAPON", 21: "WEAPON", 22: "OFFHAND",
             15: "RANGED", 26: "RANGED"}
@@ -120,14 +120,16 @@ if FLAVOR == "era":
             if delay > 0:
                 dps = (float(v[45]) + float(v[46])) / 2 / (delay / 1000.0)
                 score += dps * 14
+        base = score
+        if cls == 4: score += int(v[60] or 0) * 0.02       # armor: the pet gets 30% of yours on Forever
         score = round(score)
-        if score <= 0: continue
+        if round(base) <= 0: continue                      # armor alone doesn't make an item worth listing
         mail = 1 if (cls == 4 and sub == 3) else 0
         req = int(v[14])
         if req == 0: req = max(1, min(60, int(v[13]) - 5))   # some items have no required level in the data
         gear.append((int(v[0]), slot, req, score, mail))
-    out.append("-- [itemID] = {slot, requiredLevel, score, isMail}. Score: agility x2.4, attack power x1, crit% x20, hit% x18,")
-    out.append("-- stamina x0.5, intellect x0.3, ranged weapon DPS x14.")
+    out.append("-- [itemID] = {slot, requiredLevel, score, isMail}. Score: agility x2.6, attack power x1.05, crit% x28, hit% x18,")
+    out.append("-- stamina x0.6, intellect x0.3, armor x0.02, ranged weapon DPS x14.")
     out.append("ns.GearItems = {")
     for iid, slot, lvl, sc, mail in sorted(gear):
         out.append("[%d]={%s,%d,%d,%d}," % (iid, s(slot), lvl, sc, mail))

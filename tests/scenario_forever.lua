@@ -261,9 +261,22 @@ C_Item.GetItemStats = function(link)
 end
 C_Item.GetItemInfo = function(id) if id == 273033 or id == 273036 then return "x", nil, 3, 40, 34 end return oldGI(id) end
 local g = ns.GearItems[273033]
-assert(g and g[1] == "RANGED" and g[3] == 292 and g[2] == 34, "crossbow scored in game: " .. tostring(g and g[3]))
+assert(g and g[1] == "RANGED" and g[3] == 293 and g[2] == 34, "crossbow scored in game: " .. tostring(g and g[3]))
 assert(ns.GearItems[273055] == nil, "a shield is not hunter gear")
 assert(ns.GearItems[273036] and ns.GearItems[273036][3] == 3, "cloth bracers: usable, low score")
+-- armor counts a little (the pet gets a share of it): read from the tooltip when the stats call has none
+do
+  local kT = C_TooltipInfo
+  C_TooltipInfo = { GetHyperlink = function() return { lines = { { leftText = "Mail Belt" }, { leftText = "125 Armor" } } } end }
+  local oldInstant = C_Item.GetItemInfoInstant
+  C_Item.GetItemInfoInstant = function(id) if id == 273037 then return id, "Armor", "Mail", "INVTYPE_WAIST", 0, 4, 3 end return oldInstant(id) end
+  local oldStats, oldInfo = C_Item.GetItemStats, C_Item.GetItemInfo
+  C_Item.GetItemStats = function(link) if link == "item:273037" then return { ITEM_MOD_AGILITY_SHORT = 7 } end return oldStats(link) end
+  C_Item.GetItemInfo = function(id) if id == 273037 then return "x", nil, 2, 38, 33 end return oldInfo(id) end
+  local m = ns.GearItems[273037]
+  assert(m and m[3] == 21 and m[4] == 1, "mail belt: agility 7 x2.6 + 125 armor x0.02 = 21: " .. tostring(m and m[3]))
+  C_TooltipInfo, C_Item.GetItemInfoInstant, C_Item.GetItemStats, C_Item.GetItemInfo = kT, oldInstant, oldStats, oldInfo
+end
 assert(ns.LootForMe(273033), "the loot card sees it")
 local n = 0 for id in pairs(ns.GearItems) do if id == 273033 then n = n + 1 end end
 assert(n == 0, "the shipped list itself is unchanged")

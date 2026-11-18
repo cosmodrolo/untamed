@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.42.0
+Gear scores now count what your pet gets from you.
+- On WoW Forever a hunter's pet shares the hunter's stats (per Wowhead's Beast Mastery guide): all of your crit chance, 30% of your armor, 10% of your attack power, and 2 health per point of stamina. The score now reflects that: crit 20 to 28 per 1%, agility 2.4 to 2.6, attack power 1 to 1.05, stamina 0.5 to 0.6, and armor counts for the first time at 0.02 per point.
+- Armor is a tiebreaker on purpose. A full move from leather to mail is worth about 12 points in total, enough to pick mail when the stats are close and never enough to give up real agility for it.
+- Every item in the gear list was rescored (about 4,700), so upgrade numbers and ranks shift a little everywhere. Items new in Forever that are scored in game use the same weights, with armor read from the item.
+
 ## v2.41.3
 - Blizzard look: the "Viewing" picker at the top right is a dark box like the other dropdowns, not a red button.
 

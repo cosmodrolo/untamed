@@ -3,8 +3,10 @@ local _, ns = ...
 ---------------------------------------------------------------------------
 -- Gear the shipped list doesn't know (new Forever items, like the City of Dalaran's loot) is
 -- scored in game from the item itself, with the same weights as the list:
---   agility x2.4, attack power x1, crit% x20, hit% x18, stamina x0.5, intellect x0.3,
---   ranged weapon DPS x14.
+--   agility x2.6, attack power x1.05, crit% x28, hit% x18, stamina x0.6, intellect x0.3,
+--   armor x0.02, ranged weapon DPS x14.
+-- On WoW Forever your pet shares your stats (all of your crit chance, 30% of your armor, 10% of
+-- your attack power, 2 health per stamina), which is why crit weighs this much and armor counts.
 -- ns.GearItems[id] answers for those items too (same shape: slot, required level, score, isMail),
 -- so the loot card, Need alert, tooltips and "what you wear" all see them. Items a hunter can't
 -- equip (plate, shields, maces, wands) stay unknown. Looping over ns.GearItems still gives only
@@ -25,9 +27,10 @@ local WEAPON_OK = { [0] = true, [1] = true, [2] = true, [3] = true, [6] = true, 
 local ARMOR_OK = { [0] = true, [1] = true, [2] = true, [3] = true }
 
 local WEIGHT = {
-  ITEM_MOD_AGILITY_SHORT = 2.4, ITEM_MOD_ATTACK_POWER_SHORT = 1, ITEM_MOD_RANGED_ATTACK_POWER_SHORT = 1,
-  ITEM_MOD_STAMINA_SHORT = 0.5, ITEM_MOD_INTELLECT_SHORT = 0.3,
-  ITEM_MOD_CRIT_RATING_SHORT = 20, ITEM_MOD_CRIT_RANGED_RATING_SHORT = 20,
+  ITEM_MOD_AGILITY_SHORT = 2.6, ITEM_MOD_ATTACK_POWER_SHORT = 1.05, ITEM_MOD_RANGED_ATTACK_POWER_SHORT = 1.05,
+  ITEM_MOD_STAMINA_SHORT = 0.6, ITEM_MOD_INTELLECT_SHORT = 0.3,
+  ITEM_MOD_CRIT_RATING_SHORT = 28, ITEM_MOD_CRIT_RANGED_RATING_SHORT = 28,
+  RESISTANCE0_NAME = 0.02,
   ITEM_MOD_HIT_RATING_SHORT = 18, ITEM_MOD_HIT_RANGED_RATING_SHORT = 18,
 }
 
@@ -73,6 +76,21 @@ local function Compute(id)
   if slot == "RANGED" then
     local dps = stats.ITEM_MOD_DAMAGE_PER_SECOND_SHORT
     if type(dps) == "number" then score = score + dps * 14 end
+  end
+  -- armor: if the stats call left it out, the tooltip's "61 Armor" line has it
+  if classID == 4 and type(stats.RESISTANCE0_NAME) ~= "number" and C_TooltipInfo and C_TooltipInfo.GetHyperlink then
+    local okT, tip = pcall(C_TooltipInfo.GetHyperlink, "item:" .. id)
+    local lines = okT and type(tip) == "table" and not ns.IsSecret(tip) and tip.lines
+    local word = (type(ARMOR) == "string" and ARMOR or "Armor"):lower()
+    if type(lines) == "table" and not ns.IsSecret(lines) then
+      for _, line in ipairs(lines) do
+        local text = type(line) == "table" and line.leftText
+        if type(text) == "string" and not ns.IsSecret(text) then
+          local n, what = text:match("^(%d+)%s+(.-)%s*$")
+          if n and what:lower() == word then score = score + tonumber(n) * WEIGHT.RESISTANCE0_NAME break end
+        end
+      end
+    end
   end
   return { slot, tonumber(minLevel) or 1, math.floor(score + 0.5), (classID == 4 and subclassID == 3) and 1 or 0, live = true }, true
 end
