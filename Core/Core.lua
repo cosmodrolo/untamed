@@ -665,6 +665,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print("/ut hud move  drag the display under your character")
     ns.Print("/ut window reset  the window back to its starting size and place")
     ns.Print("/ut help all  every command")
+    ns.Print(L["Something wrong or missing? Tell us in the CurseForge comments or at github.com/cosmodrolo/untamed/issues"])
   elseif msg == "help all" then
     ns.Print("/untamed worn  every item you wear with its score and rank")
     ns.Print("/untamed advice  what the quest reward box saw lately, and which addon took a reward for you")

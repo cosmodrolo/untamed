@@ -660,6 +660,7 @@ L["Sold by"] = true
 L["Sold by a quartermaster: usually needs reputation."] = true
 L["Some costs are unknown until you open Beast Training once (shown as +)."] = true
 L["Something goes wrong: Feign Death drops everything off you (from 30)."] = true
+L["Something wrong or missing? Tell us in the CurseForge comments or at github.com/cosmodrolo/untamed/issues"] = true
 L["Soon"] = true
 L["Source: "] = true
 L["Spells"] = true

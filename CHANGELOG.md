@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.42.2
+- /ut help ends with where to report something wrong or missing (CurseForge comments or GitHub issues).
+- The recorder keeps its saved file small: each list keeps only its newest entries (for example 1,500 loot sources and 600 beasts), trimmed at login, and each loot source keeps at most 60 items. It never sends anything anywhere.
+
 ## v2.42.1
 Data update (Nov 18).
 - QuestieDB 1.1.3 (Nov 18 scan): about 68 beasts got fresher spawn points, and Search was rebuilt with its newest Forever NPCs, objects, items and quests plus your latest recordings.

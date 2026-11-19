@@ -11,6 +11,12 @@ local C = ns.C
 --     its item and quest IDs). Each list is capped so the saved file stays small.
 -- Your copy uses this right away; it's also saved for sharing (Settings > Share data).
 
+local function CountKeys(t)
+  local n = 0
+  for _ in pairs(t) do n = n + 1 end
+  return n
+end
+
 local function Store()
   ns.db.recorded = ns.db.recorded or {}
   local r = ns.db.recorded[ns.FLAVOR]
@@ -171,7 +177,8 @@ local function RecordLoot()
             rec = { name = name, map = map, x = x, y = y, items = {} }
             drops[key] = rec
           end
-          rec.items[id] = (rec.items[id] or 0) + 1
+          if rec.items[id] or CountKeys(rec.items) < 60 then rec.items[id] = (rec.items[id] or 0) + 1 end
+          rec.t = time()
           if kind == "GameObject" and map and x then
             rec.spots = rec.spots or {}
             ns.RecordSpot(rec.spots, map, x, y, 60)
@@ -279,12 +286,35 @@ function ns.RecordBook(name, what, value)
   end
 end
 
+---------------------------------------------------------------------------
+-- Keep the saved file small: each list keeps its newest entries up to a limit. Older entries
+-- are what the data updates have long since picked up.
+---------------------------------------------------------------------------
+local KEEP = { drops = 1500, vendors = 400, beasts = 600, rares = 200, marks = 300, objects = 300, books = 100 }
+
+function ns.RecorderTrim()
+  local r = ns.db and ns.db.recorded and ns.db.recorded[ns.FLAVOR]
+  if not r then return 0 end
+  local dropped = 0
+  for list, keep in pairs(KEEP) do
+    local t = r[list]
+    if type(t) == "table" and CountKeys(t) > keep then
+      local keys = {}
+      for k, e in pairs(t) do keys[#keys + 1] = { k = k, at = type(e) == "table" and (e.t or e.seen) or 0 } end
+      table.sort(keys, function(a, b) return a.at > b.at end)    -- newest first
+      for i = keep + 1, #keys do t[keys[i].k] = nil; dropped = dropped + 1 end
+    end
+  end
+  return dropped
+end
+
 local ev = CreateFrame("Frame")
-for _, e in ipairs({ "MERCHANT_SHOW", "LOOT_OPENED", "NAME_PLATE_UNIT_ADDED", "PLAYER_TARGET_CHANGED", "UPDATE_MOUSEOVER_UNIT" }) do
+for _, e in ipairs({ "PLAYER_LOGIN", "MERCHANT_SHOW", "LOOT_OPENED", "NAME_PLATE_UNIT_ADDED", "PLAYER_TARGET_CHANGED", "UPDATE_MOUSEOVER_UNIT" }) do
   pcall(ev.RegisterEvent, ev, e)
 end
 ev:SetScript("OnEvent", function(_, event, unit)
-  if event == "NAME_PLATE_UNIT_ADDED" then RecordUnit(unit, false)
+  if event == "PLAYER_LOGIN" then ns.RecorderTrim()
+  elseif event == "NAME_PLATE_UNIT_ADDED" then RecordUnit(unit, false)
   elseif event == "PLAYER_TARGET_CHANGED" then RecordUnit("target", true)
   elseif event == "UPDATE_MOUSEOVER_UNIT" then RecordUnit("mouseover", true)
   elseif event == "MERCHANT_SHOW" then
@@ -309,4 +339,4 @@ function ns.RecordedCounts()
   return v, d, items, extra
 end
 
-ns.RecorderTest = { RecordVendor = RecordVendor, RecordLoot = RecordLoot, ParseGUID = ParseGUID, RecordUnit = RecordUnit }
+ns.RecorderTest = { Trim = ns.RecorderTrim, RecordVendor = RecordVendor, RecordLoot = RecordLoot, ParseGUID = ParseGUID, RecordUnit = RecordUnit }

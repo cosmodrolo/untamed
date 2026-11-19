@@ -388,6 +388,20 @@ do
   r.drops["o" .. chestId] = nil
   ns.ChestCacheClear()
 end
+-- the recorder keeps the newest entries when a list grows past its limit
+do
+  ns.db.recorded = ns.db.recorded or {}
+  local r = ns.db.recorded[ns.FLAVOR] or {}
+  ns.db.recorded[ns.FLAVOR] = r
+  local keepBeasts = r.beasts
+  r.beasts = {}
+  for i = 1, 650 do r.beasts[1000000 + i] = { name = "b" .. i, t = i } end
+  local gone = ns.RecorderTrim()
+  local n, oldest = 0, math.huge
+  for _, e in pairs(r.beasts) do n = n + 1; oldest = math.min(oldest, e.t) end
+  check(gone >= 50 and n == 600 and oldest == 51, "the recorder keeps the 600 newest beasts: " .. n .. " " .. oldest)
+  r.beasts = keepBeasts
+end
 ns.ScanReport()
 -- near a chest spot, and a chest as the interact target
 local heard = {}

@@ -30,8 +30,12 @@ Six sections along the top, plus Settings. With a controller: D-pad moves, Cross
 - **Alerts.** Rare beasts, a chest or book nearby, an upgrade dropping in a dungeon (with a loot card), Growl on in a group, a boss without Hunter's Mark, whether Feign Death worked.
 - **Macros.** One click makes the hunter macros from the Rotation page. `Care` is one button for your pet: revive, call, mend, or feed, whichever it needs.
 - **Restock.** A button on the vendor window fills your quiver and tops up pet food.
-- **Recorder.** Notes what you tame, loot and see, so the data improves as you play.
+- **Recorder.** Notes the vendors, loot, beasts and chests you come across, and uses them right away to fill gaps on your own map. It stays on your computer: nothing is sent anywhere, and it keeps only its newest entries so the saved file stays small. It can be turned off in Settings.
 - **Self-check.** `/ut doctor` tests each part against the game and says what isn't working.
+
+## Something wrong or missing?
+
+Tell us in the CurseForge comments or open an issue at https://github.com/cosmodrolo/untamed/issues. A screenshot and the zone help a lot.
 
 ## Built for the gamepad UI
 
