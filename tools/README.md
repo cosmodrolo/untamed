@@ -28,7 +28,7 @@ Source checkouts in one folder, called `SRC` below:
 
 ```
 python tools/build_services.py SRC/cdb/full.sql services.json
-python tools/build_data.py SRC forever Data/Forever.lua tools/forever_pets.json services.json
+python tools/build_data.py SRC forever Data/Forever.lua tools/forever_pets.json services.json [Untamed.lua ...]
 python tools/build_names.py SRC forever Data/Forever.lua Data/Names_Forever.lua
 python tools/build_foods.py SRC/cdb/Full_DB/ClassicDB_1_12_1_z2815.sql.gz Data/Foods.lua
 
@@ -45,6 +45,7 @@ python tools/build_looks.py SRC
 
 Notes:
 
+- `build_data.py` can take the same recorder files: a tameable beast Questie has no spawns for gets the spots the recorder saw it at.
 - `build_search.py` can take players' `WTF/Account/<name>/SavedVariables/Untamed.lua` files as extra arguments. Vendors and loot the recorder noted in game are merged in. The shipped `Search_Forever.lua` was built with such recordings, so a build without them differs slightly.
 - `blizzard/CreatureSpellData_<build>.txt`: to refresh it for a new build, open `https://wago.tools/db2/CreatureSpellData/csv?build=<build>` and convert each row to `ID:spell.spell.spell`.
 - `forever_gear.txt` is computed from wago.tools ItemSparse, RandPropPoints and ItemDamage tables for WoW Forever.

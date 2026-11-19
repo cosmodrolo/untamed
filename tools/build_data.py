@@ -13,6 +13,7 @@ import re, sys, json, os
 SRC, FLAVOR, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
 FJSON = sys.argv[4] if len(sys.argv) > 4 and sys.argv[4] != "-" else None
 SJSON = sys.argv[5] if len(sys.argv) > 5 else None   # services.json from build_services.py
+RECORDED = sys.argv[6:]   # players' SavedVariables/Untamed.lua: beasts seen in game fill in spots for tameable ones Questie doesn't place
 SVC = json.load(open(SJSON)) if SJSON else {"ammo": {}, "hunterTrainer": [], "petTrainer": [], "spellIds": {}}
 EXTRA = {}
 for k in SVC["ammo"]: EXTRA[int(k)] = "A"
@@ -252,6 +253,26 @@ def lval(v):
     if isinstance(v, float): return ("%.2f" % v).rstrip("0").rstrip(".")
     return str(v)
 
+# Beasts the recorder saw in game: { npcID: [(uiMapID, x, y), ...] }
+seen = {}
+for path in RECORDED:
+    try:
+        from lupa.lua51 import LuaRuntime
+    except ImportError:
+        log("recordings skipped: pip install lupa"); break
+    lua = LuaRuntime()
+    lua.execute(open(path, encoding="utf-8").read())
+    db = lua.globals().UntamedDB
+    beasts = db and db.recorded and db.recorded[FLAVOR] and db.recorded[FLAVOR].beasts
+    if not beasts: continue
+    for nid, e in beasts.items():
+        s = e.spots
+        if not s: continue
+        vals = [s[i] for i in range(1, len(s) + 1)]
+        for i in range(0, len(vals) - 2, 3):
+            seen.setdefault(int(nid), []).append((int(vals[i]), float(vals[i + 1]), float(vals[i + 2])))
+recorded_used = 0
+
 lines, nospawn = [], []
 for nid in sorted(tame, key=lambda n: (str(tame[n]["fam"]), tame[n]["lo"], n)):
     b = tame[nid]
@@ -271,6 +292,11 @@ for nid in sorted(tame, key=lambda n: (str(tame[n]["fam"]), tame[n]["lo"], n)):
         for zn, pts in b["coords"].items():
             if zn.lower() in zone_by_name:
                 spawns.append("[%d]={%s}" % (zone_by_name[zn.lower()], ",".join("%.1f,%.1f" % tuple(p) for p in pts)))
+    if not spawns and seen.get(nid):     # seen in game by the recorder
+        by = {}
+        for ui, x, y in seen[nid]: by.setdefault(ui, []).append((x, y))
+        spawns = ["[%d]={%s}" % (ui, ",".join("%.1f,%.1f" % p for p in thin(sorted(pts)))) for ui, pts in sorted(by.items())]
+        recorded_used += 1
     if not spawns and b.get("zone"):
         spawns, inst = zone_spawns(b["zone"])
         if not spawns and inst is None:
@@ -326,6 +352,7 @@ with open(OUT, "w", encoding="utf-8") as f:
     f.write("ns.AbilitySpellIDs = {%s}\n" % ",".join('[%s]=%d' % (lstr(k), v[0]) for k, v in sorted(SVC["spellIds"].items())))
     f.write("ns.ZoneNames = {\n" + "\n".join('  [%d]=%s,' % (ui, lstr(nm)) for ui, nm in sorted(set(zmap.values()))) + "\n}\n")
 
+log("spots from recordings:", recorded_used)
 log("beasts written:", len(lines), "teaching:", sum(1 for b in tame.values() if b["spells"]), "no spawn:", len(nospawn))
 log("  no spawn:", ", ".join(sorted(nospawn)))
 log("services:", {k: sum(1 for l in svc_lines if l.startswith('  {"%s"' % k)) for k in "SFATP"})

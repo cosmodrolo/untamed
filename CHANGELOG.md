@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.42.1
+Data update (Nov 18).
+- QuestieDB 1.1.3 (Nov 18 scan): about 68 beasts got fresher spawn points, and Search was rebuilt with its newest Forever NPCs, objects, items and quests plus your latest recordings.
+- Bloodscalp Tiger (Stranglethorn) is back in the Bestiary: it's tameable, but Questie's Forever data has no spawns for it yet, so its spots come from where the recorder saw it. Beasts the recorder sees now fill in spots this way whenever Questie has none.
+- Game build 1.60.1.70959 (Nov 17) changed the stats on two items in the gear list (Blessed Band of Light lost its hit, Souvenir Sea Shell lost a little stamina); their scores follow.
+
 ## v2.42.0
 Gear scores now count what your pet gets from you.
 - On WoW Forever a hunter's pet shares the hunter's stats (per Wowhead's Beast Mastery guide): all of your crit chance, 30% of your armor, 10% of your attack power, and 2 health per point of stamina. The score now reflects that: crit 20 to 28 per 1%, agility 2.4 to 2.6, attack power 1 to 1.05, stamina 0.5 to 0.6, and armor counts for the first time at 0.02 per point.
