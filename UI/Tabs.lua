@@ -251,7 +251,7 @@ local SECTIONS = {
   { key = "data", title = L["Your data"], icon = "INV_Misc_Note_01",
     blurb = L["Untamed learns from what you see in the game. This is where that lives."],
     items = {
-      { "check", L["Note vendors, loot and beasts as I play"], "recordData", L["Who sells what and where, what drops from what, the beasts and chests you come across. Untamed uses it right away to fill gaps, and you can share it to improve the data. /ut recorded shows how much there is."] },
+      { "check", L["Note vendors, loot and beasts as I play"], "recordData", L["Who sells what and where, what drops from what, the beasts and chests you come across. Untamed uses it right away to fill gaps in its lists and your map. It stays on your computer and keeps only its newest notes. /ut recorded shows how much there is."] },
       { "button", L["Export my tame data"], function()
           local text, n = ns.ExportObserved()
           ns.TextPopup(L["Export tame data ("] .. n .. " beasts)", text)

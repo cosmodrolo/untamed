@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.43.0
+Release polish.
+- Talents: the page says where each build comes from (the leveling build is Untamed's pick from wowhead.com's Forever talent numbers; the raid build is Feor's guide on mobalytics.gg) and that it's a suggestion, with where to turn off the talent glow and the level-up tip.
+- /ut talents opens the Talents page again (a debug print had taken the command; it's now /ut talents debug).
+- An unknown /ut command says so and points to /ut help, instead of opening the window.
+- The help lines can be translated.
+- Recorder wording: it stays on your computer and fills gaps in your own lists and map (nothing is sent anywhere).
+- Data: QuestieDB (Nov 19). Two more tameable beasts with spots the recorder saw: Skullsplitter Panther (Stranglethorn) and Wayward Buzzard (Badlands).
+
 ## v2.42.2
 - /ut help ends with where to report something wrong or missing (CurseForge comments or GitHub issues).
 - The recorder keeps its saved file small: each list keeps only its newest entries (for example 1,500 loot sources and 600 beasts), trimmed at login, and each loot source keeps at most 60 items. It never sends anything anywhere.

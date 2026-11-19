@@ -9,7 +9,7 @@ local C = ns.C
 --   Beasts and rares you see (nameplates, target, mouseover): level, family and where.
 --   What the game marks on your minimap (vignettes), library books (where you found each one,
 --     its item and quest IDs). Each list is capped so the saved file stays small.
--- Your copy uses this right away; it's also saved for sharing (Settings > Share data).
+-- Your copy uses this right away. It stays in your SavedVariables; nothing is sent anywhere.
 
 local function CountKeys(t)
   local n = 0

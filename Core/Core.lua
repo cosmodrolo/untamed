@@ -582,7 +582,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.SearchFor(searchText)
   elseif msg == "recorded" then
     local v, d, n, x = ns.RecordedCounts()
-    ns.Print(string.format(L["Recorded so far: %d vendors (%d items) and %d loot sources. Thanks for helping fix the data!"], v, n, d))
+    ns.Print(string.format(L["Recorded so far: %d vendors (%d items) and %d loot sources. It stays on your computer and fills gaps in your own lists and map."], v, n, d))
     if x then
       ns.Print(string.format(L["Also: %d beasts and %d rares you've seen, %d things marked on your minimap, %d library books."], x.beasts, x.rares, x.marks, x.books))
     end
@@ -644,7 +644,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Route_Next()
   elseif msg == "spot" then
     ns.Arrow_NextSpot()
-  elseif msg == "talents" then
+  elseif msg == "talents debug" then
     if ns.TalentDebug then ns.TalentDebug() end
   elseif msg == "hud" or msg:match("^hud ") then
     if ns.HUDCommand then ns.HUDCommand(msg:match("^hud%s*(.*)$")) end
@@ -656,38 +656,41 @@ SlashCmdList.UNTAMED = function(msg)
     or msg == "supplies" or msg == "spells" or msg == "talents" or msg == "gear" or msg == "quests" then
     if ns.UI_Show then ns.UI_Show(msg) end
   elseif msg == "help" then
-    ns.Print("/ut  open Untamed   |  /ut settings  every switch, with what it does")
-    ns.Print("/ut s <name>  find any item, NPC or beast and where to get it")
-    ns.Print("/ut zone  what your pet can learn in this zone")
-    ns.Print("/ut want <beast>  put a beast on your wishlist (again to take it off)")
-    ns.Print("/ut book  arrow to the nearest library book you need")
-    ns.Print("/ut clear  clear the arrow and the map focus")
-    ns.Print("/ut hud move  drag the display under your character")
-    ns.Print("/ut window reset  the window back to its starting size and place")
-    ns.Print("/ut help all  every command")
+    ns.Print(L["/ut  open Untamed   |  /ut settings  every switch, with what it does"])
+    ns.Print(L["/ut s <name>  find any item, NPC or beast and where to get it"])
+    ns.Print(L["/ut zone  what your pet can learn in this zone"])
+    ns.Print(L["/ut want <beast>  put a beast on your wishlist (again to take it off)"])
+    ns.Print(L["/ut book  arrow to the nearest library book you need"])
+    ns.Print(L["/ut clear  clear the arrow and the map focus"])
+    ns.Print(L["/ut hud move  drag the display under your character"])
+    ns.Print(L["/ut window reset  the window back to its starting size and place"])
+    ns.Print(L["/ut help all  every command"])
     ns.Print(L["Something wrong or missing? Tell us in the CurseForge comments or at github.com/cosmodrolo/untamed/issues"])
   elseif msg == "help all" then
-    ns.Print("/untamed worn  every item you wear with its score and rank")
-    ns.Print("/untamed advice  what the quest reward box saw lately, and which addon took a reward for you")
-    ns.Print("/untamed bags  marks on bag items (arrows, locks, coins)   |  /untamed bags arrows, locks, coins  switch one")
-    ns.Print("/untamed  open the window   |  /untamed plan, browse, care, settings  open a tab")
-    ns.Print("/untamed search <text>  (or /ut s <text>)  find any item, NPC or beast and where to get it")
-    ns.Print("/untamed zone  what your pet can learn in this zone   |  /untamed next  skip to the next route stop")
-    ns.Print("/untamed ammo, trainer, pettrainer, stable  arrow to the nearest one   |  /untamed rare  arrow to the last rare seen")
-    ns.Print("/untamed clear  clear map focus and the navigation arrow   |  /untamed spot  arrow to the next spawn spot")
-    ns.Print("/untamed alerts  toggle zone alerts   |  /untamed minimap  toggle the minimap button")
-    ns.Print("/untamed loot  the dungeon loot card (move, lock, size 80, reset, stay, need, off, on)")
-    ns.Print("/untamed hud  the hunter display under your character (move, lock, reset, scale 1.2, off, on)")
-    ns.Print("/untamed books  library books   |  /untamed book  arrow to the nearest one you need   |  /untamed librarian  arrow to yours")
-    ns.Print("/untamed chests  chest spots on the map (on, off, minimap)   |  /untamed scan  what the game marks on your minimap")
-    ns.Print("/untamed recorded  what Untamed has noted for future data updates")
-    ns.Print("/untamed doctor  self-check: what the game answers for each part of Untamed")
-    ns.Print("/untamed mem  how much memory Untamed is using")
-    ns.Print("/untamed pad on | off  the controller in Untamed's window")
-    ns.Print("/untamed tamedfrom <beast>  which beast the pet that's out was tamed from")
-    ns.Print("/untamed range  the range meter (off, on, alerts, always)")
-    ns.Print("/untamed want <beast name>  put a beast on your wishlist (again to take it off)   |  /untamed wishlist  open it")
-  else
+    ns.Print(L["/untamed worn  every item you wear with its score and rank"])
+    ns.Print(L["/untamed advice  what the quest reward box saw lately, and which addon took a reward for you"])
+    ns.Print(L["/untamed bags  marks on bag items (arrows, locks, coins)   |  /untamed bags arrows, locks, coins  switch one"])
+    ns.Print(L["/untamed  open the window   |  /untamed plan, browse, care, settings  open a tab"])
+    ns.Print(L["/untamed search <text>  (or /ut s <text>)  find any item, NPC or beast and where to get it"])
+    ns.Print(L["/untamed zone  what your pet can learn in this zone   |  /untamed next  skip to the next route stop"])
+    ns.Print(L["/untamed ammo, trainer, pettrainer, stable  arrow to the nearest one   |  /untamed rare  arrow to the last rare seen"])
+    ns.Print(L["/untamed clear  clear map focus and the navigation arrow   |  /untamed spot  arrow to the next spawn spot"])
+    ns.Print(L["/untamed alerts  toggle zone alerts   |  /untamed minimap  toggle the minimap button"])
+    ns.Print(L["/untamed loot  the dungeon loot card (move, lock, size 80, reset, stay, need, off, on)"])
+    ns.Print(L["/untamed hud  the hunter display under your character (move, lock, reset, scale 1.2, off, on)"])
+    ns.Print(L["/untamed books  library books   |  /untamed book  arrow to the nearest one you need   |  /untamed librarian  arrow to yours"])
+    ns.Print(L["/untamed chests  chest spots on the map (on, off, minimap)   |  /untamed scan  what the game marks on your minimap"])
+    ns.Print(L["/untamed recorded  what Untamed has noted as you play"])
+    ns.Print(L["/untamed doctor  self-check: what the game answers for each part of Untamed"])
+    ns.Print(L["/untamed talents debug  what the talent window reports, for bug reports"])
+    ns.Print(L["/untamed mem  how much memory Untamed is using"])
+    ns.Print(L["/untamed pad on | off  the controller in Untamed's window"])
+    ns.Print(L["/untamed tamedfrom <beast>  which beast the pet that's out was tamed from"])
+    ns.Print(L["/untamed range  the range meter (off, on, alerts, always)"])
+    ns.Print(L["/untamed want <beast name>  put a beast on your wishlist (again to take it off)   |  /untamed wishlist  open it"])
+  elseif msg == "" then
     if ns.UI_Toggle then ns.UI_Toggle() end
+  else
+    ns.Print(string.format(L["Untamed doesn't know \"%s\". Type /ut help for the commands."], msg))
   end
 end

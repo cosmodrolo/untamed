@@ -233,6 +233,7 @@ end
 local BUILDS = {
   {
     key = "leveling", label = L["Leveling (Beast Mastery)"], split = "31/20/0",
+    short = "Untamed's pick, from wowhead.com",
     source = "Untamed's own pick for the strongest pet (Nov 13 2026), from the Forever talent numbers on wowhead.com's talent changes page and the Nov 10 hotfixes",
     -- Points, by what they do per point: Ferocity with Frenzy about 4% pet damage, Frenzy about 3%,
     -- Unleashed Fury 3% (pet and hawks), Bestial Wrath 50% for 18 sec every 2 min (about 7.5% on
@@ -253,6 +254,7 @@ local BUILDS = {
   },
   {
     key = "raid", label = L["Raid (Marksmanship)"], split = "7/32/12",
+    short = "Feor's guide, mobalytics.gg",
     source = "Feor, Marksmanship Hunter Guide (mobalytics.gg, WoW Forever, Nov 2026)",
     steps = {
       { 2, "Lethal Attacks", 5 }, { 2, "Careful Aim", 5 }, { 2, "Improved Stings", 3 }, { 2, "Rapid Killing", 2 },
@@ -835,10 +837,14 @@ do
     add(0, ns.Icon(build.key == "raid" and "Ability_TrueShot" or "Ability_Druid_FerociousBite"), (build.label:gsub("%s*%(.-%)", "")) .. "  " .. C.GREY .. build.split .. "|r",
       free and free > 0 and (C.GREEN .. ns.Count(free, L["point to spend"], L["points to spend"]) .. "|r") or "", nil,
       { build.label, L["Source: "] .. build.source, L["Open your talent window: the next talent in this build glows green."] }, { header = true })
+    -- where the build comes from, and that it's only a suggestion
+    add(0, nil, C.GREY .. L["Based on: "] .. "|r" .. (build.short or build.source), "", nil,
+      { L["A suggestion, not a rule"], L["Source: "] .. build.source,
+        L["Prefer your own picks? In Settings, Gear, spells and talents, turn off \"Glow on the next talent\" and \"Tell me the next talent on level up\". This page stays as a reference."] })
     if not MapTalents()[1]["Deadly Aspects"] then
       add(0, nil, C.GREY .. L["Open your talent window once so Untamed can read your talents."] .. "|r")
       if ns.talentError then add(0, nil, C.RED .. L["Couldn't read your talents: "] .. tostring(ns.talentError) .. "|r") end
-      add(0, nil, C.GREY .. L["Still empty? Type /ut talents and send me what it prints."] .. "|r")
+      add(0, nil, C.GREY .. L["Still empty? Type /ut talents debug and send what it prints."] .. "|r")
     end
     local okOff, off = pcall(OffPath, build)
     if okOff and off and #off > 0 then
@@ -866,8 +872,8 @@ do
       add(14, nil, string.format("%s%d.|r %s%s|r  %s%d/%d|r", C.GREY, i, color, label, C.GREY, st.done, st.pts),
         (isNext and (C.GOLD .. L["next"] .. "  |r") or "") .. C.GREY .. L["lvl "] .. lvlText .. "|r", nil, tip)
     end
-    add(0, nil, C.GREY .. L["Community builds: adjust to taste."] .. "|r", "", nil,
-      { L["Builds"], L["Builds are common community picks. Swap points to suit your pet and playstyle."] })
+    add(0, nil, C.GREY .. L["A suggestion: adjust to taste. The glow and level-up tips can be turned off in Settings."] .. "|r", "", nil,
+      { L["A suggestion, not a rule"], L["Swap points to suit your pet and playstyle. In Settings, Gear, spells and talents, turn off \"Glow on the next talent\" and \"Tell me the next talent on level up\" to do your own thing."] })
     list:Set(rows)
     local okT, errT = pcall(FillTree, build, steps, nextStep)
     if not okT then ns.talentTreeError = tostring(errT) end

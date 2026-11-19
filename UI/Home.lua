@@ -252,7 +252,7 @@ TIPS = {
   L["Alt-click an item to add it to your wishlist. Shift-click to link it in chat."],
   L["Viewing (top right) switches between your pet, a stabled pet, or any family you might tame."],
   L["Type /ut s and a name to search from chat, or /ut help for every command."],
-  L["Untamed notes vendors and loot as you play to fill gaps in its data (Settings > Share data)."],
+  L["Untamed notes vendors, loot and chests as you play and uses them to fill gaps in its lists and your map (Settings > Your data)."],
 }
 
 ns.RegisterTab("home", L["Today"], Build, Refresh)

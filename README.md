@@ -15,7 +15,7 @@ Six sections along the top, plus Settings. With a controller: D-pad moves, Cross
 | **Today** | Today | What's worth doing right now: your pet's state, abilities in reach, upgrades nearby. |
 | **Bestiary** | Bestiary, Find a Pet, Rares, Planner | Every tameable beast with its 3D model, what it teaches, attack speed and where it lives. Looks shows every skin a family comes in. Find a Pet suggests beasts by role. Planner orders a taming trip by distance. |
 | **My Pets** | Abilities, Builds, Pet Care, Stable | Every ability rank your pet can still learn and which beasts teach it, training point builds, feeding and happiness, and every pet you own. |
-| **Hunter** | Spells, Talents, Rotation, Hunter Quests | What to train, the talent to take next (builds are checked against the talent window's rules), a rotation with ready-made macros, and the class quests. |
+| **Hunter** | Spells, Talents, Rotation, Hunter Quests | What to train, a suggested talent build beside the talent trees (each build names where it comes from; the glow and level-up tips can be switched off), a rotation with ready-made macros, and the class quests. |
 | **Gear** | Gear, Wishlist, Dungeons, Reputation, Supplies | Your next upgrades by slot with a rank and how to get each one, your weakest slot, dungeon loot, reputation rewards, and ammo and pet food. |
 | **World** | Search, Library books | Find any item, NPC or beast and where to get it. The library books you still need. |
 
@@ -84,7 +84,7 @@ Seven scenarios load the addon exactly as the game does (from the TOC) against a
 - WoW Forever item stats, trainer spells and creature displays: WoW Forever client tables (build 1.60.1), exported with [wago.tools](https://wago.tools).
 - WoW Forever beast abilities: compiled from public Forever pet guides, with field-confirmed abilities and spawn points from [beastmaster.io](https://beastmaster.io/forever) (sources listed in `tools/forever_pets.json`).
 - Family damage, armor and health modifiers: [Icy Veins Classic hunter pet guide](https://www.icy-veins.com/wow-classic/hunter-dps-pets-guide).
-- Talent trees and builds: wowhead.com's Forever talent calculator, and Feor's Marksmanship guide on mobalytics.gg for the raid build.
+- Talent builds: the leveling build is Untamed's own pick from wowhead.com's Forever talent numbers and Blizzard's hotfix notes; the raid build follows Feor's Marksmanship guide on mobalytics.gg. They are suggestions: Settings, Gear, spells and talents turns off the talent glow and the level-up tip.
 - Library book locations: kept by hand from public guides.
 - No code or data is taken from other addons.
 - World of Warcraft and all game data are trademarks and copyrights of Blizzard Entertainment.
