@@ -269,6 +269,17 @@ local function FillSplit(split)
 end
 
 -- In a fight: your spell rows as the meter has them, numbers passed straight through.
+-- Whose row it is in a fight, for its color: "you", "pet" or "other" (the hawks), or nil when the
+-- game keeps the creature's name secret (then the row stays neutral).
+local function LiveKind(sp)
+  if Secret(sp.creatureName) then ns.petMeterNameSecret = true return nil end
+  ns.petMeterNameSecret = false
+  local who = Owner(sp)
+  if who == "you" then return "you" end
+  if who == L["Hawk"] or who == L["Hawks"] then return "other" end
+  return "pet"
+end
+
 local function FillLive(src)
   win.title:SetText(GOLD .. L["Pack damage"] .. "|r  " .. MUTED .. L["this fight"] .. "|r")
   local spells = src and src.combatSpells
@@ -278,7 +289,9 @@ local function FillLive(src)
     r:SetShown(sp ~= nil and sp ~= false)
     if sp then
       n = i
-      r:SetStatusBarColor(COLOR.other[1] * 0.7, COLOR.other[2] * 0.7, COLOR.other[3] * 0.7, 0.8)
+      local kind = LiveKind(sp)
+      local col = kind and COLOR[kind] or { 0.55, 0.58, 0.65 }
+      r:SetStatusBarColor(col[1] * 0.75, col[2] * 0.75, col[3] * 0.75, 0.85)
       pcall(r.SetMinMaxValues, r, 0, src.maxAmount)
       pcall(r.SetValue, r, sp.totalAmount)
       r.icon:SetTexture(SpellIcon(sp.spellID) or "Interface\\Icons\\INV_Misc_QuestionMark")
@@ -374,4 +387,4 @@ ev:SetScript("OnUpdate", function()
   Refresh()
 end)
 
-ns.PetMeterTest = { Owner = Owner, Build = function() if not win then Build() end return win end, FillLive = FillLive }
+ns.PetMeterTest = { LiveKind = LiveKind, Owner = Owner, Build = function() if not win then Build() end return win end, FillLive = FillLive }

@@ -425,6 +425,8 @@ do
   local win = ns.PetMeterTest.Build()
   ns.PetMeterTest.FillLive({ combatSpells = spells, maxAmount = 913 })
   check(win.rows[6]:IsShown() and not win.rows[7]:IsShown(), "pet meter: live rows mirror the meter")
+  local K = ns.PetMeterTest.LiveKind
+  check(K(spells[1]) == "pet" and K(spells[2]) == "you" and K(spells[3]) == "other", "pet meter: live rows colored by who did the damage")
   local kE, kL = UnitExists, InCombatLockdown
   UnitExists = function() return true end
   InCombatLockdown = function() return false end

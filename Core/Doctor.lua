@@ -101,6 +101,7 @@ function ns.Doctor()
   Line(okM and avail == true, "Damage meter for addons", okM and tostring(avail) or tostring(avail))
   local split = ns.PetMeterSplit and ns.PetMeterSplit("Current")
   Line(split ~= nil or nil, "Pet damage split (last fight)", split and (#split.parts .. " parts, " .. split.total .. " damage") or "none yet (or secret in a fight)")
+  if ns.petMeterNameSecret ~= nil then Line(not ns.petMeterNameSecret, "Pet damage colors in a fight", ns.petMeterNameSecret and "names are secret: rows stay grey" or "by who did it") end
   if ns.petMeterLive then Line(ns.petMeterLive == "numbers", "Pet damage live numbers", ns.petMeterLive) end
   if ns.petMeterError then Line(false, "Pet damage window error", ns.petMeterError) end
 
