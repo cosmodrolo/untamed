@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.44.1
+- Pet damage window: spell names and icons show during a fight too (they read "?" before).
+
 ## v2.44.0
 - New: pet damage window. It reads the game's damage meter and shows how much of your damage your pet and hawks do. During a fight it mirrors your spell rows live (the game keeps the numbers secret from addons in combat, so they can be shown but not added up); when the fight ends it shows the split, you / pet / hawks with percentages, and the same split for the whole session. Summon Hawk's damage counts for the hawks.
 - /ut meter shows or hides it; /ut meter move, lock, size 120, reset, off, on. A switch in Settings, In a fight.

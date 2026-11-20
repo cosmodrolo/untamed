@@ -39,14 +39,14 @@ local function MySource(kind)
   if ok and type(src) == "table" then return src end
 end
 
+-- Both lookups take the meter's secret spell IDs during a fight (the game allows it); the name
+-- that comes back may be secret too, which is fine for showing it.
 local function SpellName(id)
-  if Secret(id) then return nil end
   local ok, name = pcall(function() return C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(id) end)
   return ok and name or nil
 end
 
 local function SpellIcon(id)
-  if Secret(id) then return nil end
   local ok, icon = pcall(function() return C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(id) end)
   return ok and icon or nil
 end
@@ -63,7 +63,7 @@ local function Owner(sp)
   local who = sp.creatureName
   if type(who) == "string" and who ~= "" then return who end
   local name = SpellName(sp.spellID)
-  if name and name:find(L["Hawk"], 1, true) then return L["Hawks"] end
+  if name and not Secret(name) and name:find(L["Hawk"], 1, true) then return L["Hawks"] end
   return "you"
 end
 
