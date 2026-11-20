@@ -204,8 +204,21 @@ local function Build()
     r:Hide()
     win.rows[i] = r
   end
-  win.foot = Text(win, 11, nil, true)
-  win.foot:SetWidth(WIDTH - 16)
+  win.foot = Text(win, 10, nil, true)
+  win.foot:SetWidth(WIDTH - 16 - 40)
+  -- a small "Reset" button at the end of the session line: starts a new session for this window
+  -- (Blizzard's own meter keeps its numbers)
+  local rs = CreateFrame("Button", nil, win)
+  rs:SetSize(38, 14)
+  rs.text = Text(rs, 10, nil, true)
+  rs.text:SetPoint("CENTER")
+  rs.text:SetText(MUTED .. L["Reset"] .. "|r")
+  rs:SetScript("OnEnter", function() rs.text:SetText(GOLD .. L["Reset"] .. "|r") end)
+  rs:SetScript("OnLeave", function() rs.text:SetText(MUTED .. L["Reset"] .. "|r") end)
+  rs:SetScript("OnClick", function() ns.PetMeterNewSession() end)
+  rs:SetFrameLevel(win:GetFrameLevel() + 10)
+  rs:Hide()
+  win.resetBtn = rs
   win.foot:SetWordWrap(false)     -- one line: the session split is short enough at this size
   Place()
 end
@@ -214,6 +227,9 @@ local function Layout(n, foot)
   win.foot:ClearAllPoints()
   win.foot:SetPoint("TOPLEFT", 8, -24 - n * (ROW_H + 2) - 2)
   win.foot:SetText(foot or "")
+  win.resetBtn:ClearAllPoints()
+  win.resetBtn:SetPoint("LEFT", win.foot, "LEFT", WIDTH - 16 - 38, 0)
+  win.resetBtn:SetShown(foot ~= nil and foot ~= "" and win.foot:GetText() ~= nil and foot:find(L["Session: "], 1, true) ~= nil)
   local h = 24 + n * (ROW_H + 2) + (foot and foot ~= "" and 18 or 2) + (moving and 4 or 0)
   win:SetHeight(h)
 end
@@ -260,7 +276,27 @@ local function FillSplit(split)
     end
   end
   local all = ns.PetMeterSplit("Overall")
+  -- the window's own session starts at the last Reset: take away what Blizzard's meter had then
+  local base = ns.db.petMeterBase
+  if all and base then
+    local total, gone = 0, false
+    for _, p in ipairs(all.parts) do
+      p.amount = p.amount - (base[p.label] or 0)
+      if p.amount < 0 then gone = true end
+      total = total + math.max(0, p.amount)
+    end
+    if gone then ns.db.petMeterBase = nil            -- Blizzard's meter was reset since: start over from it
+    else
+      all.total = total
+      local keep = {}
+      for _, p in ipairs(all.parts) do if p.amount > 0 then keep[#keep + 1] = p end end
+      table.sort(keep, function(a, b) return a.amount > b.amount end)
+      all.parts = keep
+      if total <= 0 then all = nil end
+    end
+  end
   local foot
+  if not all and base then foot = GOLD .. L["Session: "] .. "|r" .. SOFT .. L["new, starts with the next fight"] .. "|r" end
   if all then
     local bits = {}
     for _, p in ipairs(all.parts) do bits[#bits + 1] = p.label .. " " .. Pct(p.amount, all.total) end
@@ -352,6 +388,8 @@ function ns.PetMeterCommand(arg)
     local n = tonumber(arg:match("(%d+)"))
     if n then ns.db.petMeterScale = math.max(0.5, math.min(1.6, n / 100)) end
     Place()
+  elseif arg == "new" then
+    ns.PetMeterNewSession()
   elseif arg == "reset" then
     ns.db.petMeterPos, ns.db.petMeterScale = nil, nil
     Place()
@@ -361,6 +399,17 @@ function ns.PetMeterCommand(arg)
     ns.Print(ns.db.petMeter and L["The pet damage window is on."] or L["The pet damage window is off (/ut meter on brings it back)."])
     Refresh()
   end
+end
+
+-- New session for this window: remember Blizzard's session totals now, and count from there.
+function ns.PetMeterNewSession()
+  if InCombatLockdown() then ns.Print(L["Reset the session after the fight."]) return end
+  local all = ns.PetMeterSplit("Overall")
+  local base = {}
+  if all then for _, p in ipairs(all.parts) do base[p.label] = p.amount end end
+  ns.db.petMeterBase = base
+  ns.Print(L["Pack damage: new session started."])
+  Refresh()
 end
 
 -- Updates come in bursts during a fight: redraw at most 4 times a second.

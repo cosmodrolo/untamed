@@ -1,6 +1,7 @@
 # Changelog
 
 ## v2.44.1
+- Pack damage window: the session line is smaller and has a Reset button at its end (or /ut meter new) that starts a new session for this window. Blizzard's own meter keeps its numbers.
 - Pack damage window: live rows would be colored by who did the damage when the game lets addons read the creature's name in a fight. It doesn't on Forever, so instead the pet's name on each live row (Zabu, Hawk) is shown in orange.
 - Pack damage window: hold Alt and drag it to move it any time, and drag the grip in its bottom right corner to resize it (it keeps its top left corner in place). /ut meter reset puts it back.
 - Pack damage window: larger, outlined text on darker bars; percentages in gold and the session line brighter.

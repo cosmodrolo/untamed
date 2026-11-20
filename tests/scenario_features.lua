@@ -432,6 +432,13 @@ do
   InCombatLockdown = function() return false end
   ns.PetMeterRefresh()
   check(win:IsShown() and win.rows[3]:IsShown() and not win.rows[4]:IsShown(), "pet meter: after the fight, three rows: pet, you, hawks " .. tostring(ns.petMeterError))
+  ns.PetMeterNewSession()
+  check(ns.db.petMeterBase and ns.db.petMeterBase.Zabu == 1033, "pet meter: a new session remembers where it started")
+  spells[1].totalAmount = 1013                       -- 100 more for Zabu since
+  ns.PetMeterRefresh()
+  check(win.foot:GetText():find("Zabu 100%%", 1, false), "pet meter: the session counts from the reset: " .. tostring(win.foot:GetText()))
+  spells[1].totalAmount = 913
+  ns.db.petMeterBase = nil
   UnitExists, InCombatLockdown = kE, kL
   C_Spell, UnitGUID, UnitName, C_DamageMeter = kS, kU, kP, nil
 end
