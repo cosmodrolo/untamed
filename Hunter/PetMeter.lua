@@ -15,6 +15,7 @@ local L = ns.L
 local WIDTH, ROWS, ROW_H = 250, 8, 16
 local DEFAULT_POS = { "RIGHT", -260, -40 }
 local MUTED, GOLD = "|cff8f8f99", "|cffffd140"
+local SOFT = "|cffd8d8e0"      -- light grey that still reads on the bars and the dark backing
 local COLOR = { you = { 0.67, 0.83, 0.45 }, pet = { 0.95, 0.62, 0.25 }, other = { 0.45, 0.70, 1.0 } }
 
 local ICON = { you = "Interface\\Icons\\ClassIcon_Hunter", pet = "Interface\\Icons\\Ability_Hunter_BeastCall",
@@ -96,10 +97,11 @@ end
 ---------------------------------------------------------------------------
 -- The window
 ---------------------------------------------------------------------------
-local function Text(parent, size, template)
+local function Text(parent, size, template, outline)
   local fs = parent:CreateFontString(nil, "OVERLAY", template or "GameFontHighlight")
   local file = fs:GetFont()
-  fs:SetFont(file or STANDARD_TEXT_FONT, size, "")
+  fs:SetFont(file or STANDARD_TEXT_FONT, size, outline and "OUTLINE" or "")
+  if outline then fs:SetShadowOffset(0, 0) end
   fs:SetJustifyH("LEFT")
   fs:SetWordWrap(false)
   return fs
@@ -154,16 +156,16 @@ local function Build()
     r.icon:SetSize(ROW_H, ROW_H)
     r.icon:SetPoint("LEFT")
     r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    r.value = Text(r, 11)
+    r.value = Text(r, 12, nil, true)
     r.value:SetPoint("RIGHT", -4, 0)
     r.value:SetJustifyH("RIGHT")
-    r.name = Text(r, 11)
+    r.name = Text(r, 12, nil, true)
     r.name:SetPoint("LEFT", r.icon, "RIGHT", 4, 0)
     r.name:SetPoint("RIGHT", r.value, "LEFT", -4, 0)
     r:Hide()
     win.rows[i] = r
   end
-  win.foot = Text(win, 10)
+  win.foot = Text(win, 11, nil, true)
   win.foot:SetWidth(WIDTH - 16)
   win.foot:SetWordWrap(false)     -- one line: the session split is short enough at this size
   Place()
@@ -210,12 +212,12 @@ local function FillSplit(split)
     if p then
       n = i
       local c = COLOR[p.kind] or COLOR.other
-      r:SetStatusBarColor(c[1], c[2], c[3], 0.75)
+      r:SetStatusBarColor(c[1] * 0.75, c[2] * 0.75, c[3] * 0.75, 0.85)
       r:SetMinMaxValues(0, split.parts[1].amount)
       r:SetValue(p.amount)
       SetIcon(r.icon, p)
       r.name:SetText(p.label)
-      r.value:SetText(Short(p.amount) .. "  " .. MUTED .. Pct(p.amount, split.total) .. "|r")
+      r.value:SetText(Short(p.amount) .. "  " .. GOLD .. Pct(p.amount, split.total) .. "|r")
     end
   end
   local all = ns.PetMeterSplit("Overall")
@@ -223,7 +225,7 @@ local function FillSplit(split)
   if all then
     local bits = {}
     for _, p in ipairs(all.parts) do bits[#bits + 1] = p.label .. " " .. Pct(p.amount, all.total) end
-    foot = MUTED .. L["Session: "] .. "|r" .. table.concat(bits, MUTED .. " / |r")
+    foot = GOLD .. L["Session: "] .. "|r" .. SOFT .. table.concat(bits, " / ") .. "|r"
   end
   Layout(n, foot)
 end
@@ -238,12 +240,12 @@ local function FillLive(src)
     r:SetShown(sp ~= nil and sp ~= false)
     if sp then
       n = i
-      r:SetStatusBarColor(COLOR.other[1], COLOR.other[2], COLOR.other[3], 0.6)
+      r:SetStatusBarColor(COLOR.other[1] * 0.7, COLOR.other[2] * 0.7, COLOR.other[3] * 0.7, 0.8)
       pcall(r.SetMinMaxValues, r, 0, src.maxAmount)
       pcall(r.SetValue, r, sp.totalAmount)
       r.icon:SetTexture(SpellIcon(sp.spellID) or "Interface\\Icons\\INV_Misc_QuestionMark")
       local name = SpellName(sp.spellID) or "?"
-      local okN = pcall(r.name.SetFormattedText, r.name, "%s " .. MUTED .. "%s|r", name, sp.creatureName or "")
+      local okN = pcall(r.name.SetFormattedText, r.name, "%s " .. SOFT .. "%s|r", name, sp.creatureName or "")
       if not okN then r.name:SetText(name) end
       local amt = sp.totalAmount
       local okV = AbbreviateLargeNumbers and pcall(function() r.value:SetText(AbbreviateLargeNumbers(amt)) end)

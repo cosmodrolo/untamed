@@ -1,6 +1,7 @@
 # Changelog
 
 ## v2.44.1
+- Pack damage window: larger, outlined text on darker bars; percentages in gold and the session line brighter.
 - Pet damage window is now titled "Pack damage" (it's you, your pet and your hawks). Your pet's row shows its own portrait, and the hawks show Summon Hawk's icon.
 - Pet damage window: the session split fits on one line.
 - Pet damage window: spell names and icons show during a fight too (they read "?" before).
