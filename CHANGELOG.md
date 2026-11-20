@@ -1,6 +1,7 @@
 # Changelog
 
 ## v2.44.1
+- Pet damage window: the session split fits on one line.
 - Pet damage window: spell names and icons show during a fight too (they read "?" before).
 
 ## v2.44.0

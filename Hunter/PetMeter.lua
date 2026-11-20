@@ -165,7 +165,7 @@ local function Build()
   end
   win.foot = Text(win, 10)
   win.foot:SetWidth(WIDTH - 16)
-  win.foot:SetWordWrap(true)
+  win.foot:SetWordWrap(false)     -- one line: the session split is short enough at this size
   Place()
 end
 
@@ -202,7 +202,7 @@ local function FillSplit(split)
   if all then
     local bits = {}
     for _, p in ipairs(all.parts) do bits[#bits + 1] = p.label .. " " .. Pct(p.amount, all.total) end
-    foot = MUTED .. L["This session: "] .. "|r" .. table.concat(bits, MUTED .. "  /  |r")
+    foot = MUTED .. L["Session: "] .. "|r" .. table.concat(bits, MUTED .. " / |r")
   end
   Layout(n, foot)
 end
