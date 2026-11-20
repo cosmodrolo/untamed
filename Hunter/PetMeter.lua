@@ -107,12 +107,22 @@ local function Text(parent, size, template, outline)
   return fs
 end
 
+-- Saved place: the window's top left corner, in its own (scaled) units from the screen's bottom left.
+-- Older saves (and the default) are a point on the screen with the same name.
 local function Place()
   local p = ns.db.petMeterPos or DEFAULT_POS
-  win:ClearAllPoints()
-  win:SetPoint(p[1], UIParent, p[1], p[2], p[3])
   win:SetScale(ns.db.petMeterScale or 1)
+  win:ClearAllPoints()
+  win:SetPoint(p[1], UIParent, p.rel or p[1], p[2], p[3])
 end
+
+local function SavePlace()
+  local x, y = win:GetLeft(), win:GetTop()
+  if x and y then ns.db.petMeterPos = { "TOPLEFT", x, y, rel = "BOTTOMLEFT" } end
+end
+
+-- Hold Alt to move it with the mouse any time (or /ut meter move); the corner grip resizes it.
+local function MouseOn() return moving or (IsAltKeyDown and IsAltKeyDown()) end
 
 local function Build()
   win = CreateFrame("Frame", "UntamedPetMeter", UIParent)
@@ -129,15 +139,43 @@ local function Build()
   win:SetClampedToScreen(true)
   win:EnableMouse(false)
   win:RegisterForDrag("LeftButton")
-  win:SetScript("OnDragStart", function(self) if moving then self:StartMoving() end end)
+  win:SetScript("OnDragStart", function(self) if MouseOn() then self:StartMoving() end end)
   win:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
-    local cx, cy = self:GetCenter()
-    local ux, uy = UIParent:GetCenter()
-    local s = self:GetScale()
-    ns.db.petMeterPos = { "CENTER", cx * s - ux, cy * s - uy }
+    SavePlace()
     Place()
   end)
+  -- the grip: dragging it scales the whole window, keeping its top left corner in place
+  local grip = CreateFrame("Button", nil, win)
+  grip:SetSize(14, 14)
+  grip:SetPoint("BOTTOMRIGHT", -2, 2)
+  grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+  grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+  grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+  grip:SetAlpha(0.6)
+  grip:SetFrameLevel(win:GetFrameLevel() + 10)
+  local from
+  grip:SetScript("OnMouseDown", function()
+    local eff = win:GetEffectiveScale()
+    from = { left = win:GetLeft() * eff, top = win:GetTop() * eff }
+    grip:SetScript("OnUpdate", function()
+      local cx = GetCursorPosition()
+      local ui = UIParent:GetEffectiveScale()
+      local scale = math.max(0.6, math.min(2.2, (cx - from.left) / WIDTH / ui))
+      local newEff = scale * ui
+      win:SetScale(scale)
+      win:ClearAllPoints()
+      win:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", from.left / newEff, from.top / newEff)
+    end)
+  end)
+  grip:SetScript("OnMouseUp", function()
+    grip:SetScript("OnUpdate", nil)
+    if not from then return end
+    from = nil
+    ns.db.petMeterScale = win:GetScale()
+    SavePlace()
+  end)
+  win.grip = grip
   win.title = Text(win, 12, "GameFontNormal")
   win.title:SetPoint("TOPLEFT", 8, -6)
   win.title:SetWidth(WIDTH - 16)
@@ -287,10 +325,10 @@ function ns.PetMeterCommand(arg)
       ns.Print(L["The pet damage window shows once you've done damage this session."]) end end
   elseif arg == "move" or arg == "lock" then
     moving = (arg == "move") and not moving
-    win:EnableMouse(moving)
+    win:EnableMouse(MouseOn())
     if moving then
       Refresh() win:Show()
-      ns.Print(L["Drag the pet damage window where you want it, then type /ut meter lock."])
+      ns.Print(L["Drag the pack damage window where you want it, then type /ut meter lock. Any time: hold Alt and drag it, and drag its corner to resize."])
     else
       Refresh()
     end
@@ -301,6 +339,7 @@ function ns.PetMeterCommand(arg)
   elseif arg == "reset" then
     ns.db.petMeterPos, ns.db.petMeterScale = nil, nil
     Place()
+    ns.Print(L["The pack damage window is back in its starting place and size."])
   elseif arg == "off" or arg == "on" then
     ns.db.petMeter = arg == "on"
     ns.Print(ns.db.petMeter and L["The pet damage window is on."] or L["The pet damage window is off (/ut meter on brings it back)."])
@@ -324,7 +363,10 @@ ev:SetScript("OnEvent", function(self, event)
   end
   dirty = true
 end)
+local altWas = false
 ev:SetScript("OnUpdate", function()
+  local alt = win and MouseOn() or false
+  if win and alt ~= altWas then altWas = alt; win:EnableMouse(alt) end
   if not dirty then return end
   local now = GetTime()
   if now - last < 0.25 then return end
