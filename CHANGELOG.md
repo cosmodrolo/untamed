@@ -1,7 +1,7 @@
 # Changelog
 
 ## v2.44.1
-- Pack damage window: live rows are colored by who did the damage (green you, orange your pet, blue the hawks), when the game lets addons read the creature's name in a fight; otherwise they stay grey.
+- Pack damage window: live rows would be colored by who did the damage when the game lets addons read the creature's name in a fight. It doesn't on Forever, so instead the pet's name on each live row (Zabu, Hawk) is shown in orange.
 - Pack damage window: hold Alt and drag it to move it any time, and drag the grip in its bottom right corner to resize it (it keeps its top left corner in place). /ut meter reset puts it back.
 - Pack damage window: larger, outlined text on darker bars; percentages in gold and the session line brighter.
 - Pet damage window is now titled "Pack damage" (it's you, your pet and your hawks). Your pet's row shows its own portrait, and the hawks show Summon Hawk's icon.

@@ -15,6 +15,7 @@ local L = ns.L
 local WIDTH, ROWS, ROW_H = 250, 8, 16
 local DEFAULT_POS = { "RIGHT", -260, -40 }
 local MUTED, GOLD = "|cff8f8f99", "|cffffd140"
+local PETNAME = "|cffffa040"   -- your pets' names on the live rows
 local SOFT = "|cffd8d8e0"      -- light grey that still reads on the bars and the dark backing
 local COLOR = { you = { 0.67, 0.83, 0.45 }, pet = { 0.95, 0.62, 0.25 }, other = { 0.45, 0.70, 1.0 } }
 
@@ -296,7 +297,9 @@ local function FillLive(src)
       pcall(r.SetValue, r, sp.totalAmount)
       r.icon:SetTexture(SpellIcon(sp.spellID) or "Interface\\Icons\\INV_Misc_QuestionMark")
       local name = SpellName(sp.spellID) or "?"
-      local okN = pcall(r.name.SetFormattedText, r.name, "%s " .. SOFT .. "%s|r", name, sp.creatureName or "")
+      -- the creature's name is secret in a fight: it can't pick the row's color, but it can be shown
+      -- in a color of its own, so your pets' rows stand out from yours
+      local okN = pcall(r.name.SetFormattedText, r.name, "%s " .. PETNAME .. "%s|r", name, sp.creatureName or "")
       if not okN then r.name:SetText(name) end
       local amt = sp.totalAmount
       local okV = AbbreviateLargeNumbers and pcall(function() r.value:SetText(AbbreviateLargeNumbers(amt)) end)
