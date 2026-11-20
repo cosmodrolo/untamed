@@ -204,13 +204,13 @@ local function Build()
     r:Hide()
     win.rows[i] = r
   end
-  win.foot = Text(win, 10, nil, true)
-  win.foot:SetWidth(WIDTH - 16 - 40)
+  win.foot = Text(win, 9)              -- small and plain: an outline makes it wider
+  win.foot:SetWidth(WIDTH - 16 - 32)
   -- a small "Reset" button at the end of the session line: starts a new session for this window
   -- (Blizzard's own meter keeps its numbers)
   local rs = CreateFrame("Button", nil, win)
-  rs:SetSize(38, 14)
-  rs.text = Text(rs, 10, nil, true)
+  rs:SetSize(30, 12)
+  rs.text = Text(rs, 9)
   rs.text:SetPoint("CENTER")
   rs.text:SetText(MUTED .. L["Reset"] .. "|r")
   rs:SetScript("OnEnter", function() rs.text:SetText(GOLD .. L["Reset"] .. "|r") end)
@@ -228,7 +228,7 @@ local function Layout(n, foot)
   win.foot:SetPoint("TOPLEFT", 8, -24 - n * (ROW_H + 2) - 2)
   win.foot:SetText(foot or "")
   win.resetBtn:ClearAllPoints()
-  win.resetBtn:SetPoint("LEFT", win.foot, "LEFT", WIDTH - 16 - 38, 0)
+  win.resetBtn:SetPoint("LEFT", win.foot, "LEFT", WIDTH - 16 - 30, 0)
   win.resetBtn:SetShown(foot ~= nil and foot ~= "" and win.foot:GetText() ~= nil and foot:find(L["Session: "], 1, true) ~= nil)
   local h = 24 + n * (ROW_H + 2) + (foot and foot ~= "" and 18 or 2) + (moving and 4 or 0)
   win:SetHeight(h)
@@ -300,7 +300,7 @@ local function FillSplit(split)
   if all then
     local bits = {}
     for _, p in ipairs(all.parts) do bits[#bits + 1] = p.label .. " " .. Pct(p.amount, all.total) end
-    foot = GOLD .. L["Session: "] .. "|r" .. SOFT .. table.concat(bits, " / ") .. "|r"
+    foot = GOLD .. L["Session: "] .. "|r" .. SOFT .. table.concat(bits, MUTED .. " · |r" .. SOFT) .. "|r"
   end
   Layout(n, foot)
 end
