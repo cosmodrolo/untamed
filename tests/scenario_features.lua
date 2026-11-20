@@ -425,6 +425,12 @@ do
   local win = ns.PetMeterTest.Build()
   ns.PetMeterTest.FillLive({ combatSpells = spells, maxAmount = 913 })
   check(win.rows[6]:IsShown() and not win.rows[7]:IsShown(), "pet meter: live rows mirror the meter")
+  local kE, kL = UnitExists, InCombatLockdown
+  UnitExists = function() return true end
+  InCombatLockdown = function() return false end
+  ns.PetMeterRefresh()
+  check(win:IsShown() and win.rows[3]:IsShown() and not win.rows[4]:IsShown(), "pet meter: after the fight, three rows: pet, you, hawks " .. tostring(ns.petMeterError))
+  UnitExists, InCombatLockdown = kE, kL
   C_Spell, UnitGUID, UnitName, C_DamageMeter = kS, kU, kP, nil
 end
 ns.ScanReport()

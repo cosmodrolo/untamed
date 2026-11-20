@@ -173,15 +173,36 @@ local function Layout(n, foot)
   win.foot:ClearAllPoints()
   win.foot:SetPoint("TOPLEFT", 8, -24 - n * (ROW_H + 2) - 2)
   win.foot:SetText(foot or "")
-  local h = 24 + n * (ROW_H + 2) + (foot and foot ~= "" and (win.foot:GetStringHeight() + 6) or 2) + (moving and 4 or 0)
+  local h = 24 + n * (ROW_H + 2) + (foot and foot ~= "" and 18 or 2) + (moving and 4 or 0)
   win:SetHeight(h)
+end
+
+-- Your pet's own portrait (out now), else its family's icon; Summon Hawk's icon for the hawks.
+local function SetIcon(tex, p)
+  tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  if p.kind == "pet" then
+    local name = UnitName and UnitName("pet")
+    if name and name == p.label and UnitExists("pet") and SetPortraitTexture then
+      SetPortraitTexture(tex, "pet")
+      tex:SetTexCoord(0.12, 0.88, 0.12, 0.88)
+      return
+    end
+    local fam = UnitCreatureFamily and UnitCreatureFamily("pet")
+    fam = fam and ns.ToEnglish and ns.ToEnglish(fam) or fam
+    local icon = fam and ns.FamilyIcons and ns.FamilyIcons[fam]
+    tex:SetTexture(icon and ("Interface\\Icons\\" .. icon) or ICON.pet)
+  elseif p.kind == "other" then
+    tex:SetTexture(SpellIcon(L["Summon Hawk"]) or ICON.other)
+  else
+    tex:SetTexture(ICON.you)
+  end
 end
 
 local function Pct(a, total) return math.floor(a / total * 100 + 0.5) .. "%" end
 
 -- After the fight: you / pet / hawks, with the session's split under it.
 local function FillSplit(split)
-  win.title:SetText(GOLD .. L["Pet damage"] .. "|r  " .. MUTED .. L["last fight"] .. "|r")
+  win.title:SetText(GOLD .. L["Pack damage"] .. "|r  " .. MUTED .. L["last fight"] .. "|r")
   local n = 0
   for i, r in ipairs(win.rows) do
     local p = split.parts[i]
@@ -192,7 +213,7 @@ local function FillSplit(split)
       r:SetStatusBarColor(c[1], c[2], c[3], 0.75)
       r:SetMinMaxValues(0, split.parts[1].amount)
       r:SetValue(p.amount)
-      r.icon:SetTexture(ICON[p.kind] or ICON.other)
+      SetIcon(r.icon, p)
       r.name:SetText(p.label)
       r.value:SetText(Short(p.amount) .. "  " .. MUTED .. Pct(p.amount, split.total) .. "|r")
     end
@@ -209,7 +230,7 @@ end
 
 -- In a fight: your spell rows as the meter has them, numbers passed straight through.
 local function FillLive(src)
-  win.title:SetText(GOLD .. L["Pet damage"] .. "|r  " .. MUTED .. L["this fight"] .. "|r")
+  win.title:SetText(GOLD .. L["Pack damage"] .. "|r  " .. MUTED .. L["this fight"] .. "|r")
   local spells = src and src.combatSpells
   local n = 0
   for i, r in ipairs(win.rows) do
