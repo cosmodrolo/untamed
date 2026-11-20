@@ -24,6 +24,7 @@ Six sections along the top, plus Settings. With a controller: D-pad moves, Cross
 - **Map and minimap.** Marks for the beasts your pet needs, treasure chest spots, library books and wishlist sources. Works on Blizzard's world map and on OpenMap's Gamepad UI mode.
 - **Arrow.** Points to the nearest spawn of whatever you picked: a beast, a chest, a book, a vendor.
 - **Range meter.** Under your character: melee, too close to shoot, in range or too far, with the distance in yards. A red Hawk icon shows while you fight with Aspect of the Cheetah or Pack on.
+- **Pet damage.** A small window with your pet's and hawks' share of your damage, read from the game's damage meter: live rows during a fight, the split when it ends.
 - **Bag marks.** A green arrow on gear that beats what you wear, a lock on soulbound items, a coin on items worth selling.
 - **Quest reward advice.** When a quest offers a choice of rewards, a small box under the quest window says which to take.
 - **Item tooltips.** How much better an item is than what you wear, and its rank for your level.

@@ -402,6 +402,31 @@ do
   check(gone >= 50 and n == 600 and oldest == 51, "the recorder keeps the 600 newest beasts: " .. n .. " " .. oldest)
   r.beasts = keepBeasts
 end
+-- pet damage window: the split after a fight (you, pet, hawks) from Blizzard's damage meter
+do
+  local spells = {
+    { spellID = 1, totalAmount = 913, creatureName = "Zabu" }, { spellID = 2, totalAmount = 392, creatureName = "" },
+    { spellID = 3, totalAmount = 330, creatureName = "Hawk" }, { spellID = 4, totalAmount = 128, creatureName = "" },
+    { spellID = 5, totalAmount = 120, creatureName = "Zabu" }, { spellID = 6, totalAmount = 96, creatureName = "" },
+  }
+  local names = { "Attack", "Attack", "Attack", "Summon Hawk", "Claw", "Raptor Strike" }
+  local kS, kU, kP = C_Spell, UnitGUID, UnitName
+  C_Spell = setmetatable({ GetSpellName = function(id) return names[id] end, GetSpellTexture = function() return 1 end }, { __index = kS })
+  UnitGUID = function() return "Player-1-2" end
+  UnitName = function(u) if u == "pet" then return "Zabu" end return kP(u) end
+  C_DamageMeter = { GetCombatSessionSourceFromType = function() return { combatSpells = spells, maxAmount = 913, totalAmount = 1979 } end }
+  local s = ns.PetMeterSplit("Current")
+  check(s and s.total == 1979, "pet meter: total damage")
+  local got = {}
+  for _, p in ipairs(s.parts) do got[p.label] = { p.amount, p.kind } end
+  check(got.Zabu and got.Zabu[1] == 1033 and got.Zabu[2] == "pet", "pet meter: Zabu's claws and bites add up")
+  check(got.Hawks and got.Hawks[1] == 458 and got.Hawks[2] == "other", "pet meter: the hawks, Summon Hawk included")
+  check(got.You and got.You[1] == 488 and got.You[2] == "you", "pet meter: your own shots and strikes")
+  local win = ns.PetMeterTest.Build()
+  ns.PetMeterTest.FillLive({ combatSpells = spells, maxAmount = 913 })
+  check(win.rows[6]:IsShown() and not win.rows[7]:IsShown(), "pet meter: live rows mirror the meter")
+  C_Spell, UnitGUID, UnitName, C_DamageMeter = kS, kU, kP, nil
+end
 ns.ScanReport()
 -- near a chest spot, and a chest as the interact target
 local heard = {}

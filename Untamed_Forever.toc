@@ -68,6 +68,7 @@ Hunter\QuestAdvice.lua
 Hunter\Rotation.lua
 Hunter\HUD.lua
 Hunter\Range.lua
+Hunter\PetMeter.lua
 World\Reputation.lua
 UI\Home.lua
 UI\Tabs.lua

@@ -96,6 +96,14 @@ function ns.Doctor()
   local slots = ns.RangeMeleeSlotList and ns.RangeMeleeSlotList() or {}
   Line(#slots > 0, "Melee button on your bars", #slots > 0 and ("slot " .. table.concat(slots, ", ")) or "none found (put Raptor Strike or the Rapt macro on a bar)")
 
+  -- pet damage window (Blizzard's damage meter)
+  local okM, avail = Try(C_DamageMeter and C_DamageMeter.IsDamageMeterAvailable)
+  Line(okM and avail == true, "Damage meter for addons", okM and tostring(avail) or tostring(avail))
+  local split = ns.PetMeterSplit and ns.PetMeterSplit("Current")
+  Line(split ~= nil or nil, "Pet damage split (last fight)", split and (#split.parts .. " parts, " .. split.total .. " damage") or "none yet (or secret in a fight)")
+  if ns.petMeterLive then Line(ns.petMeterLive == "numbers", "Pet damage live numbers", ns.petMeterLive) end
+  if ns.petMeterError then Line(false, "Pet damage window error", ns.petMeterError) end
+
   -- auras
   local okA = Try(C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID, 13165)
   Line(okA, "Aura lookup (aspects)")

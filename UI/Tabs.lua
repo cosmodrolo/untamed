@@ -202,6 +202,7 @@ local SECTIONS = {
   { key = "fight", title = L["In a fight"], icon = "Ability_Hunter_RunningShot",
     blurb = L["Short warnings about mistakes that are easy to make in combat."],
     items = {
+      { "check", L["Pet damage window"], "petMeter", L["A small window with how much of your damage your pet and hawks do, read from the game's damage meter. Live during a fight; the split (you, pet, hawks) shows when the fight ends. /ut meter move places it."], on = true },
       { "check", L["Warn when Growl is on in a group"], "growlWarning", L["Your pet taunting in a dungeon pulls the boss off the tank."] },
       { "check", L["Aspect reminder"], "aspectReminder", L["A sound and a line on screen when you start a fight with Cheetah or Pack on (one hit dazes you)."] },
       { "check", L["Hunter's Mark reminder on bosses"], "markReminder", L["A nudge when a boss has no Hunter's Mark."] },

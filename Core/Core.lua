@@ -650,6 +650,8 @@ SlashCmdList.UNTAMED = function(msg)
     if ns.HUDCommand then ns.HUDCommand(msg:match("^hud%s*(.*)$")) end
   elseif msg == "range" or msg:match("^range ") then
     if ns.RangeCommand then ns.RangeCommand(msg:match("^range%s*(.*)$")) end
+  elseif msg == "meter" or msg:match("^meter ") then
+    if ns.PetMeterCommand then ns.PetMeterCommand(msg:match("^meter%s*(.*)$")) end
   elseif msg == "loot" or msg:match("^loot ") then
     if ns.LootCommand then ns.LootCommand(msg:match("^loot%s*(.*)$")) end
   elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" or msg == "builds" or msg == "search"
@@ -663,6 +665,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print(L["/ut book  arrow to the nearest library book you need"])
     ns.Print(L["/ut clear  clear the arrow and the map focus"])
     ns.Print(L["/ut hud move  drag the display under your character"])
+    ns.Print(L["/ut meter  your pet's share of your damage (move, lock, size 120, reset, off, on)"])
     ns.Print(L["/ut window reset  the window back to its starting size and place"])
     ns.Print(L["/ut help all  every command"])
     ns.Print(L["Something wrong or missing? Tell us in the CurseForge comments or at github.com/cosmodrolo/untamed/issues"])
