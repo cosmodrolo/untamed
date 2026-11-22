@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.44.2
+- Arrow: a beast with only one known spot (like Old Cliff Jumper) no longer repeats "Checked every known spot" every few seconds while you camp it. The arrow stays on the spot and says to wait there; with several spots, the "starting over" line shows once.
+
 ## v2.44.1
 - Pack damage window: the session line is small (plain, no outline, dots between parts) and has a Reset button at its end (or /ut meter new) that starts a new session for this window. Blizzard's own meter keeps its numbers.
 - Pack damage window: live rows would be colored by who did the damage when the game lets addons read the creature's name in a fight. It doesn't on Forever, so instead the pet's name on each live row (Zabu, Hawk) is shown in orange.

@@ -135,7 +135,7 @@ local function Create()
       if Spotted(target.npcId) then
         target.found = true
         PlaySound(SOUNDKIT and SOUNDKIT.RAID_WARNING or 8959)
-      elseif d > ARRIVE * 2 or GetTime() - target.arrivedAt >= WAIT then
+      elseif not target.camp and (d > ARRIVE * 2 or GetTime() - target.arrivedAt >= WAIT) then
         Advance(true)
         return
       end
@@ -145,6 +145,8 @@ local function Create()
       arrow:SetVertexColor(1, 0.82, 0)
       if target.found then
         dist:SetText("|cff40ff40" .. L["Found it! Right-click to stop."] .. "|r")
+      elseif hop and target.camp then
+        dist:SetText("|cff40ff40" .. L["Only known spot. Wait here for it."] .. "|r")
       elseif hop and target.arrivedAt then
         dist:SetText(string.format("|cff40ff40" .. L["Look around. Next spot in %d s"] .. "|r", math.max(0, math.ceil(WAIT - (GetTime() - target.arrivedAt)))))
       else
@@ -207,8 +209,18 @@ Advance = function(auto)
     -- Every spot checked: start over from the nearest.
     t.checked = { { t.cont, t.east, t.north } }
     spot, left = NextSpot(t)
-    ns.Print(string.format(L["Checked every known spot for %s. Starting over from the nearest; it may still be respawning."], ns.Beasts[t.npcId][1]))
-    if not spot then return end
+    if not spot then
+      -- one spot (or spots all within a few yards): nothing to hop to, so stay and wait for it
+      if not t.camp then
+        t.camp = true
+        ns.Print(string.format(L["%s has only this one known spot. The arrow stays here while you wait for it to spawn."], ns.Beasts[t.npcId][1]))
+      end
+      return
+    end
+    if not t.restarted then          -- say it once, not on every round
+      t.restarted = true
+      ns.Print(string.format(L["Checked every known spot for %s. Starting over from the nearest; it may still be respawning."], ns.Beasts[t.npcId][1]))
+    end
   elseif auto then
     ns.Print(string.format(L["%s isn't here. Heading to the next spot (%d left)."], ns.Beasts[t.npcId][1], left))
   end
