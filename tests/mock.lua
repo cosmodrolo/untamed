@@ -194,3 +194,7 @@ BOUGHT = {}
 BuyMerchantItem = function(i, q) BOUGHT[#BOUGHT + 1] = i end
 GetMoney = function() return 1000000 end
 GetItemCount = function() return 0 end
+
+-- The Kit (Kit/, OneForAll inside Untamed) is tested on its own (tests/kit_load.py); here it stays idle, as it does
+-- in game while OneForAll is loaded
+IsAddOnLoaded = IsAddOnLoaded or function(name) return name == "OneForAll" end

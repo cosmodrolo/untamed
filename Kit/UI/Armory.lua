@@ -1,0 +1,1182 @@
+local _, FLT = ...; FLT = FLT.Kit; if not FLT then return end
+local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
+local function N(s) return s end -- marks an English text translated where it is shown (tools/locale/extract.py)
+local UI = FLT.UI
+local unpack = unpack or table.unpack
+local makeTexture = UI.makeTexture
+local H = UI.DungeonHelpers or {}
+
+-- Armory tab: item sets (raid, dungeon, PvP, crafted, world) with what the
+-- character already owns, and the reputation rewards of every faction.
+-- Data: Data\Armory.lua (FLT.ARMORY_SETS, FLT.ARMORY_REPUTATION).
+
+local GOLD = UI.GOLD
+local TEXT = {0.92, 0.90, 0.84}
+local DIM = {0.62, 0.60, 0.56}
+
+local CLASSES = {
+  { id = 1, token = "WARRIOR", name = "Warrior" }, { id = 2, token = "PALADIN", name = "Paladin" },
+  { id = 3, token = "HUNTER", name = "Hunter" },   { id = 4, token = "ROGUE", name = "Rogue" },
+  { id = 5, token = "PRIEST", name = "Priest" },   { id = 7, token = "SHAMAN", name = "Shaman" },
+  { id = 8, token = "MAGE", name = "Mage" },       { id = 9, token = "WARLOCK", name = "Warlock" },
+  { id = 11, token = "DRUID", name = "Druid" },
+}
+local CLASS_NAME = {}
+-- shown names: the client's own (localized) class names, English as a fallback
+local function className(token) return (type(LOCALIZED_CLASS_NAMES_MALE) == "table" and LOCALIZED_CLASS_NAMES_MALE[token]) or CLASS_NAME[token] or token end
+for _, c in ipairs(CLASSES) do CLASS_NAME[c.token] = c.name end
+
+local GROUPS = {
+  { key = "raid", label = N"Raid Sets", icon = "Interface\\Icons\\INV_Helmet_08" },
+  { key = "dungeon", label = N"Dungeon Sets", icon = "Interface\\Icons\\INV_Chest_Cloth_05" },
+  { key = "pvp", label = N"PvP Sets", icon = "Interface\\Icons\\INV_BannerPVP_02" },
+  { key = "crafted", label = N"Crafted Sets", icon = "Interface\\Icons\\Trade_BlackSmithing" },
+  { key = "world", label = N"World Sets", icon = "Interface\\Icons\\INV_Misc_Map_01" },
+}
+local GROUP_LABEL = {}
+for _, g in ipairs(GROUPS) do GROUP_LABEL[g.key] = g.label end
+
+-- Buttons for the main sets of a group (user 22.10.): { label, sub names }; everything else of the group
+-- goes into the "Other Sets" drop-down. Groups without an entry (World Sets) keep the plain list.
+local TABS = {
+  raid = { { N"Forever T1", { N"Forever Tier 1" } }, { N"Tier 1", { N"Tier 1 - Molten Core" } },
+           { N"Tier 2", { N"Tier 2 - Blackwing Lair" } }, { N"Tier 3", { N"Tier 3 - Naxxramas" } } },
+  dungeon = { { N"Dungeon 1", { N"Dungeon Set 1" } }, { N"Dungeon 2", { N"Dungeon Set 2" } } },
+  pvp = { { N"Rare (Rank 7-10)", { N"Rank 7-10 (rare)" } }, { N"Epic (Rank 12-13)", { N"Rank 12-13 (epic)" } },
+          { N"Rank 14", { N"Rank 14 weapons" } } }, -- Arathi Basin under "Other Sets" (user 22.10.)
+  crafted = { { "Leatherworking", { "Leatherworking" } }, { "Blacksmithing", { "Blacksmithing" } }, { "Tailoring", { "Tailoring" } } },
+}
+for _, list in pairs(TABS) do
+  for _, t in ipairs(list) do t.set = {}; for _, sub in ipairs(t[2]) do t.set[sub] = true end end
+end
+
+-- st: 1 obtainable, 2 made for Forever but no source known yet, 0 not in Forever yet
+local STATUS = {
+  -- sets marked "not in Forever yet" show no note any more (6.2.14-beta4, user 21.11.: "den Hinweis Not in forever yet ...
+  -- bitte entfernen"); the colour stays for factions that are not in Forever yet
+  [0] = { c = {0.62, 0.50, 0.46} },
+  [2] = { text = N"Source not known yet", c = {0.95, 0.70, 0.28}, tip = N"A set made for WoW Forever. Where its pieces drop is not known yet." },
+}
+local RANK_LABEL = { [3] = N"Neutral", [4] = N"Friendly", [5] = N"Honored", [6] = N"Revered", [7] = N"Exalted" }
+local RANK_COLOR = { [3] = {0.85, 0.85, 0.85}, [4] = {0.30, 0.85, 0.30}, [5] = {0.30, 0.85, 0.55}, [6] = {0.30, 0.75, 0.85}, [7] = {0.75, 0.55, 1.00} }
+-- words from Data/Armory.lua that are shown with L[...] (armor and weapon types, slots, kinds; extract.py counts them here)
+local function _words() return N"Cloth", N"Leather", N"Mail", N"Plate", N"Sword", N"Mace", N"Fist Weapon", N"Dagger", N"Axe", N"Shield",
+  N"Polearm", N"Staff", N"Bow", N"Crossbow", N"Gun", N"Head", N"Neck", N"Shoulder", N"Back", N"Chest", N"Wrist", N"Hands", N"Waist",
+  N"Legs", N"Feet", N"Finger", N"Trinket", N"Main Hand", N"One-Hand", N"Two-Hand", N"Off Hand", N"Ranged", N"Tabard",
+  N"Held In Off-hand", N"Recipe", N"Item", N"Back (slot)" end
+local KINDS = { { key = "all", label = N"All" }, { key = "gear", label = N"Gear" }, { key = "recipe", label = N"Recipes" }, { key = "other", label = N"Other" } }
+
+-- Saved choices (per character): class filter, hide unreleased sets, item kind.
+local function prefs()
+  if type(UntamedKitCharDB) ~= "table" then return {} end
+  UntamedKitCharDB.armory = UntamedKitCharDB.armory or {}
+  return UntamedKitCharDB.armory
+end
+local function playerClass()
+  local _, token = UnitClass("player")
+  return token
+end
+
+-- Item helpers ------------------------------------------------------------
+local GetItemCount = GetItemCount or (C_Item and C_Item.GetItemCount)
+local IsEquippedItem = IsEquippedItem or (C_Item and C_Item.IsEquippedItem)
+
+local SW = FLT.SlotWord or function(w) return w and L[w] end -- slot / item words ("Back" is not the button "Back")
+local function itemName(id, fallback)
+  -- German client + German chosen: the client's item name first (beta12); else our English name from the data
+  if fallback and not (FLT.ClientTexts and FLT.ClientTexts()) then return fallback end
+  local n = C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id)
+  if not n and GetItemInfo then n = GetItemInfo(id) end
+  if not n and C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, id) end
+  return n or fallback or (L["Item"] .. " " .. id)
+end
+local function setItemIcon(tex, id, icon)
+  if type(icon) == "number" and icon > 0 then tex:SetTexture(icon)
+  elseif type(icon) == "string" then tex:SetTexture("Interface\\Icons\\" .. icon)
+  else
+    local fid = C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(id)
+    tex:SetTexture(fid or "Interface\\Icons\\INV_Misc_QuestionMark")
+  end
+end
+local function qualityColor(q)
+  local c = q and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[q]
+  if c then return c.r, c.g, c.b end
+  return unpack(TEXT)
+end
+
+-- "equipped", "bags", "bank" or nil
+local function ownedWhere(id)
+  if not id then return nil end
+  if IsEquippedItem then local ok, eq = pcall(IsEquippedItem, id); if ok and eq then return "equipped" end end
+  if FLT.bagItems and FLT.bagItems[id] then return "bags" end
+  if FLT.bankItems and FLT.bankItems[id] then return "bank" end
+  if GetItemCount then
+    local ok, n = pcall(GetItemCount, id, true)
+    if ok and (n or 0) > 0 then return "bags" end
+  end
+  return nil
+end
+local function setProgress(set)
+  local owned, equipped = 0, 0
+  for _, it in ipairs(set.i) do
+    local w = ownedWhere(it[1])
+    if w then owned = owned + 1 end
+    if w == "equipped" then equipped = equipped + 1 end
+  end
+  return owned, equipped, #set.i
+end
+
+-- Faction sets / factions of the other side are not shown.
+local function sideOK(x)
+  if not x.side then return true end
+  local fac = UnitFactionGroup and UnitFactionGroup("player")
+  return not fac or (x.side == "A") == (fac == "Alliance")
+end
+
+local function setForClass(set, token)
+  if not sideOK(set) then return false end
+  if not token then return true end
+  if not set.cls or #set.cls == 0 then return true end
+  for _, c in ipairs(set.cls) do if c == token then return true end end
+  return false
+end
+
+local function setIcon(set)
+  for _, it in ipairs(set.i) do if it[3] == "Chest" then return it end end
+  return set.i[1]
+end
+
+-- Reputation standing of the player: standingID (1-8), value in rank, rank size.
+local function standing(fid)
+  if type(C_Reputation) == "table" and C_Reputation.GetFactionDataByID then
+    local ok, d = pcall(C_Reputation.GetFactionDataByID, fid)
+    if ok and type(d) == "table" and d.name then
+      local lo, hi = d.currentReactionThreshold or 0, d.nextReactionThreshold or 0
+      return d.reaction, (d.currentStanding or 0) - lo, hi - lo, d.name
+    end
+  end
+  if GetFactionInfoByID then
+    local ok, name, _, st, bmin, bmax, val = pcall(GetFactionInfoByID, fid)
+    if ok and name and st then return st, (val or 0) - (bmin or 0), (bmax or 0) - (bmin or 0), name end
+  end
+  return nil
+end
+local function standingLabel(st)
+  if not st then return L["Not met yet"] end
+  return _G["FACTION_STANDING_LABEL" .. st] or (RANK_LABEL[st - 1] and L[RANK_LABEL[st - 1]]) or tostring(st)
+end
+-- shown faction name: the client's (localized) one when ClientTexts, else ours
+local function factionName(f, clientName) return (clientName and FLT.ClientTexts and FLT.ClientTexts()) and clientName or f.n end
+
+-- Set name and bonuses in the client's language (beta12): read once from the tooltip of the set's first piece
+-- ("Name (0/6)", "(2) Set: ...", worn bonuses as "Set: ..."); nil until the item is loaded or when ClientTexts is off
+local setLoc = {}
+-- a client format ("%s (%d/%d)", German "%1$s (%2$d/%3$d)") as a match pattern; nil when it cannot be one
+local function fmtPat(fmt)
+  local p = "^" .. fmt:gsub("%%%d%$", "%%"):gsub("[%^%$%(%)%.%[%]%*%+%-%?]", "%%%0"):gsub("%%d", "(%%d+)"):gsub("%%s", "(.+)") .. "$"
+  return pcall(string.find, "", p) and p or nil
+end
+-- the text captures of a match (positional formats can put the number first)
+local function textOf(a, b, c) if a and not tonumber(a) then return a end if b and not tonumber(b) then return b end return c end
+local pats -- { name, gray bonus, active bonus }, made once
+local function clientSet(s)
+  if not (FLT.ClientTexts and FLT.ClientTexts()) then return nil end
+  local c = setLoc[s.id]; if c then return c end
+  local TI = type(C_TooltipInfo) == "table" and C_TooltipInfo.GetItemByID
+  if type(TI) ~= "function" or type(ITEM_SET_NAME) ~= "string" or not s.i[1] then return nil end
+  pats = pats or { fmtPat(ITEM_SET_NAME), type(ITEM_SET_BONUS_GRAY) == "string" and fmtPat(ITEM_SET_BONUS_GRAY),
+    type(ITEM_SET_BONUS) == "string" and fmtPat(ITEM_SET_BONUS) }
+  local pn, pg, pa = pats[1], pats[2], pats[3]
+  if not pn then return nil end
+  local ok, data = pcall(TI, s.i[1][1])
+  if not (ok and type(data) == "table" and type(data.lines) == "table") then return nil end
+  local name, b = nil, {}
+  for _, line in ipairs(data.lines) do
+    local t = (line.leftText or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+    if not name then name = textOf(t:match(pn)) end
+    local x = pg and textOf(t:match(pg))
+    if not x and pa then x = textOf(t:match(pa)) end
+    if x then b[#b + 1] = x end
+  end
+  if not name then -- not loaded yet: ask for it, the Armory redraws when it arrives
+    if C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, s.i[1][1]) end
+    return nil
+  end
+  c = { n = name, b = (#b == #(s.b or {})) and b or nil }
+  setLoc[s.id] = c
+  return c
+end
+local function setName(s) local c = clientSet(s); return c and c.n or s.n end
+-- source texts from the data: "Crafted: Tailoring" / "Quest: ..." translated, "Dungeon - Boss" as it is (for now)
+local function sourceText(src)
+  local prof = src:match("^Crafted: (.+)$")
+  if prof then return string.format(L["Crafted: %s"], L[prof]) end
+  local q = src:match("^Quest: (.+)$")
+  return q and string.format(L["Quest: %s"], q) or src
+end
+-- item ranks use 0-7 (4 = Friendly); the client's standingID is 1-8
+local function rankReached(rank, st) return st and (st - 1) >= rank end
+
+-- Source text -> action (open the dungeon / the Professions tab).
+local function findDungeon(name)
+  for _, d in ipairs(FLT.DUNGEONS or {}) do if d.name == name then return d end end
+end
+local function sourceAction(src)
+  if type(src) ~= "string" then return nil end
+  if src:find("^Crafted:") then
+    return function() if FLT.OpenPanel then FLT:OpenPanel("professions") end end, L["Professions"]
+  end
+  local dname, boss = src:match("^(.-) %- (.+)$")
+  if src:find("^Quest:") then dname = src:match("%(([^%)]+)%)$") end
+  local d = dname and findDungeon(dname)
+  if not d then return nil end
+  return function()
+    if FLT.OpenPanel then FLT:OpenPanel("dungeons") end
+    if UI.OpenDungeon then UI.OpenDungeon(d, (not src:find("^Quest:")) and boss or nil) end
+  end, d.name
+end
+
+local function newText(parent, template, w, color)
+  local fs = FLT.NewFS(parent, nil, "OVERLAY", template or "GameFontHighlightSmall")
+  if w then fs:SetWidth(w) end
+  fs:SetJustifyH("LEFT"); fs:SetWordWrap(false)
+  if color then fs:SetTextColor(FLT.TextC(unpack(color))) end
+  return fs
+end
+local function setFontSize(fs, size)
+  local font, _, flags = fs:GetFont(); if font then fs:SetFont(font, size, flags) end
+end
+
+local function itemTooltip(owner, id, name, slot, q)
+  if H.tryShowItemTooltip and H.tryShowItemTooltip(owner, { id = id, name = name, slot = slot, quality = q }) then return end
+  GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+  if not pcall(GameTooltip.SetHyperlink, GameTooltip, "item:" .. id) then GameTooltip:AddLine(name or (L["Item"] .. " " .. id)) end
+  GameTooltip:Show()
+end
+local function itemClick(id, name, slot, q, button)
+  if H.handleDungeonItemClick then H.handleDungeonItemClick({ id = id, name = name, slot = slot, quality = q }, button) end
+end
+
+-- Scroll list with a row pool: list:SetRows(entries, build) where
+-- build(row, entry) fills a recycled row; rows have a fixed height per kind.
+local function scrollList(parent, width)
+  local sf = FLT.SkinBlizz(CreateFrame("ScrollFrame", nil, parent, "UIPanelScrollFrameTemplate"))
+  sf:SetPoint("TOPLEFT", 10, -10); sf:SetPoint("BOTTOMRIGHT", -28, 8)
+  local child = CreateFrame("Frame", nil, sf); child:SetSize(width, 1); sf:SetScrollChild(child)
+  UI.AutoHideScrollBar(sf)
+  sf.child = child
+  return sf
+end
+
+-- SPECIAL QUESTS (6.2.5, user 11.11.2026: "Special Quests" as an extra list entry - quest chains with an unusual
+-- reward, like the paladin sword). Data/SpecialQuests.lua (QuestieDB Forever). Chains of the other faction are not
+-- shown; class chains of other classes are greyed. Left: the chains with the steps done; right: rewards and the steps
+-- with the giver, the place (map button) and a check for every quest done.
+local function createQuestView(body)
+  local view = CreateFrame("Frame", nil, body); view:SetAllPoints(); view:Hide()
+  local data = FLT.SPECIAL_QUESTS or { chains = {}, quests = {} }
+  local LIST_W, ROW_W, DW = 262, 258, 452
+  local left = CreateFrame("Frame", nil, view); left:SetPoint("TOPLEFT"); left:SetPoint("BOTTOMLEFT"); left:SetWidth(300)
+  UI.Column(left, 4)
+  local lsf = scrollList(left, LIST_W)
+  local right = CreateFrame("Frame", nil, view); right:SetPoint("TOPLEFT", 308, 0); right:SetPoint("BOTTOMRIGHT")
+  local dsf = FLT.SkinBlizz(CreateFrame("ScrollFrame", nil, right, "UIPanelScrollFrameTemplate"))
+  dsf:SetPoint("TOPLEFT", 14, -12); dsf:SetPoint("BOTTOMRIGHT", -28, 10)
+  local detail = CreateFrame("Frame", nil, dsf); detail:SetSize(DW, 1); dsf:SetScrollChild(detail)
+  UI.AutoHideScrollBar(dsf)
+
+  local function quest(id, c)
+    local s = data.quests[id]; if not s then return nil end
+    local name, lv, giver, map, x, y = strsplit("|", s)
+    local at = c and c.at and c.at[id] -- this chain starts the quest somewhere else (the other faction's half of the map)
+    if at then giver, map, x, y = strsplit("|", at) end
+    return { id = id, name = name, lv = tonumber(lv), giver = giver ~= "" and giver or nil, map = tonumber(map), x = tonumber(x), y = tonumber(y) }
+  end
+  local function ids(str) local t = {} for v in tostring(str or ""):gmatch("%d+") do t[#t + 1] = tonumber(v) end return t end
+  local function title(c) return type(c.n) == "number" and itemName(c.n) or (FLT.Name and FLT.Name(c.n) or c.n) end
+  local function mine(c) return not c.cls or c.cls == playerClass() end
+  local function doneCount(c)
+    local n, all = 0, ids(c.q)
+    for _, id in ipairs(all) do if FLT:IsQuestDone(id) then n = n + 1 end end
+    return n, #all
+  end
+  local function zoneName(map)
+    local mi = map and type(C_Map) == "table" and type(C_Map.GetMapInfo) == "function" and C_Map.GetMapInfo(map)
+    return type(mi) == "table" and mi.name or nil
+  end
+  local function quality(id)
+    local q = C_Item and C_Item.GetItemQualityByID and C_Item.GetItemQualityByID(id)
+    if not q and GetItemInfo then q = select(3, GetItemInfo(id)) end
+    return q
+  end
+
+  local selected, openStep
+  local rows, steps, items = {}, {}, {}
+  local render -- forward
+  -- user 11.11.2026: a hint under the list that more chains will come
+  local more = newText(lsf.child, "GameFontHighlightSmall", ROW_W - 10, DIM); more:SetText(L["More to come..."])
+  local function row(i)
+    local r = rows[i]; if r then return r end
+    r = CreateFrame("Button", nil, lsf.child); r:SetSize(ROW_W, 42)
+    r.card = UI.CardRow(r)
+    r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(28, 28); r.icon:SetPoint("LEFT", 6, 0)
+    r.name = newText(r, "GameFontHighlight", ROW_W - 50); r.name:SetPoint("TOPLEFT", 42, -6)
+    r.sub = newText(r, "GameFontHighlightSmall", ROW_W - 50, DIM); r.sub:SetPoint("TOPLEFT", 42, -23)
+    r:SetScript("OnClick", function(self) selected = self.c; view:Refresh(true) end)
+    rows[i] = r
+    return r
+  end
+  local dTitle = newText(detail, "GameFontNormalLarge", DW - 10, GOLD); dTitle:SetPoint("TOPLEFT", 2, -2); setFontSize(dTitle, 17)
+  local dSub = newText(detail, "GameFontHighlightSmall", DW - 10, TEXT); dSub:SetPoint("TOPLEFT", 2, -26)
+  local rewTitle = UI.SectionTitle(detail, L["Rewards"], 2, -50, -6)
+  local stepTitle = UI.SectionTitle(detail, L["Steps"], 2, -120, -6)
+  local function itemRow(i)
+    local r = items[i]; if r then return r end
+    r = CreateFrame("Button", nil, detail); r:SetSize(DW - 4, 34)
+    r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    r.card = UI.CardRow(r)
+    r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(26, 26); r.icon:SetPoint("LEFT", 5, 0)
+    r.name = newText(r, "GameFontHighlight", DW - 90); r.name:SetPoint("LEFT", 38, 0)
+    r.check = r:CreateTexture(nil, "OVERLAY"); r.check:SetSize(16, 16); r.check:SetPoint("RIGHT", -40, 0)
+    r.check:SetTexture("Interface\\RaidFrame\\ReadyCheck-Ready")
+    r.star = UI.WishStar(r); r.star:SetPoint("RIGHT", -10, 0)
+    r:SetHitRectInsets(0, 36, 0, 0)
+    r:SetScript("OnEnter", function(self) itemTooltip(self, self.id, self.itName) end)
+    r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    r:SetScript("OnClick", function(self, button) itemClick(self.id, self.itName, nil, quality(self.id), button) end)
+    items[i] = r
+    return r
+  end
+  local function stepRow(i)
+    local r = steps[i]; if r then return r end
+    r = CreateFrame("Button", nil, detail); r:SetSize(DW - 4, 38)
+    r.card = UI.CardRow(r)
+    r.num = newText(r, "GameFontNormal", 22, GOLD); r.num:SetPoint("TOPLEFT", 6, -12); r.num:SetJustifyH("CENTER")
+    r.name = newText(r, "GameFontHighlight", DW - 130); r.name:SetPoint("TOPLEFT", 34, -5)
+    r.sub = newText(r, "GameFontHighlightSmall", DW - 130, DIM); r.sub:SetPoint("TOPLEFT", 34, -21)
+    -- 6.2.8 (user 14.11.: "so anpassen, dass es ist wie im dungeon quests"): the state on the right like the dungeon
+    -- quest chains (Done / Ready to turn in / In log), done = green row, in the log = green text
+    r.state = newText(r, "GameFontHighlightSmall", 110); r.state:SetPoint("RIGHT", -78, 0); r.state:SetJustifyH("RIGHT")
+    r.map = UI.GoldButton(r, L["Map"], 64, 20, UI.ASSET_ROOT .. "icon_map", 11); r.map:SetPoint("TOPRIGHT", -6, -9)
+    r.state:ClearAllPoints(); r.state:SetPoint("TOPRIGHT", -78, -13)
+    -- 6.2.8 (user 14.11.: "ein klick auf jede einzelne quest ... questannahme und turn in ... daten zur quest und was zu tun
+    -- ist"): a click opens the quest below its row: start and turn-in with map buttons, quest level, objective
+    local function line(yy)
+      local l = { label = newText(r, "GameFontNormalSmall", 80, GOLD), text = newText(r, "GameFontHighlightSmall", DW - 200) }
+      l.label:SetPoint("TOPLEFT", 34, yy); l.text:SetPoint("TOPLEFT", 118, yy)
+      l.map = UI.GoldButton(r, L["Map"], 64, 18, UI.ASSET_ROOT .. "icon_map", 10); l.map:SetPoint("TOPRIGHT", -6, yy + 3)
+      return l
+    end
+    r.lStart, r.lEnd = line(-44), line(-66)
+    r.lStart.label:SetText(L["Starts at"]); r.lEnd.label:SetText(L["Turn in"])
+    r.objLabel = newText(r, "GameFontNormalSmall", 80, GOLD); r.objLabel:SetPoint("TOPLEFT", 34, -88); r.objLabel:SetText(L["Objective"])
+    r.obj = newText(r, "GameFontHighlightSmall", DW - 160); r.obj:SetPoint("TOPLEFT", 118, -88); r.obj:SetWordWrap(true)
+    r:SetScript("OnClick", function(self) openStep = (openStep ~= self.qid) and self.qid or nil; render(selected) end)
+    steps[i] = r
+    return r
+  end
+  local note = newText(detail, "GameFontDisableSmall", DW - 10); note:SetWordWrap(true)
+
+  render = function(c)
+    local done, total = doneCount(c)
+    dTitle:SetText(title(c))
+    local bits = { string.format(L["Level %d"], c.lv or 1) }
+    if c.side then bits[#bits + 1] = c.side == "A" and L["Alliance"] or L["Horde"] end
+    if c.cls then bits[#bits + 1] = className(c.cls) end
+    bits[#bits + 1] = string.format(L["%d / %d quests done"], done, total)
+    dSub:SetText(table.concat(bits, "  ·  "))
+    local y = -50
+    rewTitle:ClearAllPoints(); rewTitle:SetPoint("TOPLEFT", 2, y); y = y - 28
+    for _, r in ipairs(items) do r:Hide() end
+    for i, id in ipairs(ids(c.r)) do
+      local r = itemRow(i); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 37
+      r.id = id; r.itName = itemName(id)
+      setItemIcon(r.icon, id); r.name:SetText(r.itName); r.name:SetTextColor(qualityColor(quality(id)))
+      r.star:SetItem(id); r.check:SetShown(ownedWhere(id) ~= nil)
+    end
+    y = y - 8
+    stepTitle:ClearAllPoints(); stepTitle:SetPoint("TOPLEFT", 2, y); y = y - 28
+    for _, r in ipairs(steps) do r:Hide() end
+    for i, id in ipairs(ids(c.q)) do
+      local q = quest(id, c)
+      if q then
+        local r = stepRow(i); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); r.qid = id
+        local isDone = FLT:IsQuestDone(id)
+        local logInfo = UI.DungeonHelpers and UI.DungeonHelpers.getQuestLogInfo
+        local inLog, ready = false, false
+        if not isDone and logInfo then inLog, ready = logInfo({ id = id, name = q.name }) end
+        r.num:SetText(i)
+        r.name:SetText(FLT.Name and FLT.Name(q.name) or q.name)
+        if isDone or inLog then r.name:SetTextColor(FLT.TextC(0.25, 1, 0.35)) else r.name:SetTextColor(FLT.TextC(unpack(TEXT))) end
+        r.card:SetFill(isDone and 0.10 or 0.060, isDone and 0.34 or 0.062, isDone and 0.12 or 0.074, isDone and 0.42 or 0.97)
+        if isDone then r.state:SetText(L["Done"]); r.state:SetTextColor(FLT.TextC(0.40, 0.94, 0.50))
+        elseif ready then r.state:SetText(L["Ready to turn in"]); r.state:SetTextColor(FLT.TextC(1, 0.82, 0.20))
+        elseif inLog then r.state:SetText(L["In log"]); r.state:SetTextColor(FLT.TextC(1, 0.82, 0.20))
+        else r.state:SetText("") end
+        local zone = zoneName(q.map)
+        local who = q.giver and (FLT.Name and FLT.Name(q.giver) or q.giver) or "?"
+        r.sub:SetText(who .. (zone and ("  ·  " .. zone .. (q.x and string.format(" (%.1f, %.1f)", q.x, q.y) or "")) or ""))
+        local e = data.ends and data.ends[id]
+        local eName, eMap, eX, eY
+        if e then eName, eMap, eX, eY = strsplit("|", e); eMap, eX, eY = tonumber(eMap), tonumber(eX), tonumber(eY) end
+        local eZone = zoneName(eMap)
+        local eWho = eName and (FLT.Name and FLT.Name(eName) or eName) or "?"
+        local function place(l, nm, zn, mp, x, yy)
+          l.text:SetText(nm .. (zn and ("  ·  " .. zn .. (x and string.format(" (%.1f, %.1f)", x, yy) or "")) or ""))
+          if mp and x then l.map:Show(); l.map:SetScript("OnClick", function() FLT:ShowOnMap({ mapID = mp, x = x, y = yy, zone = zn, name = nm }) end)
+          else l.map:Hide() end
+        end
+        -- the row's map button: where to go now - the turn-in once the quest is in the log (user 14.11.: Stepping Stones
+        -- "ready to turn in" sent me to Westfall where it starts)
+        local goMap, goX, goY, goZone, goWho = q.map, q.x, q.y, zone, who
+        if (inLog or ready) and eMap and eX then goMap, goX, goY, goZone, goWho = eMap, eX, eY, eZone, eWho end
+        if goMap and goX then
+          r.map:Show(); r.map:SetScript("OnClick", function() FLT:ShowOnMap({ mapID = goMap, x = goX, y = goY, zone = goZone, name = goWho }) end)
+        else r.map:Hide() end
+        if (inLog or ready) and eMap then r.sub:SetText(L["Turn in"] .. ": " .. eWho .. (eZone and ("  ·  " .. eZone .. (eX and string.format(" (%.1f, %.1f)", eX, eY) or "")) or "")) end
+        local open = openStep == id
+        local parts = { r.lStart.label, r.lStart.text, r.lStart.map, r.lEnd.label, r.lEnd.text, r.lEnd.map, r.objLabel, r.obj }
+        for _, w in ipairs(parts) do w:SetShown(open) end
+        local h = 38
+        if open then
+          place(r.lStart, who, zone, q.map, q.x, q.y)
+          place(r.lEnd, eWho, eZone, eMap, eX, eY)
+          local inf = data.info and data.info[id]
+          local qlv, obj = "", ""
+          if inf then qlv, obj = strsplit("|", inf, 2) end
+          local lvTxt = tonumber(qlv) and string.format(L["Level %d"], tonumber(qlv)) or ""
+          r.obj:SetText((obj and obj ~= "" and obj or "-") .. (lvTxt ~= "" and ("\n|cff9d9d9d" .. lvTxt .. "|r") or ""))
+          h = 92 + math.max(14, r.obj:GetStringHeight() or 14) + 8
+        end
+        r:SetHeight(h); y = y - h - 3
+      end
+    end
+    note:ClearAllPoints(); note:SetPoint("TOPLEFT", 2, y - 6)
+    note:SetText(L["Green = done   Green text = in log   A green check marks the rewards you own. Click a quest for start, turn-in and objective; Map: where to go next."])
+    y = y - 44
+    detail:SetHeight(-y)
+  end
+
+  function view:Refresh(keepScroll)
+    for _, r in ipairs(rows) do r:Hide() end
+    local list = {}
+    for _, c in ipairs(data.chains) do if sideOK(c) then list[#list + 1] = c end end
+    -- the chains for the own class first, then by level
+    table.sort(list, function(a, b)
+      local ma, mb = mine(a), mine(b)
+      if ma ~= mb then return ma end
+      return (a.lv or 0) < (b.lv or 0)
+    end)
+    local sel
+    for _, c in ipairs(list) do if c == selected then sel = c end end
+    sel = sel or list[1]; selected = sel
+    local y = -2
+    for i, c in ipairs(list) do
+      local r = row(i); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 45
+      r.c = c
+      local main = ids(c.r)[1]
+      if main then setItemIcon(r.icon, main) else r.icon:SetTexture("Interface\\Icons\\INV_Misc_Note_01") end
+      r.name:SetText(title(c))
+      r.name:SetTextColor(FLT.TextC(unpack(mine(c) and TEXT or DIM)))
+      FLT.Desat(r.icon, not mine(c))
+      local done, total = doneCount(c)
+      local sub = string.format(L["Level %d"], c.lv or 1)
+      if c.cls then sub = sub .. "  ·  " .. className(c.cls) end
+      r.sub:SetText(sub .. "  ·  " .. (done >= total and ("|cff66dd66" .. L["Done"] .. "|r") or string.format("%d / %d", done, total)))
+      r.card:SetSelected(c == sel)
+    end
+    more:ClearAllPoints(); more:SetPoint("TOPLEFT", 8, y - 4); y = y - 24
+    lsf.child:SetHeight(math.max(1, -y))
+    if not keepScroll then lsf:SetVerticalScroll(0) end
+    if sel then render(sel) end
+  end
+  return view
+end
+
+local function createArmoryPanel(parent)
+  local panel = CreateFrame("Frame", nil, parent)
+  UI.PlacePanel(panel, parent)
+  local P = prefs()
+  -- the class filter always starts on the character's own class
+  P.class = playerClass()
+
+  local band = UI.TitleBand(panel, { emblem = UI.ASSET_ROOT .. "emblem_armory", art = UI.ASSET_ROOT .. "armory_banner",
+    title = L["Armory"], subtitle = L["Item sets and reputation rewards in WoW Forever, and which pieces you already own."], fadeRight = 60 })
+
+  local nav, navTop = UI.SideNav(panel, -74, "emblem_armory", L["Armory"]) -- ht8: the same side list in every tab
+  local body = CreateFrame("Frame", nil, panel)
+  body:SetPoint("TOPLEFT", 182, -74); body:SetPoint("BOTTOMRIGHT", -8, 4)
+
+  local views = {}
+  local navButtons = {}
+  local current -- "gear", group key or "rep"
+  local show -- forward
+
+  local function hideViews() for _, v in pairs(views) do v:Hide() end end
+  local function setNav(key) for k, b in pairs(navButtons) do b:SetActive(k == key) end end
+
+  -- Class filter bar (shared by the set views) ----------------------------
+  local filterBar = CreateFrame("Frame", nil, body); filterBar:SetPoint("TOPLEFT", 0, 0); filterBar:SetPoint("TOPRIGHT", 0, 0); filterBar:SetHeight(30)
+  local classButtons = {}
+  local refreshSets -- forward
+  local function paintClassButtons()
+    for _, b in ipairs(classButtons) do
+      local on = (b.token or false) == (P.class or false)
+      if b.ring then
+        b.icon:SetAlpha(on and 1 or 0.6); FLT.Desat(b.icon, not on)
+        if on then b.ring:SetVertexColor(FLT.SkinC(1, 0.84, 0.36, 1)) else b.ring:SetVertexColor(FLT.SkinC(0.55, 0.42, 0.22, 1)) end
+      else
+        b:SetActive(on)
+      end
+    end
+  end
+  do
+    local allB = UI.GoldButton(filterBar, L["All classes"], 92, 26); allB:SetPoint("LEFT", 0, 0)
+    allB.token = nil
+    allB:SetScript("OnClick", function() P.class = false; paintClassButtons(); if refreshSets then refreshSets() end end)
+    classButtons[#classButtons + 1] = allB
+    local x = math.floor((allB:GetWidth() or 92) + 6) -- the button grows with a longer name (French / Spanish, beta42)
+    for _, c in ipairs(CLASSES) do
+      local b = CreateFrame("Button", nil, filterBar); b:SetSize(30, 30); b:SetPoint("LEFT", x, 0); x = x + 34
+      local ic = b:CreateTexture(nil, "ARTWORK"); ic:SetPoint("TOPLEFT", 3, -3); ic:SetPoint("BOTTOMRIGHT", -3, 3)
+      ic:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
+      local tc = type(CLASS_ICON_TCOORDS) == "table" and CLASS_ICON_TCOORDS[c.token]
+      if tc then
+        local dx, dy = (tc[2] - tc[1]) * 0.06, (tc[4] - tc[3]) * 0.06
+        ic:SetTexCoord(tc[1] + dx, tc[2] - dx, tc[3] + dy, tc[4] - dy)
+      end
+      local ring = b:CreateTexture(nil, "OVERLAY"); ring:SetAllPoints(); FLT.SetTex(ring, UI.ASSET_ROOT .. "talent_frame")
+      local hl = b:CreateTexture(nil, "HIGHLIGHT"); FLT.SetTex(hl, UI.ASSET_ROOT .. "talent_frame"); hl:SetAllPoints(); hl:SetBlendMode("ADD")
+      hl:SetVertexColor(FLT.SkinC(1, 0.86, 0.40, 0.85))
+      b.icon, b.ring, b.token = ic, ring, c.token
+      b:SetScript("OnClick", function() P.class = c.token; paintClassButtons(); if refreshSets then refreshSets() end end)
+      b:SetScript("OnEnter", function(self) GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText(className(c.token)); GameTooltip:Show() end)
+      b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+      classButtons[#classButtons + 1] = b
+    end
+    -- (the switch "Hide sets not in Forever yet" went with the note, 6.2.14-beta4)
+  end
+  paintClassButtons()
+
+  -- Set buttons of the group (TABS) + "Other Sets" drop-down -------------------
+  -- tabPick[group] = index of a button, or the sub name picked under "Other Sets"; starts on the first button
+  local tabBar = CreateFrame("Frame", nil, body); tabBar:SetPoint("TOPLEFT", 0, -36); tabBar:SetPoint("TOPRIGHT", 0, -36); tabBar:SetHeight(26); tabBar:Hide()
+  local tabButtons, tabPick = {}, {}
+  local otherB = UI.GoldButton(tabBar, L["Other Sets"], 170, 24, nil, 12)
+  -- a long source name ends with "..." on the button, the whole name is in its tooltip (user 22.10.)
+  otherB._label:SetWidth(170 - 40); otherB._label:SetWordWrap(false)
+  otherB:SetScript("OnEnter", function(self)
+    local pick = tabPick[current]
+    if type(pick) ~= "string" then return end
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM"); GameTooltip:SetText(L[pick]); GameTooltip:Show()
+  end)
+  otherB:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  local otherArrow = otherB:CreateTexture(nil, "OVERLAY"); otherArrow:SetSize(12, 12); otherArrow:SetPoint("RIGHT", -8, 0)
+  FLT.SetTex(otherArrow, UI.ASSET_ROOT .. "chevron"); otherArrow:SetTexCoord(0, 0.5, 0, 1)
+  -- the subs of a group that have no button, in data order
+  local function otherSubs(group)
+    local out, seen, tabs = {}, {}, TABS[group] or {}
+    for _, st in ipairs(FLT.ARMORY_SETS or {}) do
+      local sub = st.sub
+      if st.g == group and sub and not seen[sub] then
+        local inTab = false
+        for _, t in ipairs(tabs) do if t.set[sub] then inTab = true end end
+        if not inTab then seen[sub] = true; out[#out + 1] = sub end
+      end
+    end
+    return out
+  end
+  local function paintTabs()
+    local tabs = TABS[current]
+    if tabs and tabPick[current] == nil then -- the first button (user 22.10.) that has sets for the class filter
+      tabPick[current] = 1
+      for i = #tabs, 1, -1 do
+        for _, st in ipairs(FLT.ARMORY_SETS or {}) do
+          if st.g == current and tabs[i].set[st.sub or ""] and setForClass(st, P.class or nil) then tabPick[current] = i; break end
+        end
+      end
+    end
+    for i, b in ipairs(tabButtons) do
+      local t = tabs and tabs[i]
+      b:SetShown(t ~= nil)
+      if t then
+        b:SetLabel(L[t[1]]); b:SetActive(tabPick[current] == i)
+      end
+    end
+    local pick = tabPick[current]
+    local isOther = type(pick) == "string"
+    otherB:SetLabel(isOther and L[pick] or L["Other Sets"]); otherB:SetActive(isOther)
+    otherB:SetShown(tabs ~= nil and #otherSubs(current) > 0)
+    otherB:ClearAllPoints(); otherB:SetPoint("LEFT", tabButtons[tabs and #tabs or 1], "RIGHT", 10, 0)
+  end
+  for i = 1, 4 do
+    local b = UI.GoldButton(tabBar, "", 126, 24, nil, 12)
+    if i == 1 then b:SetPoint("LEFT", 0, 0) else b:SetPoint("LEFT", tabButtons[i - 1], "RIGHT", 6, 0) end
+    b:SetScript("OnClick", function() tabPick[current] = i; paintTabs(); if refreshSets then refreshSets() end end)
+    tabButtons[i] = b
+  end
+  otherB:SetScript("OnClick", function(self)
+    local opts, longest = {}, 0
+    for _, sub in ipairs(otherSubs(current)) do
+      opts[#opts + 1] = { key = sub, label = L[sub] }
+      longest = math.max(longest, #L[sub])
+    end
+    -- wide enough for the longest name (the list was narrower than its text, user 22.10.)
+    UI.OpenDropDown(self, opts, tabPick[current], function(k) tabPick[current] = k; paintTabs(); if refreshSets then refreshSets() end end,
+      math.max(220, math.floor(longest * 7.6 + 44)))
+  end)
+
+  -- SET VIEW (one for all groups) ----------------------------------------
+  local setView = CreateFrame("Frame", nil, body); setView:SetPoint("TOPLEFT", 0, -36); setView:SetPoint("BOTTOMRIGHT", 0, 0); setView:Hide()
+  views.sets = setView
+  local LIST_W, ROW_W = 262, 258
+  local left = CreateFrame("Frame", nil, setView); left:SetPoint("TOPLEFT"); left:SetPoint("BOTTOMLEFT"); left:SetWidth(300)
+  UI.Column(left, 4)
+  local lsf = scrollList(left, LIST_W)
+  local right = CreateFrame("Frame", nil, setView); right:SetPoint("TOPLEFT", 308, 0); right:SetPoint("BOTTOMRIGHT")
+  local dsf = FLT.SkinBlizz(CreateFrame("ScrollFrame", nil, right, "UIPanelScrollFrameTemplate"))
+  dsf:SetPoint("TOPLEFT", 14, -12); dsf:SetPoint("BOTTOMRIGHT", -28, 10)
+  local DW = 452
+  local detail = CreateFrame("Frame", nil, dsf); detail:SetSize(DW, 1); dsf:SetScrollChild(detail)
+  UI.AutoHideScrollBar(dsf)
+  local emptyText = newText(right, "GameFontDisable", 400); emptyText:SetPoint("CENTER"); emptyText:SetJustifyH("CENTER"); emptyText:SetText(L["No sets for this filter."])
+
+  local selectedSet = {} -- group -> set id
+  local setRows, headRows = {}, {}
+  local renderDetail -- forward
+
+  local function setRow(i)
+    local r = setRows[i]; if r then return r end
+    r = CreateFrame("Button", nil, lsf.child); r:SetSize(ROW_W, 38)
+    r.card = UI.CardRow(r)
+    r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(28, 28); r.icon:SetPoint("LEFT", 6, 0)
+    r.name = newText(r, "GameFontHighlight", 190); r.name:SetPoint("TOPLEFT", 42, -5)
+    r.sub = newText(r, "GameFontHighlightSmall", 200, DIM); r.sub:SetPoint("TOPLEFT", 42, -21)
+    r:SetScript("OnClick", function(self) selectedSet[current] = self.set.id; refreshSets(true) end)
+    r:SetScript("OnEnter", function(self)
+      local st = STATUS[self.set.st]
+      if not (st and st.text) then return end
+      GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(self.set.n, 1, 0.82, 0)
+      GameTooltip:AddLine(L[st.text], unpack(st.c)); GameTooltip:AddLine(L[st.tip], 1, 1, 1, true); GameTooltip:Show()
+    end)
+    r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    setRows[i] = r
+    return r
+  end
+  local function headRow(i)
+    local h = headRows[i]; if h then return h end
+    h = CreateFrame("Frame", nil, lsf.child); h:SetSize(ROW_W, 22)
+    h.text = newText(h, "GameFontNormalSmall", ROW_W - 8, UI.HEAD_GOLD); h.text:SetPoint("LEFT", 4, -2)
+    local line = makeTexture(h, "ARTWORK", 0.72, 0.50, 0.12, 0.45); line:SetPoint("BOTTOMLEFT", 2, 0); line:SetPoint("BOTTOMRIGHT", -2, 0); line:SetHeight(1)
+    headRows[i] = h
+    return h
+  end
+
+  local function filteredSets(group)
+    local out = {}
+    for _, s in ipairs(FLT.ARMORY_SETS or {}) do
+      if s.g == group and setForClass(s, P.class or nil) then
+        local tabs, pick = TABS[group], tabPick[group]
+        local ok = true
+        if tabs then
+          if type(pick) == "string" then ok = s.sub == pick
+          else ok = tabs[pick or 1].set[s.sub or ""] or false end
+        end
+        if ok then out[#out + 1] = s end
+      end
+    end
+    -- highest level first (user 22.10.) within each source (headings stay together), otherwise the data order
+    local pos, subPos = {}, {}
+    for i, st in ipairs(out) do pos[st] = i; local k = st.sub or ""; subPos[k] = subPos[k] or i end
+    table.sort(out, function(a, b)
+      local sa, sb = subPos[a.sub or ""], subPos[b.sub or ""]
+      if sa ~= sb then return sa < sb end
+      local la, lb = a.lv or 0, b.lv or 0
+      if la ~= lb then return la > lb end
+      return pos[a] < pos[b]
+    end)
+    return out
+  end
+
+  refreshSets = function(keepScroll)
+    if current == "gear" then return end
+    if not views.sets:IsShown() then return end
+    local list = filteredSets(current)
+    for _, r in ipairs(setRows) do r:Hide() end
+    for _, h in ipairs(headRows) do h:Hide() end
+    local y, nr, nh, lastSub = -2, 0, 0, false
+    local sel
+    for _, s in ipairs(list) do
+      if s.id == selectedSet[current] then sel = s end
+    end
+    sel = sel or list[1]
+    if sel then selectedSet[current] = sel.id end
+    for _, s in ipairs(list) do
+      local raw = s.sub or GROUP_LABEL[s.g]
+      local d = findDungeon(raw)
+      local sub = L[raw]
+      if d and d.level then sub = sub .. "  |cff9d9d9d·  " .. d.level .. "|r" end
+      if sub ~= lastSub then
+        nh = nh + 1; local h = headRow(nh); h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, y); h:Show(); y = y - 24
+        h.text:SetText(sub); lastSub = sub
+      end
+      nr = nr + 1
+      local r = setRow(nr); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 41
+      r.set = s
+      local first = setIcon(s)
+      setItemIcon(r.icon, first[1], first[5]); FLT.Desat(r.icon, false); r.icon:SetAlpha(1)
+      r.name:SetText(setName(s))
+      local owned, _, total = setProgress(s)
+      r.name:SetTextColor(qualityColor(first[4]))
+      local info = string.format(L["%d / %d owned"], owned, total)
+      if s.arm then info = info .. "  ·  " .. L[s.arm] end
+      if s.lv then info = info .. "  ·  " .. string.format(L["Lvl %d"], s.lv) end
+      if s.st == 2 then info = info .. "  ·  |cfff2b347" .. L["no source yet"] .. "|r" end
+      r.sub:SetText(info)
+      r.card:SetSelected(s == sel)
+    end
+    lsf.child:SetHeight(math.max(1, -y))
+    if not keepScroll then lsf:SetVerticalScroll(0) end
+    emptyText:SetShown(sel == nil); dsf:SetShown(sel ~= nil)
+    if sel then renderDetail(sel) end
+  end
+
+  -- detail pane: header, pieces, bonuses (pooled widgets)
+  local dTitle = newText(detail, "GameFontNormalLarge", DW - 10, GOLD); dTitle:SetPoint("TOPLEFT", 2, -2); setFontSize(dTitle, 17)
+  local dSub = newText(detail, "GameFontHighlightSmall", DW - 10, DIM); dSub:SetPoint("TOPLEFT", 2, -26)
+  local dStatus = newText(detail, "GameFontHighlightSmall", DW - 10); dStatus:SetPoint("TOPLEFT", 2, -42); dStatus:SetWordWrap(true)
+  local dProgress = newText(detail, "GameFontNormal", DW - 10, TEXT); dProgress:SetPoint("TOPLEFT", 2, -60)
+  local piecesTitle = UI.SectionTitle(detail, L["Pieces"], 2, -84, -6)
+  local pieceRows = {}
+  local function pieceRow(i)
+    local r = pieceRows[i]; if r then return r end
+    r = CreateFrame("Button", nil, detail); r:SetSize(DW - 4, 36)
+    r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    r.card = UI.CardRow(r)
+    r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(28, 28); r.icon:SetPoint("LEFT", 5, 0)
+    r.name = newText(r, "GameFontHighlight", 215); r.name:SetPoint("TOPLEFT", 40, -4)
+    r.src = newText(r, "GameFontHighlightSmall", 215, DIM); r.src:SetPoint("TOPLEFT", 40, -20)
+    r.own = newText(r, "GameFontHighlightSmall", 66); r.own:SetPoint("RIGHT", -96, 0); r.own:SetJustifyH("RIGHT"); r.own._ofaNoAnchor = true
+    r.check = r:CreateTexture(nil, "OVERLAY"); r.check:SetSize(16, 16); r.check:SetPoint("RIGHT", -166, 0)
+    r.check:SetTexture("Interface\\RaidFrame\\ReadyCheck-Ready")
+    -- star far right like everywhere else, "Show" left of it (user 22.10.)
+    r.star = UI.WishStar(r); r.star:SetPoint("RIGHT", -10, 0)
+    r.go = UI.GoldButton(r, L["Show"], 54, 20, nil, 11); r.go:SetPoint("RIGHT", -38, 0)
+    r:SetHitRectInsets(0, 96, 0, 0) -- no item tooltip over "Show" and the star (like the gear planner)
+    r:SetScript("OnEnter", function(self) itemTooltip(self, self.it[1], self.itName, self.it[3], self.it[4]) end)
+    r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    r:SetScript("OnClick", function(self, button) itemClick(self.it[1], self.itName, self.it[3], self.it[4], button) end)
+    pieceRows[i] = r
+    return r
+  end
+  local bonusTitle = UI.SectionTitle(detail, L["Set bonuses"], 2, -300, -6)
+  local bonusLines = {}
+  local function bonusLine(i)
+    local b = bonusLines[i]; if b then return b end
+    b = FLT.NewFS(detail, nil, "OVERLAY", "GameFontHighlightSmall"); b:SetWidth(DW - 16); b:SetJustifyH("LEFT")
+    bonusLines[i] = b
+    return b
+  end
+  local dNote = newText(detail, "GameFontDisableSmall", DW - 10); dNote:SetWordWrap(true)
+
+  renderDetail = function(s)
+    dTitle:SetText(setName(s))
+    local cls = {}
+    for _, c in ipairs(s.cls or {}) do cls[#cls + 1] = className(c) end
+    local parts = { L[s.sub or GROUP_LABEL[s.g]] }
+    if s.arm then parts[#parts + 1] = L[s.arm] end
+    if s.lv then parts[#parts + 1] = string.format(L["Requires level %d"], s.lv) end
+    if #cls > 0 and #cls < 9 then parts[#parts + 1] = table.concat(cls, ", ") end
+    dSub:SetText(table.concat(parts, "  ·  "))
+    local st = STATUS[s.st]
+    if s.st == 0 then dStatus:SetText("") -- no note any more (6.2.14-beta4), and no "obtainable" claim either
+    elseif st then dStatus:SetText(L[st.text] .. ": " .. L[st.tip]); dStatus:SetTextColor(FLT.TextC(unpack(st.c)))
+    else dStatus:SetText(L["Obtainable in WoW Forever"]); dStatus:SetTextColor(0.35, 0.85, 0.35) end
+    local owned, equipped, total = setProgress(s)
+    dProgress:SetText(string.format(L["Owned %d / %d"], owned, total) .. (equipped > 0 and ("   " .. string.format(L["(%d equipped)"], equipped)) or ""))
+    local y = -42 - math.max(14, dStatus:GetStringHeight() or 14) - 6
+    dProgress:ClearAllPoints(); dProgress:SetPoint("TOPLEFT", 2, y); y = y - 26
+    piecesTitle:ClearAllPoints(); piecesTitle:SetPoint("TOPLEFT", 2, y)
+    y = y - 26
+    for _, r in ipairs(pieceRows) do r:Hide() end
+    for i, it in ipairs(s.i) do
+      local r = pieceRow(i); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 39
+      r.it = it; r.itName = itemName(it[1], it[2])
+      setItemIcon(r.icon, it[1], it[5])
+      r.name:SetText(r.itName); r.name:SetTextColor(qualityColor(it[4]))
+      local src = it[6] and it[6][1]
+      local srcText = (it[3] and SW(it[3]) or "") .. (it[7] and (", " .. L[it[7]]) or "")
+      if src then srcText = srcText .. "  ·  " .. sourceText(src)
+      elseif s.st == 1 then srcText = srcText .. "  ·  " .. L["source not known yet"] end
+      if it[6] and #it[6] > 1 then srcText = srcText .. string.format("  (+%d)", #it[6] - 1) end
+      r.src:SetText(srcText)
+      r.star:SetItem(it[1])
+      local w = ownedWhere(it[1])
+      r.check:SetShown(w ~= nil)
+      r.own:SetText(w and L[w == "equipped" and N"Equipped" or (w == "bank" and N"Bank" or N"Bags")] or "")
+      r.own:SetTextColor(0.40, 0.85, 0.40)
+      local action, target = sourceAction(src)
+      if action then
+        r.go:Show(); r.go:SetScript("OnClick", action)
+        r.go:SetScript("OnEnter", function(self) GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(string.format(L["Open %s"], target), 1, 0.82, 0); GameTooltip:Show() end)
+        r.go:SetScript("OnLeave", function() GameTooltip:Hide() end)
+      else
+        r.go:Hide()
+      end
+    end
+    y = y - 8
+    bonusTitle:ClearAllPoints(); bonusTitle:SetPoint("TOPLEFT", 2, y); y = y - 28
+    for _, b in ipairs(bonusLines) do b:Hide() end
+    if #(s.b or {}) == 0 then
+      local b = bonusLine(1); b:ClearAllPoints(); b:SetPoint("TOPLEFT", 8, y); b:Show()
+      b:SetText(L["Set bonuses are not known yet."]); b:SetTextColor(FLT.TextC(unpack(DIM))); y = y - 18
+    end
+    local cs = clientSet(s)
+    for i, bonus in ipairs(s.b or {}) do
+      local b = bonusLine(i); b:ClearAllPoints(); b:SetPoint("TOPLEFT", 8, y); b:Show()
+      b:SetText(string.format(L["(%d) Set: %s"], bonus[1], cs and cs.b and cs.b[i] or bonus[2]))
+      if equipped >= bonus[1] then b:SetTextColor(0.35, 0.90, 0.35) else b:SetTextColor(FLT.TextC(unpack(DIM))) end
+      y = y - (b:GetStringHeight() or 14) - 6
+    end
+    y = y - 6
+    dNote:ClearAllPoints(); dNote:SetPoint("TOPLEFT", 2, y)
+    dNote:SetText(L["Bonuses light up for the pieces you wear. Hover a piece for its tooltip, Shift-click to link it."])
+    y = y - 30
+    detail:SetHeight(-y)
+  end
+
+  -- REPUTATION VIEW --------------------------------------------------------
+  local repView = CreateFrame("Frame", nil, body); repView:SetAllPoints(); repView:Hide()
+  views.rep = repView
+  local rleft = CreateFrame("Frame", nil, repView); rleft:SetPoint("TOPLEFT"); rleft:SetPoint("BOTTOMLEFT"); rleft:SetWidth(300)
+  UI.Column(rleft, 4)
+  local rsf = scrollList(rleft, LIST_W)
+  local rright = CreateFrame("Frame", nil, repView); rright:SetPoint("TOPLEFT", 308, 0); rright:SetPoint("BOTTOMRIGHT")
+  local isf = FLT.SkinBlizz(CreateFrame("ScrollFrame", nil, rright, "UIPanelScrollFrameTemplate"))
+  isf:SetPoint("TOPLEFT", 14, -12); isf:SetPoint("BOTTOMRIGHT", -28, 10)
+  local rdetail = CreateFrame("Frame", nil, isf); rdetail:SetSize(DW, 1); isf:SetScrollChild(rdetail)
+  UI.AutoHideScrollBar(isf)
+
+  local selectedFaction
+  local facRows, facHeads = {}, {}
+  local renderFaction, refreshRep -- forward
+  local function facRow(i)
+    local r = facRows[i]; if r then return r end
+    r = CreateFrame("Button", nil, rsf.child); r:SetSize(ROW_W, 38)
+    r.card = UI.CardRow(r)
+    r.name = newText(r, "GameFontHighlight", 236); r.name:SetPoint("TOPLEFT", 10, -5)
+    r.sub = newText(r, "GameFontHighlightSmall", 236, DIM); r.sub:SetPoint("TOPLEFT", 10, -21)
+    r:SetScript("OnClick", function(self) selectedFaction = self.f.id; refreshRep(true) end)
+    facRows[i] = r
+    return r
+  end
+  local function facHead(i)
+    local h = facHeads[i]; if h then return h end
+    h = CreateFrame("Frame", nil, rsf.child); h:SetSize(ROW_W, 22)
+    h.text = newText(h, "GameFontNormalSmall", ROW_W - 8, UI.HEAD_GOLD); h.text:SetPoint("LEFT", 4, -2)
+    local line = makeTexture(h, "ARTWORK", 0.72, 0.50, 0.12, 0.45); line:SetPoint("BOTTOMLEFT", 2, 0); line:SetPoint("BOTTOMRIGHT", -2, 0); line:SetHeight(1)
+    facHeads[i] = h
+    return h
+  end
+  local factionVisible = sideOK
+
+  refreshRep = function(keepScroll)
+    for _, r in ipairs(facRows) do r:Hide() end
+    for _, h in ipairs(facHeads) do h:Hide() end
+    local y, nr, nh, lastHead = -2, 0, 0, nil
+    local list = {}
+    for _, f in ipairs(FLT.ARMORY_REPUTATION or {}) do if factionVisible(f) then list[#list + 1] = f end end
+    local sel
+    for _, f in ipairs(list) do if f.id == selectedFaction then sel = f end end
+    sel = sel or list[1]
+    if sel then selectedFaction = sel.id end
+    for _, f in ipairs(list) do
+      local head = f.st == 0 and L["Not in Forever yet"] or L["Factions"]
+      if head ~= lastHead then
+        nh = nh + 1; local h = facHead(nh); h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, y); h:Show(); y = y - 24
+        h.text:SetText(head); lastHead = head
+      end
+      nr = nr + 1
+      local r = facRow(nr); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 41
+      r.f = f
+      r.name:SetText(factionName(f, select(4, standing(f.id))))
+      if f.st == 0 then r.name:SetTextColor(FLT.TextC(unpack(DIM))) else r.name:SetTextColor(FLT.TextC(unpack(TEXT))) end
+      local stid = standing(f.id)
+      r.sub:SetText(string.format(L["%s  ·  %d rewards"], standingLabel(stid), #f.i))
+      r.card:SetSelected(f == sel)
+    end
+    rsf.child:SetHeight(math.max(1, -y))
+    if not keepScroll then rsf:SetVerticalScroll(0) end
+    if sel then renderFaction(sel) end
+  end
+
+  local fTitle = newText(rdetail, "GameFontNormalLarge", DW - 10, GOLD); fTitle:SetPoint("TOPLEFT", 2, -2); setFontSize(fTitle, 17)
+  local fStanding = newText(rdetail, "GameFontHighlightSmall", DW - 10, TEXT); fStanding:SetPoint("TOPLEFT", 2, -26)
+  -- standing bar: thin gold rim, dark inside, warm gold fill (same look as the button collector)
+  local BAR_W = 300
+  local barBg = CreateFrame("Frame", nil, rdetail); barBg:SetPoint("TOPLEFT", 2, -44); barBg:SetSize(BAR_W, 12)
+  UI.RoundRect(barBg, barBg, "BACKGROUND", 0, 6, 0, 0.95, 0.76, 0.32, 1)
+  UI.RoundRect(barBg, barBg, "BACKGROUND", 1, 5, 1.5, 0.06, 0.05, 0.04, 0.96)
+  local bar = CreateFrame("Frame", nil, barBg); bar:SetPoint("TOPLEFT", 2, -2); bar:SetPoint("BOTTOMLEFT", 2, 2); bar:SetWidth(BAR_W - 4)
+  local barFill = UI.RoundRect(bar, bar, "ARTWORK", 0, 4, 0, 0.86, 0.62, 0.20, 1)
+  local vendorTitle = UI.SectionTitle(rdetail, L["Vendor"], 2, -64, -6)
+  local vendorRows = {}
+  local function vendorRow(i)
+    local r = vendorRows[i]; if r then return r end
+    r = CreateFrame("Frame", nil, rdetail); r:SetSize(DW - 4, 26)
+    r.text = newText(r, "GameFontHighlight", DW - 100, TEXT); r.text:SetPoint("LEFT", 6, 0)
+    r.map = UI.GoldButton(r, L["Map"], 64, 20, UI.ASSET_ROOT .. "icon_map", 11); r.map:SetPoint("RIGHT", -4, 0)
+    vendorRows[i] = r
+    return r
+  end
+  local itemsTitle = UI.SectionTitle(rdetail, L["Rewards"], 2, -120, -6)
+  local kindButtons = {}
+  for i, k in ipairs(KINDS) do
+    local b = UI.GoldButton(rdetail, L[k.label], 70, 20, nil, 11); b.key = k.key
+    b:SetScript("OnClick", function() P.kind = k.key; refreshRep(true) end)
+    kindButtons[i] = b
+  end
+  local repItemRows = {}
+  local function repItemRow(i)
+    local r = repItemRows[i]; if r then return r end
+    r = CreateFrame("Button", nil, rdetail); r:SetSize(DW - 4, 34)
+    r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    r.card = UI.CardRow(r)
+    r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(26, 26); r.icon:SetPoint("LEFT", 5, 0)
+    r.name = newText(r, "GameFontHighlight", 270); r.name:SetPoint("TOPLEFT", 38, -3)
+    r.sub = newText(r, "GameFontHighlightSmall", 270, DIM); r.sub:SetPoint("TOPLEFT", 38, -19)
+    r.check = r:CreateTexture(nil, "OVERLAY"); r.check:SetSize(16, 16); r.check:SetPoint("RIGHT", -40, 0)
+    r.check:SetTexture("Interface\\RaidFrame\\ReadyCheck-Ready")
+    r.star = UI.WishStar(r); r.star:SetPoint("RIGHT", -10, 0) -- wishlist star far right (user 22.10.)
+    r:SetHitRectInsets(0, 36, 0, 0) -- no item tooltip over the star
+    r:SetScript("OnEnter", function(self) itemTooltip(self, self.it[1], self.itName, self.it[3], self.it[4]) end)
+    r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    r:SetScript("OnClick", function(self, button) itemClick(self.it[1], self.itName, self.it[3], self.it[4], button) end)
+    repItemRows[i] = r
+    return r
+  end
+  local repNote = newText(rdetail, "GameFontDisableSmall", DW - 10); repNote:SetWordWrap(true)
+
+  -- standing band above the rewards of each rank (like the trainer's level bands)
+  -- click a band to fold its rewards in and out (user 16.10.: the chevron promised it); per session
+  local repBands, repFolded, lastFaction = {}, {}, nil
+  local function repBand(i)
+    local h = repBands[i]; if h then return h end
+    h = CreateFrame("Button", nil, rdetail); h:SetSize(DW - 4, 28)
+    h:SetScript("OnClick", function(self)
+      repFolded[self.key] = not repFolded[self.key]
+      if lastFaction then renderFaction(lastFaction) end
+    end)
+    local base = h:CreateTexture(nil, "BACKGROUND"); base:SetPoint("TOPLEFT", 1, -1); base:SetPoint("BOTTOMRIGHT", -1, 1)
+    base:SetColorTexture(1, 1, 1, 1)
+    local r1, g1, b1 = FLT.SkinC(0.20, 0.15, 0.07)
+    local r2, g2, b2 = FLT.SkinC(0.10, 0.08, 0.04)
+    if base.SetGradient and CreateColor then
+      pcall(base.SetGradient, base, "VERTICAL", CreateColor(r2, g2, b2, 0.92), CreateColor(r1, g1, b1, 0.92))
+    else
+      base:SetColorTexture(r1, g1, b1, 0.92)
+    end
+    for _, tx in ipairs(UI.OrnateFrame(h, h, 8, 1, "OVERLAY", 1) or {}) do tx:SetVertexColor(FLT.SkinC(0.70, 0.56, 0.32, 0.85)) end
+    local ch = h:CreateTexture(nil, "ARTWORK"); ch:SetSize(14, 14); ch:SetPoint("LEFT", 10, 0)
+    FLT.SetTex(ch, UI.ASSET_ROOT .. "chevron"); ch:SetTexCoord(0, 0.5, 0, 1); h.ch = ch
+    local hl = UI.makeTexture(h, "HIGHLIGHT", 1, 0.82, 0.3, 0.08); hl:SetPoint("TOPLEFT", 1, -1); hl:SetPoint("BOTTOMRIGHT", -1, 1)
+    h.text = FLT.NewFS(h, nil, "OVERLAY", "GameFontNormalLarge"); h.text:SetPoint("LEFT", 30, 0)
+    setFontSize(h.text, 15)
+    h.right = FLT.NewFS(h, nil, "OVERLAY", "GameFontHighlightSmall"); h.right:SetPoint("RIGHT", -12, 0)
+    repBands[i] = h
+    return h
+  end
+  local KIND_ORDER = { gear = 0, other = 1, recipe = 2 }
+
+  renderFaction = function(f)
+    lastFaction = f
+    local stid, val, max, cname = standing(f.id)
+    fTitle:SetText(factionName(f, cname))
+    if f.st == 0 then
+      fStanding:SetText(L["Not in Forever yet: the content of this faction is not part of WoW Forever yet."])
+      fStanding:SetTextColor(FLT.TextC(unpack(STATUS[0].c)))
+    else
+      local txt = string.format(L["Your standing: %s"], standingLabel(stid))
+      if stid and max and max > 0 then txt = txt .. string.format("  (%d / %d)", val or 0, max) end
+      fStanding:SetText(txt); fStanding:SetTextColor(FLT.TextC(unpack(TEXT)))
+    end
+    local frac = (stid and max and max > 0) and math.max(0, math.min(1, (val or 0) / max)) or 0
+    barBg:SetShown(stid ~= nil and f.st ~= 0); bar:SetShown(stid ~= nil and f.st ~= 0 and frac > 0.02)
+    bar:SetWidth(math.max(8, (BAR_W - 4) * frac))
+
+    local y = -64
+    vendorTitle:ClearAllPoints(); vendorTitle:SetPoint("TOPLEFT", 2, y); y = y - 26
+    for _, r in ipairs(vendorRows) do r:Hide() end
+    local nv = 0
+    for _, v in ipairs(f.v or {}) do
+      nv = nv + 1
+      local r = vendorRow(nv); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 28
+      local zone = v[6]
+      if v[3] and FLT.ClientTexts and FLT.ClientTexts() and type(C_Map) == "table" and type(C_Map.GetMapInfo) == "function" then
+        local mi = C_Map.GetMapInfo(v[3]); if type(mi) == "table" and mi.name then zone = mi.name end
+      end
+      local where = zone and zone ~= "" and ("  |cff9d9d9d" .. zone .. (v[4] and string.format(" (%.1f, %.1f)", v[4], v[5]) or "") .. "|r") or ""
+      r.text:SetText((FLT.Name and FLT.Name(v[2]) or v[2]) .. where)
+      if v[3] and v[4] then
+        r.map:Show(); r.map:SetScript("OnClick", function() FLT:ShowOnMap({ mapID = v[3], x = v[4], y = v[5], zone = v[6], name = FLT.Name and FLT.Name(v[2]) or v[2] }) end)
+      else r.map:Hide() end
+    end
+    if nv == 0 then
+      nv = 1; local r = vendorRow(1); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 28
+      r.text:SetText("|cff9d9d9d" .. L["Not known yet"] .. "|r"); r.map:Hide()
+    end
+    y = y - 6
+    itemsTitle:ClearAllPoints(); itemsTitle:SetPoint("TOPLEFT", 2, y)
+    local kind = P.kind or "all"
+    local kx = DW - 4
+    for i = #kindButtons, 1, -1 do
+      -- a longer (translated) label makes its button wider: place by the real width (beta13)
+      local b = kindButtons[i]; b:ClearAllPoints(); kx = kx - (b:GetWidth() or 70) - 2; b:SetPoint("TOPLEFT", kx, y + 2); b:SetActive(b.key == kind)
+    end
+    -- the title's line ends before the buttons (it ran through them with the wider German labels, user 07.11.)
+    local dv = itemsTitle.divider
+    if dv then dv:ClearAllPoints(); dv:SetPoint("LEFT", itemsTitle, "RIGHT", 12, -1); dv:SetPoint("RIGHT", kindButtons[1], "LEFT", -10, 0) end
+    y = y - 28
+    for _, r in ipairs(repItemRows) do r:Hide() end
+    for _, h in ipairs(repBands) do h:Hide() end
+    local list = {}
+    for i, it in ipairs(f.i) do if kind == "all" or it[7] == kind then list[#list + 1] = { it = it, i = i } end end
+    table.sort(list, function(a, b)
+      if a.it[6] ~= b.it[6] then return a.it[6] < b.it[6] end
+      local ka, kb = KIND_ORDER[a.it[7]] or 9, KIND_ORDER[b.it[7]] or 9
+      if ka ~= kb then return ka < kb end
+      return a.i < b.i
+    end)
+    local n, nb, lastRank, folded = 0, 0, nil, false
+    for _, e in ipairs(list) do
+      local it = e.it
+      if it[6] ~= lastRank then
+        lastRank = it[6]
+        nb = nb + 1
+        local h = repBand(nb); h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, y - (nb > 1 and 6 or 0)); h:Show()
+        h.key = f.n .. ":" .. it[6]; folded = repFolded[h.key] or false
+        if folded then h.ch:SetTexCoord(0.5, 1, 0, 1) else h.ch:SetTexCoord(0, 0.5, 0, 1) end
+        y = y - 32 - (nb > 1 and 6 or 0)
+        local rc = RANK_COLOR[it[6]] or TEXT
+        h.text:SetText(RANK_LABEL[it[6]] and L[RANK_LABEL[it[6]]] or "?"); h.text:SetTextColor(rc[1], rc[2], rc[3])
+        if f.st == 0 then h.right:SetText("")
+        elseif rankReached(it[6], stid) then h.right:SetText("|cff66dd66" .. L["Reached - you can buy these"] .. "|r")
+        else h.right:SetText("|cff9d9d9d" .. L["Not reached yet"] .. "|r") end
+      end
+      if not folded then
+        n = n + 1
+        local r = repItemRow(n); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 37
+        r.it = it; r.itName = itemName(it[1], it[2])
+        setItemIcon(r.icon, it[1], it[5])
+        r.name:SetText(r.itName); r.name:SetTextColor(qualityColor(it[4]))
+        local kindText = it[7] == "recipe" and L["Recipe"] or it[3] and SW(it[3]) or L[it[7] == "gear" and N"Gear" or N"Item"]
+        if it[9] and #it[9] > 0 then kindText = kindText .. "  ·  " .. string.format(L["%d variants"], #it[9] + 1) end
+        r.sub:SetText(kindText)
+        local reached = rankReached(it[6], stid)
+        FLT.Desat(r.icon, not reached); r.icon:SetAlpha(reached and 1 or 0.6)
+        r.star:SetItem(it[1])
+        local own = ownedWhere(it[1])
+        for _, alt in ipairs(it[9] or {}) do own = own or ownedWhere(alt) end
+        r.check:SetShown(own ~= nil)
+      end
+    end
+    if n == 0 then y = y - 4 end
+    repNote:ClearAllPoints(); repNote:SetPoint("TOPLEFT", 2, y - 4)
+    repNote:SetText(L["Rewards of the ranks you have not reached yet are greyed out. A green check marks items you own."])
+    y = y - 40
+    rdetail:SetHeight(-y)
+  end
+
+  -- GEAR PLANNER (UI/GearPlanner.lua) -----------------------------------------
+  local gear = UI.CreateGearPlanner(body)
+  views.gear = gear
+  local questView = createQuestView(body)
+  views.quests = questView
+
+  -- NAVIGATION ---------------------------------------------------------------
+  show = function(key)
+    current = key
+    hideViews(); setNav(key)
+    filterBar:SetShown(key ~= "rep" and key ~= "gear" and key ~= "quests")
+    if key == "gear" then gear:Show(); gear:Refresh()
+    elseif key == "rep" then repView:Show(); refreshRep()
+    elseif key == "quests" then questView:Show(); questView:Refresh()
+    else
+      local tabs = TABS[key] ~= nil
+      tabBar:SetShown(tabs)
+      if tabs then paintTabs() end
+      setView:ClearAllPoints(); setView:SetPoint("TOPLEFT", 0, tabs and -68 or -36); setView:SetPoint("BOTTOMRIGHT", 0, 0)
+      setView:Show(); refreshSets()
+    end
+    if key == "gear" or key == "rep" or key == "quests" then tabBar:Hide() end
+  end
+  local navY = navTop
+  local function navButton(key, label, icon)
+    local b; b, navY = UI.NavEntry(nav, navY, label, icon)
+    b:SetScript("OnClick", function() show(key) end)
+    navButtons[key] = b
+    return b
+  end
+  local function divider() navY = UI.NavSeparator(nav, navY) end
+  navButton("gear", L["Gear Planner"], "Interface\\Icons\\INV_Misc_Note_05")
+  divider()
+  for _, g in ipairs(GROUPS) do navButton(g.key, L[g.label], g.icon) end
+  divider()
+  navButton("rep", L["Reputation"], "Interface\\Icons\\INV_Misc_Note_02")
+  navButton("quests", L["Special Quests"], "Interface\\Icons\\INV_Scroll_03")
+  divider()
+  for _, l in ipairs({ { N"Mounts", "Interface\\Icons\\Ability_Mount_RidingHorse" }, { N"Legendaries", "Interface\\Icons\\INV_Staff_Medivh" } }) do
+    local b; b, navY = UI.NavEntry(nav, navY, L[l[1]], l[2])
+    b._label:SetTextColor(0.5, 0.5, 0.5); if b.icon then FLT.Desat(b.icon, true); b.icon:SetAlpha(0.5) end
+    b:SetScript("OnEnter", function(self) GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(L[l[1]], 1, 0.82, 0); GameTooltip:AddLine(L["Coming in a later version."], 1, 1, 1); GameTooltip:Show() end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  end
+
+  -- Item names and ownership arrive later: redraw (throttled) while visible.
+  local pending, gearChanged, lastRedraw, otherEvent = false, false, 0, false
+  local function redraw()
+    pending = false
+    lastRedraw = GetTime and GetTime() or 0
+    local changed, itemsOnly = gearChanged, not otherEvent; gearChanged, otherEvent = false, false
+    if not panel:IsVisible() then return end
+    if current == "rep" then refreshRep(true) elseif current == "quests" then questView:Refresh(true) elseif current == "gear" then gear:Refresh(changed, itemsOnly) elseif current then refreshSets(true) end
+  end
+  local ev = CreateFrame("Frame", nil, panel)
+  ev:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+  pcall(ev.RegisterEvent, ev, "ITEM_DATA_LOAD_RESULT") -- C_Item.RequestLoadItemDataByID answers with this one (names in German)
+  ev:RegisterEvent("BAG_UPDATE_DELAYED")
+  ev:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+  ev:RegisterEvent("UPDATE_FACTION")
+  ev:RegisterEvent("QUEST_TURNED_IN") -- the checks of the special quests
+  ev:RegisterEvent("QUEST_ACCEPTED") -- 6.2.8: their "In log" state (debounced, only while the panel is shown)
+  pcall(ev.RegisterEvent, ev, "QUEST_REMOVED")
+  ev:SetScript("OnEvent", function(_, event, id, success)
+    if event == "PLAYER_EQUIPMENT_CHANGED" then gearChanged = true end
+    -- 6.2.14: bags, reputation, quests can change what the Gear Planner lists - a full pass; item data alone does not
+    if event ~= "GET_ITEM_INFO_RECEIVED" and event ~= "ITEM_DATA_LOAD_RESULT" and panel:IsVisible() then otherEvent = true end
+    -- a failed load: no redraw (it would ask again). 6.2.10 (user 15.11., video: "All slots" lagged without end): the
+    -- same for GET_ITEM_INFO_RECEIVED - items the server does not know failed, the redraw asked for them again, and so
+    -- on forever. The Gear Planner leaves those items out (FLT.ItemLoadFailed).
+    if (event == "ITEM_DATA_LOAD_RESULT" or event == "GET_ITEM_INFO_RECEIVED") and success == false then
+      if id then FLT.ItemLoadFailed = FLT.ItemLoadFailed or {}; FLT.ItemLoadFailed[id] = true end
+      return
+    end
+    if pending or not panel:IsVisible() then return end
+    -- 6.2.14 (user 22.11., video: the Gear Planner froze every 1.5 s in Orgrimmar): item data for items the planner does not
+    -- wait for (other players' gear, chat links) is no reason to go through its whole list again
+    if current == "gear" and (event == "GET_ITEM_INFO_RECEIVED" or event == "ITEM_DATA_LOAD_RESULT") and FLT.GearPlannerWants
+      and not FLT.GearPlannerWants(id) then return end
+    pending = true
+    -- while many items arrive the redraws come at most every 1.5 s (each one goes through the whole list)
+    local now = GetTime and GetTime() or 0
+    local wait = math.max(0.4, 1.5 - (now - lastRedraw))
+    if C_Timer and C_Timer.After then C_Timer.After(wait, function() FLT.SafeCall("Armory", redraw) end) else redraw() end
+  end)
+  panel.Refresh = function() if panel:IsVisible() and current then show(current) end end
+
+  show("gear")
+  panel:Hide()
+  return panel
+end
+
+UI.RegisterPanel({ key = "armory", label = N"Armory", order = 1, tabWidth = 96, create = createArmoryPanel })

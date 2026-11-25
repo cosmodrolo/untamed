@@ -69,6 +69,7 @@ L["/ut clear  clear the arrow and the map focus"] = true
 L["/ut help all  every command"] = true
 L["/ut hud move  drag the display under your character"] = true
 L["/ut hud move, lock, reset, scale 1.2, off, on"] = true
+L["/ut kit  the Kit window (OneForAll's armory, professions, books and extras; also /ofa)"] = true
 L["/ut meter  your pet's share of your damage (new = new session, move, lock, size 120, reset, off, on)"] = true
 L["/ut pad on | off: the controller in Untamed's window. Now: "] = true
 L["/ut range off, on, alerts (only when too close or too far), always  (/ut hud move moves it)"] = true
@@ -772,6 +773,8 @@ L["That doesn't look like an Untamed build string."] = true
 L["That's %d books: the librarian has a reward quest for you (%s)."] = true
 L["The Abilities, Builds and Planner pages show a pet of this family."] = true
 L["The Abilities, Builds and Planner pages show this pet instead of the one that is out."] = true
+L["The Kit did not load."] = true
+L["The Kit is off while %s is enabled: turn %s off in the AddOns list and reload, and the Kit takes over with its settings."] = true
 L["The Need alert for loot rolls is off."] = true
 L["The Need alert for loot rolls is on."] = true
 L["The Untamed button on your minimap. /ut opens the window either way."] = true

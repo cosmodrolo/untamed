@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.45.0
+- New: the Kit. OneForAll (by Smoergi, GPL-3.0-or-later) now lives inside Untamed as the Kit, with the controller support and OpenMap map icons of OneForAll Pad: the armory, professions and Skill-Up planner, Library Books, the info bar and the everyday extras (sell junk, repair, quick loot, loot sparkles, loot feed and more). /ut kit or /ofa opens its window.
+- The Kit stays off while OneForAll or OneForAll Pad is enabled, and copies their settings each session; turn OneForAll off and the Kit takes over with the same settings, books and plans.
+- tools/port_kit.py brings a new OneForAll version in.
+
 ## v2.44.2
 - Arrow: a beast with only one known spot (like Old Cliff Jumper) no longer repeats "Checked every known spot" every few seconds while you camp it. The arrow stays on the spot and says to wait there; with several spots, the "starting over" line shows once.
 

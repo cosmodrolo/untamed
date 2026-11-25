@@ -652,6 +652,12 @@ SlashCmdList.UNTAMED = function(msg)
     if ns.RangeCommand then ns.RangeCommand(msg:match("^range%s*(.*)$")) end
   elseif msg == "meter" or msg:match("^meter ") then
     if ns.PetMeterCommand then ns.PetMeterCommand(msg:match("^meter%s*(.*)$")) end
+  elseif msg == "kit" then
+    -- the Kit (Kit/, OneForAll inside Untamed): its window, or why it is idle
+    local K = ns.Kit
+    if K and K.ToggleUI then K:ToggleUI()
+    elseif ns.KitIdleFor then ns.Print(string.format(L["The Kit is off while %s is enabled: turn %s off in the AddOns list and reload, and the Kit takes over with its settings."], ns.KitIdleFor, ns.KitIdleFor))
+    else ns.Print(L["The Kit did not load."]) end
   elseif msg == "loot" or msg:match("^loot ") then
     if ns.LootCommand then ns.LootCommand(msg:match("^loot%s*(.*)$")) end
   elseif msg == "plan" or msg == "browse" or msg == "care" or msg == "settings" or msg == "builds" or msg == "search"
@@ -666,6 +672,7 @@ SlashCmdList.UNTAMED = function(msg)
     ns.Print(L["/ut clear  clear the arrow and the map focus"])
     ns.Print(L["/ut hud move  drag the display under your character"])
     ns.Print(L["/ut meter  your pet's share of your damage (new = new session, move, lock, size 120, reset, off, on)"])
+    ns.Print(L["/ut kit  the Kit window (OneForAll's armory, professions, books and extras; also /ofa)"])
     ns.Print(L["/ut window reset  the window back to its starting size and place"])
     ns.Print(L["/ut help all  every command"])
     ns.Print(L["Something wrong or missing? Tell us in the CurseForge comments or at github.com/cosmodrolo/untamed/issues"])
