@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.47.4
+- /rl reloads the interface.
+
 ## v2.47.3
 - Kit window: its own height is put back to normal once (it had been stretched to make room for Untamed's pages); the Untamed tab keeps its taller height.
 - The version shown in the Kit window and /ut is the real one in Alejandro's copy.

@@ -575,6 +575,10 @@ ev:SetScript("OnEvent", function(self, event, arg1, arg2, arg3, arg4)
   end
 end)
 
+-- /rl reloads the interface (if another addon has /rl too, either one does the same)
+SLASH_UNTAMEDRELOAD1 = "/rl"
+SlashCmdList.UNTAMEDRELOAD = function() ReloadUI() end
+
 SLASH_UNTAMED1 = "/untamed"
 SLASH_UNTAMED2 = "/ut"
 SlashCmdList.UNTAMED = function(msg)
