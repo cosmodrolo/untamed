@@ -14,8 +14,8 @@ local LOGIN_WINDOW = 180 -- seconds after login in which the note may appear
 
 local function myVersion()
   local v
-  if C_AddOns and C_AddOns.GetAddOnMetadata then v = C_AddOns.GetAddOnMetadata("Untamed", "Version")
-  elseif GetAddOnMetadata then v = GetAddOnMetadata("Untamed", "Version") end
+  if C_AddOns and C_AddOns.GetAddOnMetadata then v = FLT.KitVersion()
+  elseif GetAddOnMetadata then v = FLT.KitVersion() end
   return v or "0"
 end
 

@@ -42,7 +42,7 @@ local function logError(tag, err)
   local db = type(UntamedKitDB) == "table" and UntamedKitDB
   if db then
     db.errors = db.errors or {}
-    local ver = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version")) or (GetAddOnMetadata and GetAddOnMetadata(ADDON, "Version")) or "?"
+    local ver = (C_AddOns and C_AddOns.GetAddOnMetadata and FLT.KitVersion()) or (GetAddOnMetadata and FLT.KitVersion()) or "?"
     local line = string.format("%s | %s | %s | %s | %s", date and date("%Y-%m-%d %H:%M") or "", tostring(ver), GetLocale and GetLocale() or "?", tostring(tag), tostring(err))
     if db.errors[1] ~= line then table.insert(db.errors, 1, line) end
     while #db.errors > 20 do table.remove(db.errors) end

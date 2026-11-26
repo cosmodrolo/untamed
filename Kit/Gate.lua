@@ -35,3 +35,11 @@ if other then
 end
 
 ns.Kit = { ASSET_ROOT = "Interface\\AddOns\\" .. ADDON .. "\\Kit\\Assets\\", DISPLAY_NAME = "Untamed Kit" }
+local KIT_VERSION = "6.2.17" -- the OneForAll release in Kit/
+function ns.Kit.KitVersion() return KIT_VERSION end
+function ns.Kit.KitFooterVersion()
+  local get = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
+  local ok, v = pcall(get, ADDON, "Version")
+  v = ok and v and not tostring(v):find("@", 1, true) and v or nil
+  return v and (v .. ", OneForAll " .. KIT_VERSION) or ("OneForAll " .. KIT_VERSION)
+end

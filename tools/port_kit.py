@@ -84,10 +84,21 @@ if other then
 end
 
 ns.Kit = { ASSET_ROOT = "Interface\\\\AddOns\\\\" .. ADDON .. "\\\\Kit\\\\Assets\\\\", DISPLAY_NAME = "Untamed Kit" }
+local KIT_VERSION = "@KIT_VERSION@" -- the OneForAll release in Kit/
+function ns.Kit.KitVersion() return KIT_VERSION end
+function ns.Kit.KitFooterVersion()
+  local get = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
+  local ok, v = pcall(get, ADDON, "Version")
+  v = ok and v and not tostring(v):find("@", 1, true) and v or nil
+  return v and (v .. ", OneForAll " .. KIT_VERSION) or ("OneForAll " .. KIT_VERSION)
+end
 '''
 
 
-def port_lua(text):
+META_VERSION = re.compile(r'(?:C_AddOns\.)?GetAddOnMetadata\((?:ADDON|ADDON_NAME|"Untamed"|"OneForAll"),\s*"Version"\)')
+
+
+def port_lua(text, rel=""):
     def head(m):
         # (no extra local: some files are at Lua's limit of 200 locals; the second ... value is Untamed's ns)
         return f"local {m.group(1)}, FLT = ...; FLT = FLT.Kit; if not FLT then return end"
@@ -96,6 +107,9 @@ def port_lua(text):
         raise SystemExit("no FLT header")
     for rx, rep in SUBS:
         text = rx.sub(rep, text)
+    # the Kit's version is OneForAll's (its guild version check and "what's new" compare with OneForAll's releases);
+    # the window's footer shows Untamed's and the Kit's
+    text = META_VERSION.sub("FLT.KitFooterVersion()" if rel.endswith("MainFrame.lua") else "FLT.KitVersion()", text)
     out = []
     for line in text.split("\n"):
         if not KEEP_PLAIN.search(line):
@@ -118,12 +132,13 @@ def main():
     for rel in files:
         out = DST / rel
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(port_lua((SRC / rel).read_text(encoding="utf-8")), encoding="utf-8", newline="\n")
+        out.write_text(port_lua((SRC / rel).read_text(encoding="utf-8"), rel), encoding="utf-8", newline="\n")
     shutil.copytree(SRC / "Assets", DST / "Assets")
     for extra in ("LICENSE.txt", "THIRD_PARTY_LICENSES.txt", "README.txt", "DUNGEON_DATA_SOURCES.txt"):
         if (SRC / extra).exists():
             shutil.copy2(SRC / extra, DST / extra)
-    (DST / "Gate.lua").write_text(GATE, encoding="utf-8", newline="\n")
+    ver = re.search(r"(?m)^## Version:\s*(\S+)", (SRC / "OneForAll.toc").read_text(encoding="utf-8")).group(1)
+    (DST / "Gate.lua").write_text(GATE.replace("@KIT_VERSION@", ver), encoding="utf-8", newline="\n")
     (DST / "SOURCE.txt").write_text(LICENSE_NOTE, encoding="utf-8")
     left = [str(p.relative_to(DST)) for p in DST.rglob("*.lua")
             if re.search(r"OneForAll(?!DB|CharDB)", re.sub(r'PREFIX\s*=\s*"OneForAll"|--[^\n]*', "", p.read_text(encoding="utf-8")))]

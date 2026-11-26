@@ -1341,8 +1341,8 @@ function UI.ShowBugReport()
   end
   local f = bugFrame
   local ver
-  if C_AddOns and C_AddOns.GetAddOnMetadata then ver = C_AddOns.GetAddOnMetadata(ADDON, "Version")
-  elseif GetAddOnMetadata then ver = GetAddOnMetadata(ADDON, "Version") end
+  if C_AddOns and C_AddOns.GetAddOnMetadata then ver = FLT.KitVersion()
+  elseif GetAddOnMetadata then ver = FLT.KitVersion() end
   local class = UnitClass and UnitClass("player")
   local level = UnitLevel and UnitLevel("player")
   local lines = { string.format("OneForAll %s | %s | Level %s | %s", tostring(ver or "?"), tostring(class or "?"),

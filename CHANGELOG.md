@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.48.2
+- Kit: no more "A newer version (6.2.17) is available" at every login. The Kit's guild version check and "what's new" compared OneForAll's releases with Untamed's version; they now use the OneForAll release inside the Kit. The window's footer shows both (Untamed's, then OneForAll's).
+
 ## v2.48.1
 - Untamed tab: no empty band under the Kit's tabs (it sits as high as the Kit's own pages); the window gets wider on this tab (1200) so the right-hand details and buttons are no longer cut off, and goes back to the Kit's width on its tabs; the hint line no longer runs into the page; the version shows once, at the bottom of the Kit's window.
 

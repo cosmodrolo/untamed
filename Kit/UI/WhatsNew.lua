@@ -65,8 +65,8 @@ end
 
 local function addonVersion()
   local v
-  if C_AddOns and C_AddOns.GetAddOnMetadata then v = C_AddOns.GetAddOnMetadata("Untamed", "Version")
-  elseif GetAddOnMetadata then v = GetAddOnMetadata("Untamed", "Version") end
+  if C_AddOns and C_AddOns.GetAddOnMetadata then v = FLT.KitVersion()
+  elseif GetAddOnMetadata then v = FLT.KitVersion() end
   return v or NEWS_ID
 end
 
