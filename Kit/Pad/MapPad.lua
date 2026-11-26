@@ -202,7 +202,9 @@ function MP.Sync()
         SetIcon(f, e.kind, k)
         f:SetSize(k.w * 0.75, k.h * 0.75)
         f.entry, f.UiMapID, f.x, f.y = e, mapID, e.x, e.y
-        lib.worldmapPins[f] = { uiMapID = mapID, worldMapShowFlag = k.top and SHOW_CONTINENT or 0 }
+        -- entrances and books from further out too (OpenMap shows other addons' icons only zoomed in to a zone,
+        -- unless they ask to be on a continent's map); ships, flight masters and the rest when zoomed in
+        lib.worldmapPins[f] = { uiMapID = mapID, worldMapShowFlag = (k.top or e.book) and SHOW_CONTINENT or 0 }
       end
     end
   end

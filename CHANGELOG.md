@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.47.1
+- Kit: Library Books now show on OpenMap's controller map from further out (zone and continent views), like dungeon entrances; ships, flight masters and the rest still need a zoomed-in view.
+- Kit: its controller messages say "Untamed Kit" instead of "OneForAll Pad".
+
 ## v2.47.0
 - With the Kit on, Untamed leaves to it what it also does. Gone from Untamed: the Gear, Talents, Library books, Spells, Hunter Quests and Dungeons pages, and the upgrade tooltips and alerts, bag upgrade arrows, quest reward advice, boss loot card, Need alert, training reminder, talent glow and talent chat line, and the library book pins and alerts (their settings are off and hidden).
 - Today's cards and links for gear, talents and books open the Kit's Armory, Talent Trees and Library Books.
