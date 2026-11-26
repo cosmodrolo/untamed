@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.47.0
+- With the Kit on, Untamed leaves to it what it also does. Gone from Untamed: the Gear, Talents, Library books, Spells, Hunter Quests and Dungeons pages, and the upgrade tooltips and alerts, bag upgrade arrows, quest reward advice, boss loot card, Need alert, training reminder, talent glow and talent chat line, and the library book pins and alerts (their settings are off and hidden).
+- Today's cards and links for gear, talents and books open the Kit's Armory, Talent Trees and Library Books.
+- Without the Kit (OneForAll enabled instead) everything is back as before.
+
 ## v2.46.0
 - One window: with the Kit on, Untamed is the "Untamed" tab of the Kit's window, next to Armory, Professions and Books, with its sections (Today, Bestiary, My Pets, Hunter, Gear, World) inside. /ut, the minimap button and every "open this page" go there.
 - The Kit's controller support drives the whole window, Untamed's tab and its menus included.

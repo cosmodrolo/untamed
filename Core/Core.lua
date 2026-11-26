@@ -67,6 +67,8 @@ local defaultsDB = {
 local function InitDB()
   UntamedDB = UntamedDB or {}
   for k, v in pairs(defaultsDB) do if UntamedDB[k] == nil then UntamedDB[k] = v end end
+  -- the Kit does these (UI/UI.lua, ns.KIT_SETTINGS): Untamed's own stay off
+  if ns.Kit and ns.KIT_SETTINGS then for k in pairs(ns.KIT_SETTINGS) do UntamedDB[k] = false end end
   -- settings of features that are gone (2.38: cooldown rows, Auto Shot timer bar, Sting and Mark timers, hawk tracker, pet watch, Food and Pet reminders)
   for _, k in ipairs({ "hudAlways", "autoShotBar", "shotBarPos", "hawkPos", "hawkTracker", "hudDur", "hudFood", "petWatch", "petLeash" }) do
     UntamedDB[k] = nil

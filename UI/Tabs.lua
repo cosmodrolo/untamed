@@ -326,7 +326,9 @@ local function BuildSettings(panel, top)
     end
     for _, it in ipairs(sec.items) do
       local kind = it[1]
-      if kind == "check" then
+      if kind == "check" and ns.Kit and ns.KIT_SETTINGS[it[3]] then
+        -- (the Kit does this; UI/UI.lua)
+      elseif kind == "check" then
         local label, key, desc = it[2], it[3], it[4]
         local c = ns.MakeCheck(page, label, 14, y,
           function() if it.on then return ns.db[key] ~= false end return ns.db[key] and true or false end,

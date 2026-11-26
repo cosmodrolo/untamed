@@ -1087,6 +1087,14 @@ local SECTION_OF = {
   books = { "world", 1 }, search = { "world", 2 },
   settings = { "settings", 1 },
 }
+-- With the Kit on (Kit/, OneForAll inside Untamed), Untamed leaves to it what it does too: these pages go, and a
+-- link to one opens the Kit's page instead (false: no Kit page to open). Settings of the features that go with
+-- them are turned off and hidden (UI/Tabs.lua, Core/Core.lua).
+ns.KIT_PAGES = { gear = "armory", talents = "talents", books = "books", spells = false, quests = false, dungeons = false }
+ns.KIT_SETTINGS = { gearTooltip = true, gearAlerts = true, bagUp = true, questAdvice = true, lootCard = true, needAlert = true,
+  trainerReminder = true, talentGlow = true, talentPath = true, bookPins = true, bookAlerts = true }
+function ns.KitTrims(key) return ns.Kit ~= nil and ns.KIT_PAGES[key] ~= nil end
+
 local sectionByKey = {}
 for i, sec in ipairs(SECTIONS) do sec.index = i; sectionByKey[sec.key] = sec end
 local activeSection
@@ -1103,13 +1111,13 @@ end
 -- the pages of a section, in order
 local function SectionPages(secKey)
   local list = {}
-  for _, t in pairs(tabs) do if t.meta.sec == secKey then list[#list + 1] = t end end
+  for _, t in pairs(tabs) do if t.meta.sec == secKey and not ns.KitTrims(t.key) then list[#list + 1] = t end end
   table.sort(list, function(a, b) if a.meta.order ~= b.meta.order then return a.meta.order < b.meta.order end return a.key < b.key end)
   return list
 end
 
 local function SelectTab(key)
-  if not tabs[key] then key = "abilities" end
+  if not tabs[key] or ns.KitTrims(key) then key = "abilities" end
   activeTab = key
   for k, t in pairs(tabs) do
     if t.panel then t.panel:SetShown(k == key) end
@@ -1633,6 +1641,10 @@ function ns.UI_Host(parent)
 end
 
 function ns.UI_Show(key)
+  if key and ns.KitTrims(key) then
+    if ns.KIT_PAGES[key] and ns.Kit.OpenPanel then ns.Kit:OpenPanel(ns.KIT_PAGES[key]) end
+    return
+  end
   if ns.KitShow and ns.KitShow() then
     if key and tabs[key] and frame then SelectTab(key) elseif key and tabs[key] then ns.pendingTab = key end
     return
