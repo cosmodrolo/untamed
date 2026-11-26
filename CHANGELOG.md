@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.46.0
+- One window: with the Kit on, Untamed is the "Untamed" tab of the Kit's window, next to Armory, Professions and Books, with its sections (Today, Bestiary, My Pets, Hunter, Gear, World) inside. /ut, the minimap button and every "open this page" go there.
+- The Kit's controller support drives the whole window, Untamed's tab and its menus included.
+- New look, Kit (dark slate and gold), to match the Kit's window; picked once when Untamed first opens in it. Settings can change it.
+- OneForAll's Hunter Pets tab is hidden once per character (Untamed's pages cover it); the Kit's settings can show it again.
+- The Kit's controller support now finds its window (it looked for OneForAll's).
+
 ## v2.45.0
 - New: the Kit. OneForAll (by Smoergi, GPL-3.0-or-later) now lives inside Untamed as the Kit, with the controller support and OpenMap map icons of OneForAll Pad: the armory, professions and Skill-Up planner, Library Books, the info bar and the everyday extras (sell junk, repair, quick loot, loot sparkles, loot feed and more). /ut kit or /ofa opens its window.
 - The Kit stays off while OneForAll or OneForAll Pad is enabled, and copies their settings each session; turn OneForAll off and the Kit takes over with the same settings, books and plans.

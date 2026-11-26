@@ -27,6 +27,7 @@ LICENSE_NOTE = "Kit/ is OneForAll by Smoergi (GPL-3.0-or-later), https://github.
 HEADER = re.compile(r"^local ([A-Za-z_]+), *FLT *= *\.\.\.[^\n]*$", re.M)
 SUBS = [
     (re.compile(r"\b_G\[ADDON\] = FLT"), "_G.UntamedKit = FLT"),
+    (re.compile(r"\b_G\.OneForAll([A-Za-z_]+)"), r"_G.UntamedKit\1"),
     (re.compile(r"\bOneForAllCharDB\b"), "UntamedKitCharDB"),
     (re.compile(r"\bOneForAllDB\b"), "UntamedKitDB"),
     (re.compile(r"\bForeverCompanionCharDB\b"), "UntamedKitNoLegacyCharDB"),

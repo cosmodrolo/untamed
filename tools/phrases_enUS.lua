@@ -391,6 +391,7 @@ L["Keep your pet up"] = true
 L["Keeping your pet fed and alive, and your quiver full."] = true
 L["Keeps its sources on your map and tells you when you're in a zone that has it."] = true
 L["Keeps its spots on your map and alerts you when it's near."] = true
+L["Kit (matches the Kit's window)"] = true
 L["Knows"] = true
 L["Last stop: abandon the tamed beast, then take your pet back from "] = true
 L["Later"] = true

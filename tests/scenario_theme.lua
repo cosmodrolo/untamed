@@ -28,7 +28,7 @@ for _, th in ipairs(ns.THEMES) do
     check(ns.Theme.accent[1] == th.accent[1] and (ns.Theme.blizzard == true) == (th.art == true), th.key .. " goes in place")
   end
 end
-check(#ns.THEMES == 6 and seen.savage and seen.midnight and seen.ember and seen.slate and seen.twilight, "six looks to choose from")
+check(#ns.THEMES == 7 and seen.kit and seen.savage and seen.midnight and seen.ember and seen.slate and seen.twilight, "seven looks to choose from")
 ns.db.theme = "blizzard"; ns.ApplyTheme()
 check(rawget(ns.UI_Frame(), "blizzNine") ~= nil, "the frame art is on our own frame")
 for _, key in ipairs({ "browse", "talents", "gear", "settings", "stable", "care" }) do ns.UI_Show(key) end

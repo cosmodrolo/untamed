@@ -37,6 +37,9 @@ ns.THEMES = {
   { key = "blizzard", name = L["Blizzard (like the game's windows)"], art = true,
     window = { 0.050, 0.048, 0.052 }, bar = { 0.030, 0.028, 0.030 }, panel = { 0.095, 0.088, 0.082 }, deep = { 0.032, 0.030, 0.034 },
     button = { 0.170, 0.135, 0.100 }, line = { 0.430, 0.345, 0.200 }, accent = { 1.000, 0.820, 0.000 }, ink = { 0.160, 0.100, 0.000 } },
+  { key = "kit",      name = L["Kit (matches the Kit's window)"],
+    window = { 0.045, 0.045, 0.058 }, bar = { 0.030, 0.030, 0.040 }, panel = { 0.072, 0.070, 0.088 }, deep = { 0.036, 0.035, 0.046 },
+    button = { 0.125, 0.115, 0.125 }, line = { 0.320, 0.270, 0.180 }, accent = { 0.960, 0.780, 0.300 }, ink = { 0.200, 0.130, 0.000 } },
   { key = "midnight", name = L["Midnight (navy and ice blue)"],
     window = { 0.050, 0.065, 0.100 }, bar = { 0.032, 0.042, 0.068 }, panel = { 0.075, 0.098, 0.150 }, deep = { 0.040, 0.052, 0.084 },
     button = { 0.110, 0.150, 0.230 }, line = { 0.200, 0.290, 0.440 }, accent = { 0.350, 0.780, 0.980 }, ink = { 0.020, 0.120, 0.200 } },
@@ -51,6 +54,8 @@ ns.THEMES = {
     button = { 0.170, 0.130, 0.240 }, line = { 0.340, 0.260, 0.480 }, accent = { 0.800, 0.600, 1.000 }, ink = { 0.200, 0.080, 0.300 } },
 }
 function ns.ApplyTheme()
+  -- the first time Untamed lives in the Kit's window, it takes the look that matches it (Settings can change it back)
+  if ns.Kit and ns.db and not ns.db.kitTheme then ns.db.kitTheme = true; ns.db.theme = "kit" end
   local want = ns.db and ns.db.theme
   for _, th in ipairs(ns.THEMES) do
     if th.key == want and th.window then
@@ -113,6 +118,7 @@ local function BlizzardFrameArt(frame, onClose)
     stone:SetTexture("Interface\\FrameGeneral\\UI-Background-Rock", "REPEAT", "REPEAT")
     stone:SetHorizTile(true); stone:SetVertTile(true)
     stone:SetVertexColor(0.55, 0.55, 0.6)
+    frame.blizzStone = stone
     local nine = CreateFrame("Frame", nil, frame, "NineSlicePanelTemplate")
     NineSliceUtil.ApplyLayoutByName(nine, "ButtonFrameTemplateNoPortrait")
     frame.blizzNine = nine
@@ -1447,6 +1453,7 @@ local function CreateMainFrame()
   local bar = CreateFrame("Frame", nil, frame)
   bar:SetPoint("TOPLEFT", 1, -1); bar:SetPoint("TOPRIGHT", -1, -1)
   bar:SetHeight(23)
+  frame.titleBar = bar
   if blizzard then
     -- the title sits on the metal top edge, above the border art
     bar:SetFrameLevel((frame.blizzNine:GetFrameLevel() or 500) + 5)
@@ -1545,8 +1552,10 @@ local function CreateMainFrame()
   grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
   grip:SetScript("OnMouseDown", function() frame:StartSizing("BOTTOMRIGHT") end)
   grip:SetScript("OnMouseUp", function() frame:StopMovingOrSizing(); SaveGeometry() end)
+  frame.grip = grip
 
-  frame:SetScript("OnShow", function() ns.UI_Refresh(); if ns.Pad_Open then ns.Pad_Open() end end)
+  -- (hosted in the Kit's window, the Kit's controller support drives the page instead of ours)
+  frame:SetScript("OnShow", function() ns.UI_Refresh(); if ns.Pad_Open and not ns.UI_Hosted() then ns.Pad_Open() end end)
   frame:SetScript("OnHide", function() if menu then menu:Hide() end; ns.CloseDropdown(); if ns.Pad_Close then ns.Pad_Close() end end)
 end
 
@@ -1566,7 +1575,7 @@ end
 function ns.Count(n, one, many) return n .. " " .. (n == 1 and one or many) end
 
 function ns.UI_Refresh()
-  if not frame or not frame:IsShown() then return end
+  if not frame or not frame:IsVisible() then return end
   -- Planning for the pet that is out is just "my pet".
   local s = ns.state
   if s.mode == "stable" and s.key and UnitExists("pet") and s.key == ns.PetKey(UnitName("pet"), ns.ToEnglish(UnitCreatureFamily("pet"))) then
@@ -1589,9 +1598,45 @@ function ns.UI_Refresh()
   ns.RefreshControls()
 end
 ns.On("REFRESH", ns.UI_Refresh)
-ns.On("PETCARE", function() if frame and frame:IsShown() then ns.UI_Refresh() end end)
+ns.On("PETCARE", function() if frame and frame:IsVisible() then ns.UI_Refresh() end end)
+
+-- Hosted: with the Kit loaded, this window lives in the Kit's window as its "Untamed" tab (UI/KitHost.lua):
+-- the same frame, filling that tab, without its own title bar, frame art, resize grip and dragging.
+local hostParent
+function ns.UI_Hosted() return hostParent ~= nil end
+function ns.UI_Host(parent)
+  if not frame then CreateMainFrame() end
+  if hostParent ~= parent then
+    hostParent = parent
+    frame:SetParent(parent)
+    frame:ClearAllPoints()
+    frame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 24) -- (our title bar's room, which is hidden here)
+    frame:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 0)
+    frame:SetMovable(false)
+    frame:SetResizable(false)
+    frame:EnableMouse(false) -- (its top edge reaches under the Kit's tab bar; the tabs keep their clicks)
+    frame:SetScript("OnDragStart", nil)
+    frame:SetScript("OnDragStop", nil)
+    frame:SetFrameStrata(parent:GetFrameStrata())
+    frame:SetFrameLevel((parent:GetFrameLevel() or 1) + 1)
+    for _, k in ipairs({ "titleBar", "grip", "blizzNine", "blizzClose", "blizzStone", "skinFill" }) do
+      local r = rawget(frame, k)
+      if r then r:Hide() end
+    end
+    for _, t in ipairs(rawget(frame, "skinEdges") or {}) do t:Hide() end
+    for i = #UISpecialFrames, 1, -1 do if UISpecialFrames[i] == "UntamedFrame" then table.remove(UISpecialFrames, i) end end
+  end
+  frame:Show()
+  local pending = ns.pendingTab
+  ns.pendingTab = nil
+  SelectTab((pending and tabs[pending]) and pending or activeTab or (ns.db.openHome ~= false and "home") or "abilities")
+end
 
 function ns.UI_Show(key)
+  if ns.KitShow and ns.KitShow() then
+    if key and tabs[key] and frame then SelectTab(key) elseif key and tabs[key] then ns.pendingTab = key end
+    return
+  end
   if not frame then CreateMainFrame() end
   frame:Show()
   SelectTab((key and tabs[key]) and key or activeTab or (ns.db.openHome ~= false and "home") or "abilities")
@@ -1647,6 +1692,7 @@ end
 function ns.UI_ViewingMenu() if header.viewing then OpenMenu(header.viewing) end end
 
 function ns.UI_Toggle()
+  if ns.KitToggle and ns.KitToggle() then return end
   if frame and frame:IsShown() then frame:Hide() else ns.UI_Show() end
 end
 

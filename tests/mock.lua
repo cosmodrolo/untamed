@@ -6,6 +6,7 @@ local function newObj(name)
   mt.__index = function(t, k)
     if NILKEYS[k] then return nil end
     if k == "IsShown" then return function(self) return self._shown end end
+    if k == "IsVisible" then return function(self) return self._shown end end
     if k == "Show" then return function(self) self._shown = true; if self._scripts.OnShow then self._scripts.OnShow(self) end end end
     if k == "Hide" then return function(self) self._shown = false end end
     if k == "SetShown" then return function(self, v) if v then self:Show() else self:Hide() end end end

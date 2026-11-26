@@ -36,7 +36,7 @@ local function DB()
   return UntamedKitDB.pad
 end
 
-local function Window() return _G.OneForAllFrame end
+local function Window() return _G.UntamedKitFrame end
 
 -- Which of the rects is the best step from `f` in a direction. Rects are { l, r, t, b } in screen
 -- units (t above b). Plain numbers in, an index out.
@@ -105,6 +105,11 @@ local function Collect(root, out)
 end
 
 local function Scope()
+  -- a menu of a page another addon put into the window (FLT.PadExtraMenu, set by that addon)
+  if FLT.PadExtraMenu then
+    local ok, menu, menuOwner = pcall(FLT.PadExtraMenu)
+    if ok and menu then return menu, menuOwner end
+  end
   if UI.PadOpenMenu then
     local menu, menuOwner = UI.PadOpenMenu()
     if menu then return menu, menuOwner end
@@ -257,6 +262,14 @@ local function Back()
     UI.PadCloseMenus()
     SetFocus(menuOwner and menuOwner:IsVisible() and menuOwner or nil)
     return
+  end
+  if FLT.PadExtraMenu then
+    local ok, extra, extraOwner = pcall(FLT.PadExtraMenu)
+    if ok and extra then
+      if FLT.PadExtraClose then pcall(FLT.PadExtraClose) else extra:Hide() end
+      SetFocus(extraOwner and extraOwner:IsVisible() and extraOwner or nil)
+      return
+    end
   end
   if focus and focus.IsObjectType and focus:IsObjectType("EditBox") and focus.HasFocus and focus:HasFocus() then
     focus:ClearFocus()

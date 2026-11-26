@@ -330,6 +330,7 @@ end
 local function Apply()
   local f = ns.UI_Frame()
   if bound or not f or not f:IsShown() or InCombatLockdown() or not PadOn() then return end
+  if ns.UI_Hosted and ns.UI_Hosted() then return end -- in the Kit's window its own controller support drives it
   for key, action in pairs(KEYS) do
     SetOverrideBindingClick(owner, true, key, "UntamedPad_" .. action, "LeftButton")
   end

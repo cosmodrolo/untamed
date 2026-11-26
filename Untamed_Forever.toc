@@ -234,3 +234,4 @@ Kit\UI\GuildGames.lua
 Kit\Pad\Pad.lua
 Kit\Pad\MapPad.lua
 # /Kit
+UI\KitHost.lua

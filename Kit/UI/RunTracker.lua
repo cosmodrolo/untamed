@@ -786,7 +786,7 @@ local function openBoss(d, b, mode)
   if not (UI and UI.PrepareWindow) then return end
   d = d and d._real or d -- the test tracker shows a part of a real dungeon
   local what = d and (d.key .. ":" .. tostring(mode or (b and b.name)))
-  local win = _G.OneForAllFrame
+  local win = _G.UntamedKitFrame
   if win and win:IsShown() and opened == what and (not UI.ActiveTab or UI.ActiveTab() == "dungeons") then
     win:Hide(); opened = nil; return
   end
