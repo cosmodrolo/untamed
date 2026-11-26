@@ -1443,8 +1443,9 @@ local function BuildSidebar()
       if content then
         content:ClearAllPoints()
         content:SetPoint("TOPLEFT", 10, -100)
-        content:SetPoint("BOTTOMRIGHT", -10, 10)
+        content:SetPoint("BOTTOMRIGHT", -10, 28) -- (room for the hint line under it)
       end
+      if versionText then versionText:Hide() end -- (the Kit's window shows the version)
       if ns.KitNavSelect then ns.KitNavSelect(activeTab) end
       return
     end

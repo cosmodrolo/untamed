@@ -38,7 +38,8 @@ end
 
 UI.RegisterPanel({ key = KEY, label = "Untamed", order = 0.5, tabWidth = 112, create = function(parent)
   local panel = CreateFrame("Frame", nil, parent)
-  if UI.PlacePanel then UI.PlacePanel(panel, parent) else panel:SetAllPoints(parent) end
+  -- (as the Kit's own pages: up by the title band they no longer show, UI.TitleBand)
+  if UI.PlacePanel then UI.PlacePanel(panel, parent, UI.TITLE_BAND_H or 0) else panel:SetAllPoints(parent) end
   local hasNav
   local function host(self)
     ns.KitTall(true)
@@ -57,8 +58,10 @@ end })
 -- Height per tab: the Kit's pages are laid out for its normal height (690), Untamed's need more. On the Untamed tab
 -- the window takes Untamed's own height (ns.db.kitTabH, default 830, set by dragging the window's bottom edge while
 -- on this tab); on the Kit's tabs it goes back to the Kit's own (UntamedKitDB.window.height, untouched here).
+-- Width too: Untamed's two-column pages (a list, and a model with its details) need about 950 beside the side list.
 local BASE_H, UNTAMED_H = 690, 830
-local kitH -- the Kit's height while we are on our tab
+local UNTAMED_W = 1200
+local kitH, kitW -- the Kit's size while we are on our tab
 function ns.KitTall(on)
   local win = _G.UntamedKitFrame
   if not win then return end
@@ -66,6 +69,10 @@ function ns.KitTall(on)
   if on then
     if kitH then return end
     kitH = (w and type(w.height) == "number") and w.height or BASE_H
+    kitW = win:GetWidth()
+    local fitW = math.floor((UIParent:GetWidth() or 0) * UIParent:GetEffectiveScale() / win:GetEffectiveScale()) - 20
+    if fitW < 1040 then fitW = UNTAMED_W end
+    if kitW and kitW < UNTAMED_W then win:SetWidth(math.min(UNTAMED_W, fitW)) end
     local fit = math.floor((UIParent:GetHeight() or 0) * UIParent:GetEffectiveScale() / win:GetEffectiveScale()) - 20
     if fit < BASE_H then fit = UNTAMED_H end
     win:SetHeight(math.max(BASE_H, math.min(ns.db.kitTabH or UNTAMED_H, fit)))
@@ -74,7 +81,8 @@ function ns.KitTall(on)
     if mine and math.abs(mine - (ns.db.kitTabH or UNTAMED_H)) >= 1 then ns.db.kitTabH = math.floor(mine + 0.5) end
     if w then w.height = (kitH > BASE_H) and kitH or nil end
     win:SetHeight(kitH)
-    kitH = nil
+    if kitW then win:SetWidth(kitW) end
+    kitH, kitW = nil, nil
   end
 end
 

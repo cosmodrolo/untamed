@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.48.1
+- Untamed tab: no empty band under the Kit's tabs (it sits as high as the Kit's own pages); the window gets wider on this tab (1200) so the right-hand details and buttons are no longer cut off, and goes back to the Kit's width on its tabs; the hint line no longer runs into the page; the version shows once, at the bottom of the Kit's window.
+
 ## v2.48.0
 - Untamed tab in the Kit's look: the Kit's side list on the left (Untamed's emblem and title, every page with its icon, a line between sections) like Armory and the other tabs, in place of Untamed's section bar and page list.
 
