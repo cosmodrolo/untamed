@@ -76,6 +76,12 @@ local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function(self)
   self:UnregisterAllEvents()
+  -- once (2.47.3): the Kit's own height goes back to normal; it had been stretched for Untamed's pages before the
+  -- Untamed tab got its own height
+  if not ns.db.kitHeightReset and type(UntamedKitDB) == "table" and type(UntamedKitDB.window) == "table" then
+    ns.db.kitHeightReset = true
+    UntamedKitDB.window.height = nil
+  end
   if type(UntamedKitCharDB) ~= "table" then return end
   if not UntamedKitCharDB.untamedTabsSet then
     UntamedKitCharDB.untamedTabsSet = true

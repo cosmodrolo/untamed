@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.47.3
+- Kit window: its own height is put back to normal once (it had been stretched to make room for Untamed's pages); the Untamed tab keeps its taller height.
+- The version shown in the Kit window and /ut is the real one in Alejandro's copy.
+
 ## v2.47.2
 - Kit window: each side keeps its own height. The Untamed tab opens taller (830, or whatever you drag it to while on that tab) and the Kit's tabs go back to the Kit's own height, so Armory and the rest no longer sit in a half-empty window.
 
