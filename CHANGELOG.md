@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.47.2
+- Kit window: each side keeps its own height. The Untamed tab opens taller (830, or whatever you drag it to while on that tab) and the Kit's tabs go back to the Kit's own height, so Armory and the rest no longer sit in a half-empty window.
+
 ## v2.47.1
 - Kit: Library Books now show on OpenMap's controller map from further out (zone and continent views), like dungeon entrances; ships, flight masters and the rest still need a zoomed-in view.
 - Kit: its controller messages say "Untamed Kit" instead of "OneForAll Pad".
