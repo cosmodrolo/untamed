@@ -1116,6 +1116,17 @@ local function SectionPages(secKey)
   return list
 end
 
+-- the sections and their pages, in order (the Kit's side list, UI/KitHost.lua)
+function ns.UI_NavList()
+  local out = {}
+  for _, sec in ipairs(SECTIONS) do
+    local pages = SectionPages(sec.key)
+    if #pages > 0 then out[#out + 1] = { key = sec.key, title = sec.title, pages = pages } end
+  end
+  local st = tabs.settings
+  if st then out[#out + 1] = { key = "settings", title = st.title, pages = { st } } end
+  return out
+end
 local function SelectTab(key)
   if not tabs[key] or ns.KitTrims(key) then key = "abilities" end
   activeTab = key
@@ -1144,6 +1155,7 @@ local function SelectTab(key)
   t.panel:Show()
   ns.UI_Refresh()
 end
+function ns.UI_SelectTab(key) if frame then SelectTab(key) end end
 
 ---------------------------------------------------------------------------
 -- Header: who you're planning for, pet bars, and the "Viewing" picker
@@ -1424,6 +1436,18 @@ local function BuildSidebar()
   end
   LayoutSidebar = function()
     for _, t in pairs(tabs) do if t.button then t.button:Hide() end end
+    if ns.UI_Hosted() then
+      -- in the Kit's window its own side list (UI/KitHost.lua) takes the place of the section bar and this list
+      side:Hide()
+      if sectionBar then sectionBar:Hide() end
+      if content then
+        content:ClearAllPoints()
+        content:SetPoint("TOPLEFT", 10, -100)
+        content:SetPoint("BOTTOMRIGHT", -10, 10)
+      end
+      if ns.KitNavSelect then ns.KitNavSelect(activeTab) end
+      return
+    end
     local pages = SectionPages(activeSection)
     local single = #pages <= 1
     side:SetShown(not single)
@@ -1612,13 +1636,14 @@ ns.On("PETCARE", function() if frame and frame:IsVisible() then ns.UI_Refresh() 
 -- the same frame, filling that tab, without its own title bar, frame art, resize grip and dragging.
 local hostParent
 function ns.UI_Hosted() return hostParent ~= nil end
-function ns.UI_Host(parent)
+function ns.UI_Host(parent, left, top)
   if not frame then CreateMainFrame() end
   if hostParent ~= parent then
     hostParent = parent
     frame:SetParent(parent)
     frame:ClearAllPoints()
-    frame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 24) -- (our title bar's room, which is hidden here)
+    -- (left: the Kit's side list beside it; top: our title bar's room, which is hidden here)
+    frame:SetPoint("TOPLEFT", parent, "TOPLEFT", left or 0, top or 24)
     frame:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 0)
     frame:SetMovable(false)
     frame:SetResizable(false)

@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.48.0
+- Untamed tab in the Kit's look: the Kit's side list on the left (Untamed's emblem and title, every page with its icon, a line between sections) like Armory and the other tabs, in place of Untamed's section bar and page list.
+
 ## v2.47.4
 - /rl reloads the interface.
 

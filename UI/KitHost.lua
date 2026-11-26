@@ -13,10 +13,43 @@ if not (K and K.UI and K.UI.RegisterPanel) then return end
 local UI = K.UI
 local KEY = "untamed"
 
+-- The Kit's look: its side list on the left (emblem, title, one entry per page, a line between sections), as on
+-- Armory and the other tabs, in place of Untamed's section bar and page list; Untamed's pages to the right of it.
+local NAV_TOP, BODY_X = -74, 178
+local navButtons = {}
+local function BuildNav(panel)
+  if not (UI.SideNav and UI.NavEntry and ns.UI_NavList) then return false end
+  local nav, y = UI.SideNav(panel, NAV_TOP, "emblem_pets", "Untamed")
+  for i, sec in ipairs(ns.UI_NavList()) do
+    if i > 1 and UI.NavSeparator then y = UI.NavSeparator(nav, y) end
+    for _, t in ipairs(sec.pages) do
+      local b
+      b, y = UI.NavEntry(nav, y, t.title, ns.Icon(t.meta.icon))
+      b:SetScript("OnClick", function() ns.UI_SelectTab(t.key) end)
+      navButtons[t.key] = b
+    end
+  end
+  nav:SetHeight(math.max(560, -y + 12))
+  return true
+end
+function ns.KitNavSelect(key)
+  for k, b in pairs(navButtons) do b:SetActive(k == key) end
+end
+
 UI.RegisterPanel({ key = KEY, label = "Untamed", order = 0.5, tabWidth = 112, create = function(parent)
   local panel = CreateFrame("Frame", nil, parent)
   if UI.PlacePanel then UI.PlacePanel(panel, parent) else panel:SetAllPoints(parent) end
-  panel:SetScript("OnShow", function(self) ns.KitTall(true); ns.UI_Host(self) end)
+  local hasNav
+  local function host(self)
+    ns.KitTall(true)
+    if hasNav == nil then
+      ns.UI_Host(self, BODY_X, NAV_TOP + 24) -- (built first: the list needs Untamed's pages)
+      hasNav = BuildNav(self) and true or false
+    end
+    if hasNav then ns.UI_Host(self, BODY_X, NAV_TOP + 24) else ns.UI_Host(self) end
+  end
+  panel.UntamedHost = host
+  panel:SetScript("OnShow", host)
   panel:SetScript("OnHide", function() ns.KitTall(false) end)
   return panel
 end })
@@ -56,7 +89,7 @@ K.PadExtraClose = function() ns.UI_ClosePopups() end
 local function Hosted()
   -- (the tab's OnShow does this too; called here as well so it never depends on which frame showed first)
   local panel = UI.EnsurePanel and UI.EnsurePanel(KEY)
-  if panel and panel:IsVisible() then ns.KitTall(true); ns.UI_Host(panel) end
+  if panel and panel:IsVisible() and panel.UntamedHost then panel.UntamedHost(panel) end
 end
 function ns.KitShow()
   if not K.OpenPanel then return false end
